@@ -4,7 +4,7 @@ int main()
 {
 
 
-sf::RenderWindow window(sf::VideoMode(810, 540), "SFML works!"); //Render window
+sf::RenderWindow window(sf::VideoMode(810, 540), "SFML works!!"); //Render window
 
 
 	sf::CircleShape shape(100.f);
