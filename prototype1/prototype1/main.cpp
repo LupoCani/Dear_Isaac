@@ -1,37 +1,37 @@
 #include <SFML/Graphics.hpp>
 #include <math.h>
-#include <windows.h>
+#include <Windows.h>
 using namespace sf;
+RenderWindow main_window(VideoMode(960, 520), "main window");
 
+void menue_Render() {
+
+}
+
+void main_Render(CircleShape test) {
+	Sleep(50);
+	main_window.clear();
+	main_window.draw(test);
+	main_window.display();
+
+}
 
 int main()
 {
-<<<<<<< HEAD
-=======
+	CircleShape p1;
+	p1.setRadius(15);
+	p1.setFillColor(Color(25, 5, 100));
 
+	for (;;) {
 
-sf::RenderWindow window(sf::VideoMode(810, 540), "SFML works!!"); //Render window
-
-
-	sf::CircleShape shape(100.f);
-	shape.setFillColor(sf::Color::Green);
-
-	while (window.isOpen())
-	{
-		sf::Event event;
-		while (window.pollEvent(event))
-		{
-			if (event.type == sf::Event::Closed) {
-				window.close();
-				return 0;
+		for (;;) {
+			for (float i = 0; i <= 500; i = i + 0.2) {
+				float y = 200*sin(i);
+				p1.setPosition(Vector2f(i, y));
+				main_Render(p1);
 			}
 		}
 
-		window.clear();
-		window.draw(shape);
-		window.display();
-	}
 
->>>>>>> origin/master
-	
+	}
 }
