@@ -1,0 +1,4 @@
+﻿  Source.cpp
+c:\users\carl\documents\github\dear_isaac\dear_isaac_carl\dear_isaac_carl\source.cpp(23): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+c:\users\carl\documents\github\dear_isaac\dear_isaac_carl\dear_isaac_carl\source.cpp(34): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+LINK : fatal error LNK1104: cannot open file 'sfml-graphics-d.dll'

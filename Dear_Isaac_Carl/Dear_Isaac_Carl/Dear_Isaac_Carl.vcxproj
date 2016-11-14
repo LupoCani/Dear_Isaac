@@ -84,9 +84,12 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
+      <AdditionalIncludeDirectories>C:\Users\Carl\Documents\GitHub\Dear_Isaac\Dear_Isaac_Carl\SFML\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>sfml-graphics-d.dll;sfml-audio-d.dll;sfml-network-d.dll;sfml-system-d.dll;sfml-window-d.dll</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\Users\Carl\Documents\GitHub\Dear_Isaac\Dear_Isaac_Carl\SFML\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -110,11 +113,14 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
+      <AdditionalIncludeDirectories>C:\Users\Carl\Documents\GitHub\Dear_Isaac\Dear_Isaac_Carl\SFML\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalDependencies>sfml-graphics.dll;sfml-audio.dll;sfml-network.dll;sfml-system.dll;sfml-window.dll</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\Users\Carl\Documents\GitHub\Dear_Isaac\Dear_Isaac_Carl\SFML\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>

@@ -34,7 +34,7 @@ void draw_tail(double x, double y, bool beblue) //Render either of the tails
 	holder.setPosition(x, y); //Apply properties
 	holder.setRadius(1.5); //Radius
 	holder.setFillColor((beblue ? sf::Color::Green : sf::Color::Cyan)); //Green for orbiting body, cyan for central
-	holder.time = time(0); //Start timeout timer
+	//holder.time = time(0); //Start timeout timer
 	tail.push_back(holder); //Store in main vector
 
 	tail.erase(tail.begin()); //Erase oldest tail particle.
@@ -69,7 +69,7 @@ void fill_tail() //Generate one thousand tail particles, fill main vector.
 		holder.setPosition(0, 0);
 		holder.setRadius(1.5);
 		holder.setFillColor(sf::Color::Green);
-		holder.time = time(0);
+//		holder.time = time(0);
 		tail.push_back(holder);
 	}
 }
