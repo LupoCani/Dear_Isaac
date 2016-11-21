@@ -1,8 +1,15 @@
-﻿Build started 2016-10-24 10:13:02.
-     1>Project "\\klasod01\Elever$\gunnar.wickbom\GitHub\Dear_Isaac\prototype1\prototype1\prototype1.vcxproj" on node 2 (Build target(s)).
-     1>C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\V120\Microsoft.Cpp.Platform.targets(64,5): error MSB8020: The build tools for v140 (Platform Toolset = 'v140') cannot be found. To build using the v140 build tools, please install v140 build tools.  Alternatively, you may upgrade to the current Visual Studio tools by selecting the Project menu or right-click the solution, and then selecting "Upgrade Solution...".
-     1>Done Building Project "\\klasod01\Elever$\gunnar.wickbom\GitHub\Dear_Isaac\prototype1\prototype1\prototype1.vcxproj" (Build target(s)) -- FAILED.
+﻿Build started 2016-11-21 10:31:44.
+     1>Project "C:\Users\alex.modee\Git\Daer-Isac2\Dear_Isaac\prototype1\prototype1\prototype1.vcxproj" on node 2 (Build target(s)).
+     1>ClCompile:
+         C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin\x86_amd64\CL.exe /c /IC:\GitHub\prototype1\sfml\include /ZI /nologo /W3 /WX- /Od /D _DEBUG /D _CONSOLE /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /Fo"x64\Debug\\" /Fd"x64\Debug\vc140.pdb" /Gd /TP /errorReport:prompt main.cpp
+         main.cpp
+     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\prototype1\prototype1\main.cpp(121): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\prototype1\prototype1\main.cpp(132): warning C4305: '+=': truncation from 'double' to 'float'
+       Link:
+         C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin\x86_amd64\link.exe /ERRORREPORT:PROMPT /OUT:"C:\Users\alex.modee\Git\Daer-Isac2\Dear_Isaac\prototype1\x64\Debug\prototype1.exe" /INCREMENTAL /NOLOGO /LIBPATH:C:\GitHub\prototype1\sfml\lib "sfml-system-d.lib" "sfml-graphics-d.lib" "sfml-audio-d.lib" "sfml-network-d.lib" "sfml-window-d.lib" kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /Debug /PDB:"C:\Users\alex.modee\Git\Daer-Isac2\Dear_Isaac\prototype1\x64\Debug\prototype1.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\Users\alex.modee\Git\Daer-Isac2\Dear_Isaac\prototype1\x64\Debug\prototype1.lib" /MACHINE:X64 x64\Debug\main.obj
+         prototype1.vcxproj -> C:\Users\alex.modee\Git\Daer-Isac2\Dear_Isaac\prototype1\x64\Debug\prototype1.exe
+     1>Done Building Project "C:\Users\alex.modee\Git\Daer-Isac2\Dear_Isaac\prototype1\prototype1\prototype1.vcxproj" (Build target(s)).
 
-Build FAILED.
+Build succeeded.
 
-Time Elapsed 00:00:00.08
+Time Elapsed 00:00:01.04
