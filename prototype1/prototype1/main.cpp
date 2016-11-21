@@ -34,7 +34,7 @@ void collide(CircleShape p1, CircleShape Sun, CircleShape planet1) {
 
 	float precision = 2;
 
-	for (float i = Sun_center.x; i <= p1_x + P1_r; i += 1) {
+	for (float i = p1_center.x; i <= p1_x + P1_r; i += 1) {
 
 		float p1_pos = sqrt(P1_r*P1_r - (i - p1_x)*(i - p1_x)) + p1_y;
 		float p1_Neg = -sqrt(P1_r*P1_r - (i - p1_x)*(i - p1_x)) + p1_y;
@@ -118,8 +118,8 @@ void main() {
 
 		for (;;) {
 
-			p1.setPosition(Vector2f(k, ( 0.5*k) * cos(k / 10) + 420));
-			planet1.setPosition(Vector2f(300 * sin(k / 40) + 520, 300 * cos(k / 40) + 410));
+			p1.setPosition(Vector2f(0.05*k, ( 0.5*k) * cos(k / 100) + 420));
+			planet1.setPosition(Vector2f(300 * sin(k / 100) + 520, 300 * cos(k / 100) + 410));
 
 			window.clear();
 			window.draw(Sun);
