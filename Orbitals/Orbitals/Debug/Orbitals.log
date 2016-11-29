@@ -1,16 +1,2 @@
-﻿Build started 2016-05-30 14:20:54.
-     1>Project "\\klasod01\Elever$\gunnar.wickbom\Visual Studio 2013\Projects\Orbitals\Orbitals\Orbitals.vcxproj" on node 2 (Build target(s)).
-     1>ClCompile:
-         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\CL.exe /c /ZI /nologo /W3 /WX- /sdl /Od /Oy- /D WIN32 /D _DEBUG /D _CONSOLE /D _LIB /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Debug\\" /Fd"Debug\vc120.pdb" /Gd /TP /analyze- /errorReport:prompt Source.cpp
-         Source.cpp
-     1>\\klasod01\elever$\gunnar.wickbom\visual studio 2013\projects\orbitals\orbitals\source.cpp(23): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
-     1>\\klasod01\elever$\gunnar.wickbom\visual studio 2013\projects\orbitals\orbitals\source.cpp(34): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
-     1>C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\V120\Microsoft.CppBuild.targets(1192,5): warning MSB8012: TargetPath(\\klasod01\Elever$\gunnar.wickbom\Visual Studio 2013\Projects\Orbitals\Debug\Orbitals.exe) does not match the Linker's OutputFile property value (). This may cause your project to build incorrectly. To correct this, please make sure that $(OutDir), $(TargetName) and $(TargetExt) property values match the value specified in %(Link.OutputFile).
-       Link:
-         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\link.exe /ERRORREPORT:PROMPT /INCREMENTAL /NOLOGO /LIBPATH:"U:\SFML-2.3.2\lib" "sfml-graphics-d.lib" "sfml-window-d.lib" "sfml-system-d.lib" kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"\\klasod01\Elever$\gunnar.wickbom\Visual Studio 2013\Projects\Orbitals\Debug\Orbitals.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"\\klasod01\Elever$\gunnar.wickbom\Visual Studio 2013\Projects\Orbitals\Debug\Orbitals.lib" /MACHINE:X86 Debug\Source.obj
-         Orbitals.vcxproj -> \\klasod01\Elever$\gunnar.wickbom\Visual Studio 2013\Projects\Orbitals\Debug\Orbitals.exe
-     1>Done Building Project "\\klasod01\Elever$\gunnar.wickbom\Visual Studio 2013\Projects\Orbitals\Orbitals\Orbitals.vcxproj" (Build target(s)).
-
-Build succeeded.
-
-Time Elapsed 00:00:05.99
+﻿  Source.cpp
+c:\users\carl\documents\github\dear_isaac\orbitals\orbitals\source.cpp(3): fatal error C1083: Cannot open include file: 'SFML\Graphics.hpp': No such file or directory
