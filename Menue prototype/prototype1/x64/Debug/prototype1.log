@@ -1,2 +1,9 @@
-﻿  main.cpp
-d:\dokument\git\dear_isaac\menue prototype\prototype1\main.cpp(3): fatal error C1083: Cannot open include file: 'SFML\Graphics.hpp': No such file or directory
+﻿Build started 2016-12-05 08:53:48.
+     1>Project "C:\Users\alex.modee\Git\Daer-Isac2\Dear_Isaac\Menue prototype\prototype1\prototype1.vcxproj" on node 2 (Build target(s)).
+     1>Link:
+         prototype1.vcxproj -> C:\Users\alex.modee\Git\Daer-Isac2\Dear_Isaac\Menue prototype\x64\Debug\prototype1.exe
+     1>Done Building Project "C:\Users\alex.modee\Git\Daer-Isac2\Dear_Isaac\Menue prototype\prototype1\prototype1.vcxproj" (Build target(s)).
+
+Build succeeded.
+
+Time Elapsed 00:00:00.03
