@@ -1,2 +1,11 @@
-﻿  Source.cpp
-c:\users\carl\documents\github\dear_isaac\di_menu\di_menu\source.cpp(3): fatal error C1083: Cannot open include file: 'SFML\Graphics.hpp': No such file or directory
+﻿Build started 2016-12-12 11:01:14.
+     1>Project "C:\Users\alex.modee\Git\Daer-Isac2\Dear_Isaac\DI_Menu\DI_Menu\DI_Menu.vcxproj" on node 2 (Build target(s)).
+     1>ClCompile:
+         C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin\CL.exe /c /ZI /nologo /W3 /WX- /sdl /Od /Oy- /D WIN32 /D _DEBUG /D _CONSOLE /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /Fo"Debug\\" /Fd"Debug\vc140.pdb" /Gd /TP /analyze- /errorReport:prompt Source.cpp
+         Source.cpp
+     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\di_menu\di_menu\source.cpp(3): fatal error C1083: Cannot open include file: 'SFML\Graphics.hpp': No such file or directory
+     1>Done Building Project "C:\Users\alex.modee\Git\Daer-Isac2\Dear_Isaac\DI_Menu\DI_Menu\DI_Menu.vcxproj" (Build target(s)) -- FAILED.
+
+Build FAILED.
+
+Time Elapsed 00:00:00.42
