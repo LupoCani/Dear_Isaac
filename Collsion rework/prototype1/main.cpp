@@ -28,8 +28,10 @@ void collision(Sprite player,float player_radius, CircleShape sun, CircleShape p
 	float planet1_radius = planet1.getRadius();
 	Vector2f planet1_center(planet1.getPosition().x + planet1_radius, planet1.getPosition().y + planet1_radius);
 
-	float precision = 1;
-	for (float i = collision_box_begin; i <= collision_box_end; i += 1) {
+
+
+	float precision = 3;
+	for (float i = collision_box_begin; i <= collision_box_end; i += 0.1) {
 
 		float rout_collision = sqrt(player_radius*player_radius - (i - player_center.x)*(i - player_center.x));
 		float pos_collision = rout_collision + player_center.y;
@@ -111,7 +113,9 @@ int main() {
 	}
 	Sprite player;
 	player.setTexture(player_texture);
-	float player_radius = player.getLocalBounds().height/2;
+	player.setOrigin(16, 16);
+	float player_radius = player.getLocalBounds().height/1.5;
+	
 	
 
 	CircleShape sun(50);
@@ -124,19 +128,24 @@ int main() {
 	CircleShape planet1(20);
 	planet1.setTexture(&planet_texture1);
 
+
+	
+
+
 	while (window.isOpen()) {
 
 		float k = 0;
 
 		while (true) {
 
-			float planet1_pos_x = 200 * cos(k/100)+sun_pos_x+ sun.getRadius();
-			float planet1_pos_y = 198 * sin(k/100)+sun_pos_y+ sun.getRadius();
+			float planet1_pos_x = 300 * cos(k/100)+sun_pos_x+ sun.getRadius();
+			float planet1_pos_y = 295 * sin(k/100)+sun_pos_y+ sun.getRadius();
 			planet1.setPosition(Vector2f(planet1_pos_x, planet1_pos_y));
-
+			
 			float player_pos_x=k;
-			float player_pos_y= 200 * sin(k/100) + 500;
+			float player_pos_y= 300 * sin(k/100) + 500;
 			player.setPosition(Vector2f(player_pos_x, player_pos_y));
+			player.setRotation(2*k);
 
 			window.clear();
 			window.draw(sun);
@@ -151,7 +160,7 @@ int main() {
 				break;
 			}
 
-			k += 0.05;
+			k += 0.03;
 		
 		}
 
