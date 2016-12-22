@@ -1,0 +1,36 @@
+﻿  main.cpp
+c:\users\alex modee\desktop\game prototype (multiple modules)\game1\main.cpp(33): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+c:\users\alex modee\desktop\game prototype (multiple modules)\game1\main.cpp(33): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+c:\users\alex modee\desktop\game prototype (multiple modules)\game1\main.cpp(37): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+c:\users\alex modee\desktop\game prototype (multiple modules)\game1\main.cpp(39): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+c:\users\alex modee\desktop\game prototype (multiple modules)\game1\main.cpp(47): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+c:\users\alex modee\desktop\game prototype (multiple modules)\game1\main.cpp(62): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+c:\users\alex modee\desktop\game prototype (multiple modules)\game1\main.cpp(63): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+c:\users\alex modee\desktop\game prototype (multiple modules)\game1\main.cpp(67): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+c:\users\alex modee\desktop\game prototype (multiple modules)\game1\main.cpp(68): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+c:\users\alex modee\desktop\game prototype (multiple modules)\game1\main.cpp(79): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+c:\users\alex modee\desktop\game prototype (multiple modules)\game1\main.cpp(80): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+c:\users\alex modee\desktop\game prototype (multiple modules)\game1\main.cpp(84): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+c:\users\alex modee\desktop\game prototype (multiple modules)\game1\main.cpp(85): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+c:\users\alex modee\desktop\game prototype (multiple modules)\game1\main.cpp(154): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
+c:\users\alex modee\desktop\game prototype (multiple modules)\game1\main.cpp(256): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+c:\users\alex modee\desktop\game prototype (multiple modules)\game1\main.cpp(268): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+c:\users\alex modee\desktop\game prototype (multiple modules)\game1\main.cpp(268): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+c:\users\alex modee\desktop\game prototype (multiple modules)\game1\main.cpp(272): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+c:\users\alex modee\desktop\game prototype (multiple modules)\game1\main.cpp(274): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+c:\users\alex modee\desktop\game prototype (multiple modules)\game1\main.cpp(283): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+c:\users\alex modee\desktop\game prototype (multiple modules)\game1\main.cpp(299): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+c:\users\alex modee\desktop\game prototype (multiple modules)\game1\main.cpp(300): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+c:\users\alex modee\desktop\game prototype (multiple modules)\game1\main.cpp(304): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+c:\users\alex modee\desktop\game prototype (multiple modules)\game1\main.cpp(305): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+c:\users\alex modee\desktop\game prototype (multiple modules)\game1\main.cpp(316): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+c:\users\alex modee\desktop\game prototype (multiple modules)\game1\main.cpp(317): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+c:\users\alex modee\desktop\game prototype (multiple modules)\game1\main.cpp(321): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+c:\users\alex modee\desktop\game prototype (multiple modules)\game1\main.cpp(322): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+c:\users\alex modee\desktop\game prototype (multiple modules)\game1\main.cpp(379): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+c:\users\alex modee\desktop\game prototype (multiple modules)\game1\main.cpp(411): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+c:\users\alex modee\desktop\game prototype (multiple modules)\game1\main.cpp(412): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+c:\users\alex modee\desktop\game prototype (multiple modules)\game1\main.cpp(455): warning C4305: '+=': truncation from 'double' to 'float'
+c:\users\alex modee\desktop\game prototype (multiple modules)\game1\main.cpp(351): warning C4715: 'start_menue': not all control paths return a value
+  game1.vcxproj -> C:\Users\Alex Modee\Desktop\Game prototype (multiple modules)\x64\Debug\game1.exe
+  game1.vcxproj -> C:\Users\Alex Modee\Desktop\Game prototype (multiple modules)\x64\Debug\game1.pdb (Full PDB)
