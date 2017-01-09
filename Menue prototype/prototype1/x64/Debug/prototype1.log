@@ -1,4 +1,4 @@
-﻿Build started 2016-12-19 13:05:18.
+﻿Build started 2017-01-09 13:59:40.
      1>Project "C:\Users\alex.modee\Git\Daer-Isac2\Dear_Isaac\Menue prototype\prototype1\prototype1.vcxproj" on node 2 (Build target(s)).
      1>ClCompile:
          C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin\x86_amd64\CL.exe /c /IC:\GitHub\prototype1\sfml\include /ZI /nologo /W3 /WX- /Od /D _DEBUG /D _CONSOLE /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /Fo"x64\Debug\\" /Fd"x64\Debug\vc140.pdb" /Gd /TP /errorReport:prompt main.cpp
@@ -32,10 +32,9 @@
      1>c:\users\alex.modee\git\daer-isac2\dear_isaac\menue prototype\prototype1\main.cpp(185): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
        Link:
          C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin\x86_amd64\link.exe /ERRORREPORT:PROMPT /OUT:"C:\Users\alex.modee\Git\Daer-Isac2\Dear_Isaac\Menue prototype\x64\Debug\prototype1.exe" /INCREMENTAL /NOLOGO /LIBPATH:C:\GitHub\prototype1\sfml\lib "sfml-system-d.lib" "sfml-graphics-d.lib" "sfml-audio-d.lib" "sfml-network-d.lib" "sfml-window-d.lib" kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /Debug /PDB:"C:\Users\alex.modee\Git\Daer-Isac2\Dear_Isaac\Menue prototype\x64\Debug\prototype1.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\Users\alex.modee\Git\Daer-Isac2\Dear_Isaac\Menue prototype\x64\Debug\prototype1.lib" /MACHINE:X64 x64\Debug\main.obj
-         LINK : C:\Users\alex.modee\Git\Daer-Isac2\Dear_Isaac\Menue prototype\x64\Debug\prototype1.exe not found or not built by the last incremental link; performing full link
          prototype1.vcxproj -> C:\Users\alex.modee\Git\Daer-Isac2\Dear_Isaac\Menue prototype\x64\Debug\prototype1.exe
      1>Done Building Project "C:\Users\alex.modee\Git\Daer-Isac2\Dear_Isaac\Menue prototype\prototype1\prototype1.vcxproj" (Build target(s)).
 
 Build succeeded.
 
-Time Elapsed 00:00:02.76
+Time Elapsed 00:00:01.45
