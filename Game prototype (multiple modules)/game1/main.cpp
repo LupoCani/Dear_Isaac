@@ -14,8 +14,100 @@ Color Red(165, 41, 13);
 Color grey(177, 190, 198);
 Color white(255, 255, 255);
 bool collided = 0;
+bool restart = 0;
 
 sf::Font font;
+
+
+void option_menue() {
+
+	int header_pos_y[2] = { 400,500 };
+	Text option_header[2];
+	option_header[0].setString("Sound");
+	option_header[1].setString("BACK");
+	for (int i = 0; i <= 1; i++) {
+		option_header[i].setFont(font);
+		option_header[i].setFillColor(white);
+		option_header[i].setCharacterSize(40);
+		option_header[i].setPosition(Vector2f(window.getSize().x / 2 - option_header[i].getLocalBounds().width*0.5, header_pos_y[i]));
+	}
+
+
+	RectangleShape underline(Vector2f(option_header[0].getLocalBounds().width * 1.5, 2));
+	underline.setFillColor(white);
+	underline.setPosition(Vector2f(window.getSize().x / 2 - underline.getSize().x*0.5, option_header[0].getPosition().y + option_header[0].getLocalBounds().height*1.3));
+	bool run_option = 1;
+	bool selected[2] = { 0,0 };
+
+	while (run_option == 1) {
+		Event input;
+
+		for (int i = 0; i <= 1; i++) {
+			float activ_header_poss = option_header[i].getPosition().y + option_header[i].getLocalBounds().height*1.3;
+			if (underline.getPosition().y == activ_header_poss) {
+				selected[i] = 1;
+			}
+			if (underline.getPosition().y != activ_header_poss) {
+				selected[i] = 0;
+			}
+		}
+
+		while (window.pollEvent(input)) {
+
+			if ((input.type == Event::KeyPressed) && (input.key.code == Keyboard::Down)) {
+				for (int i = 0; i <= 1; i++) {
+					if (selected[i] == 1) {
+						if (i == 0) {
+							underline.setSize(Vector2f(option_header[i + 1].getLocalBounds().width * 1.5, 2));
+							underline.setPosition(Vector2f(window.getSize().x / 2 - underline.getSize().x*0.5, option_header[i + 1].getPosition().y + option_header[i + 1].getLocalBounds().height*1.3));
+							break;
+						}
+						else {
+							underline.setSize(Vector2f(option_header[0].getLocalBounds().width * 1.5, 2));
+							underline.setPosition(Vector2f(window.getSize().x / 2 - underline.getSize().x*0.5, option_header[0].getPosition().y + option_header[0].getLocalBounds().height*1.3));
+							break;
+						}
+					}
+				}
+			}
+
+			if ((input.type == Event::KeyPressed) && (input.key.code == Keyboard::Up)) {
+				for (int i = 0; i <= 1; i++) {
+					if (selected[i] == 1) {
+						if (i == 1) {
+							underline.setSize(Vector2f(option_header[i - 1].getLocalBounds().width * 1.5, 2));
+							underline.setPosition(Vector2f(window.getSize().x / 2 - underline.getSize().x*0.5, header_pos_y[i - 1] + option_header[i - 1].getLocalBounds().height*1.3));
+							break;
+						}
+						else {
+							underline.setSize(Vector2f(option_header[1].getLocalBounds().width * 1.5, 2));
+							underline.setPosition(Vector2f(window.getSize().x / 2 - underline.getSize().x*0.5, header_pos_y[1] + option_header[1].getLocalBounds().height*1.3));
+							break;
+						}
+					}
+				}
+			}
+
+			if ((input.type == Event::KeyPressed) && (input.key.code != Keyboard::Up) && (input.key.code != Keyboard::Down)) {
+				if (selected[1] == 1) {
+					run_option = 0;
+					break;
+				}
+			}
+
+		}
+
+		window.clear();
+		for (int i = 0; i <= 1; i++) {
+			window.draw(option_header[i]);
+		}
+		window.draw(underline);
+		window.display();
+
+	}
+
+}
+
 
 void ingame_menue() {
 
@@ -24,19 +116,19 @@ void ingame_menue() {
 	int header_pos_y[3] = { 340,440,550 };
 	Text option_header[3];
 	option_header[0].setString("Sound");
-	option_header[1].setString("Main menue");
+	option_header[1].setString("Quit to Main menue");
 	option_header[2].setString("Back");
 	for (int i = 0; i <= 2; i++) {
 		option_header[i].setFont(font);
 		option_header[i].setFillColor(white);
 		option_header[i].setCharacterSize(50);
-		option_header[i].setPosition(Vector2f(window.getSize().x/2 - option_header[i].getLocalBounds().width*0.5, header_pos_y[i]));
+		option_header[i].setPosition(Vector2f(window.getSize().x / 2 - option_header[i].getLocalBounds().width*0.5, header_pos_y[i]));
 	}
 
 
 	RectangleShape underline(Vector2f(option_header[0].getLocalBounds().width * 1.5, 2));
 	underline.setFillColor(white);
-	underline.setPosition(Vector2f(window.getSize().x/2 - underline.getSize().x*0.5, option_header[0].getPosition().y + option_header[0].getLocalBounds().height*1.3));
+	underline.setPosition(Vector2f(window.getSize().x / 2 - underline.getSize().x*0.5, option_header[0].getPosition().y + option_header[0].getLocalBounds().height*1.3));
 	bool run_option = 1;
 	bool selected[3] = { 0,0,0 };
 
@@ -65,7 +157,7 @@ void ingame_menue() {
 						}
 						else {
 							underline.setSize(Vector2f(option_header[0].getLocalBounds().width * 1.5, 2));
-							underline.setPosition(Vector2f(window.getSize().x/2 - underline.getSize().x*0.5, option_header[0].getPosition().y + option_header[0].getLocalBounds().height*1.3));
+							underline.setPosition(Vector2f(window.getSize().x / 2 - underline.getSize().x*0.5, option_header[0].getPosition().y + option_header[0].getLocalBounds().height*1.3));
 							break;
 						}
 					}
@@ -77,7 +169,7 @@ void ingame_menue() {
 					if (selected[i] == 1) {
 						if (i >= 1) {
 							underline.setSize(Vector2f(option_header[i - 1].getLocalBounds().width * 1.5, 2));
-							underline.setPosition(Vector2f(window.getSize().x/2 - underline.getSize().x*0.5, header_pos_y[i - 1] + option_header[i - 1].getLocalBounds().height*1.3));
+							underline.setPosition(Vector2f(window.getSize().x / 2 - underline.getSize().x*0.5, header_pos_y[i - 1] + option_header[i - 1].getLocalBounds().height*1.3));
 							break;
 						}
 						else {
@@ -95,7 +187,9 @@ void ingame_menue() {
 					break;
 				}
 				if (selected[1] == 1) {
-				
+					run_option = 0;
+					restart = 1;
+					break;
 				}
 			}
 
@@ -114,16 +208,16 @@ void ingame_menue() {
 
 void viewport_render(Sprite player, CircleShape sun, CircleShape planet1, CircleShape planet2) {
 
-	float modifi_x = player.getPosition().x - window.getSize().x/2;
+	float modifi_x = player.getPosition().x - window.getSize().x / 2;
 	float modifi_y = player.getPosition().y - window.getSize().y / 2;
 
-	
+
 	Vector2f player_newpos(player.getPosition().x - modifi_x, player.getPosition().y - modifi_y);
 	Vector2f sun_newpos(sun.getPosition().x - modifi_x, sun.getPosition().y - modifi_y);
 	Vector2f planet1_newpos(planet1.getPosition().x - modifi_x, planet1.getPosition().y - modifi_y);
 	Vector2f planet2_newpos(planet2.getPosition().x - modifi_x, planet2.getPosition().y - modifi_y);
 
-	player.setPosition(Vector2f(player_newpos.x,player_newpos.y));
+	player.setPosition(Vector2f(player_newpos.x, player_newpos.y));
 	sun.setPosition(Vector2f(sun_newpos.x, sun_newpos.y));
 	planet1.setPosition(Vector2f(planet1_newpos.x, planet1_newpos.y));
 	planet2.setPosition(Vector2f(planet2_newpos.x, planet2_newpos.y));
@@ -137,7 +231,7 @@ void viewport_render(Sprite player, CircleShape sun, CircleShape planet1, Circle
 
 void collision(Sprite player, float player_radius, CircleShape sun, CircleShape planet1, CircleShape planet2) {
 
-	Vector2f player_center(player.getPosition().x , player.getPosition().y );
+	Vector2f player_center(player.getPosition().x, player.getPosition().y);
 	float collision_box_begin = player_center.x - player_radius;
 	float collision_box_end = collision_box_begin + player_radius * 2;
 
@@ -213,7 +307,7 @@ void collision(Sprite player, float player_radius, CircleShape sun, CircleShape 
 				collided = 1;
 				break;
 			}
-	}
+		}
 
 		if (planet2_radius*planet2_radius - (i - planet2_center.x)*(i - planet2_center.x) >= 0) {
 
@@ -275,8 +369,8 @@ int start_menue() {
 
 	bool play = 0;
 	bool selected[3] = { 0,0,0 };
-	std::cout << underline.getPosition().y << std::endl << option_header[0].getPosition().y + option_header[0].getLocalBounds().height*1.3;
-	while (play==0) {
+
+	while (play == 0) {
 		Event input;
 
 		for (int i = 0; i <= 2; i++) {
@@ -319,7 +413,7 @@ int start_menue() {
 						}
 						else {
 							underline.setSize(Vector2f(option_header[2].getLocalBounds().width * 1.5, 2));
-							underline.setPosition(Vector2f(window.getSize().x/2 - underline.getSize().x*0.5, header_pos_y[2] + option_header[2].getLocalBounds().height*1.3));
+							underline.setPosition(Vector2f(window.getSize().x / 2 - underline.getSize().x*0.5, header_pos_y[2] + option_header[2].getLocalBounds().height*1.3));
 							break;
 						}
 					}
@@ -333,11 +427,14 @@ int start_menue() {
 				if (selected[2] == 1) {
 					window.close();
 					return 0;
+					break;
+				}
+				if (selected[1] == 1) {
+					option_menue();
 				}
 			}
 
 		}
-
 		window.clear();
 		for (int i = 0; i <= 2; i++) {
 			window.draw(option_header[i]);
@@ -346,32 +443,34 @@ int start_menue() {
 		window.draw(underline);
 		window.display();
 
+
 	}
 
 }
 
 int main() {
 
+
+
 	if (!font.loadFromFile("Alger.ttf"))
 	{
 
 	}
 
-	start_menue();
 
 	Texture planet_texture1;
 	if (!planet_texture1.loadFromFile("planet texture.png")) {
-		std::cout << "error loading planet texture" << std::endl;
+
 	}
 
 	Texture planet_texture2;
 	if (!planet_texture2.loadFromFile("planet texture2.png")) {
-		std::cout << "error loading planet texture" << std::endl;
+
 	}
 
 	Texture player_texture;
 	if (!player_texture.loadFromFile("Character sprite.png")) {
-		std::cout << "error loading player texture" << std::endl;
+
 	}
 	Sprite player;
 	player.setTexture(player_texture);
@@ -392,13 +491,14 @@ int main() {
 	CircleShape planet2(55);
 	planet2.setTexture(&planet_texture2);
 
-
-
 	while (window.isOpen()) {
-
+		restart = 0;
+		start_menue();
 		float k = 0;
 		float r = 1000;
-		while (true) {
+		player.setRotation(0);
+		collided = 0;
+		while (restart == 0) {
 
 			float planet1_pos_x = 300 * cos(k / 100) + sun_pos_x + sun.getRadius();
 			float planet1_pos_y = 295 * sin(k / 100) + sun_pos_y + sun.getRadius();
@@ -409,9 +509,9 @@ int main() {
 			planet2.setPosition(Vector2f(planet2_pos_x, planet2_pos_y));
 
 			float player_pos_x = (r - 0.4*k)*cos(k / 50) + sun_pos_x;
-			float player_pos_y = (r - 0.5*k)*sin(k/50)+sun_pos_y;
+			float player_pos_y = (r - 0.5*k)*sin(k / 50) + sun_pos_y;
 			player.setPosition(Vector2f(player_pos_x, player_pos_y));
-			
+
 			Event input;
 
 			while (window.pollEvent(input)) {
@@ -442,40 +542,43 @@ int main() {
 				}
 			}
 
-			viewport_render(player,sun,planet1,planet2);
+			viewport_render(player, sun, planet1, planet2);
 
 			collision(player, player_radius, sun, planet1, planet2);
 
 			if (collided == 1)
 			{
-				std::cout << player.getPosition().x << "    " << planet2.getPosition().x;
 				break;
 			}
 
 			k += 0.01;
 
 		}
+		bool end = 1;
+		if (restart == 0) {
+			while (end==1) {
+			
+				Event close;
+				while (window.pollEvent(close)) {
 
+					if ((close.type == Event::KeyPressed) && (close.key.code == Keyboard::Space))
+					{
+						end = 0;
+						break;
+					}
+					if (close.type == Event::Closed)
+					{
+						window.close();
+						return 0;
+					}
 
-		while (true) {
-
-			Event close;
-			while (window.pollEvent(close)) {
-
-				if ((close.type == Event::KeyPressed) && (close.key.code == Keyboard::Space))
-				{
-					break;
-				}
-				if (close.type == Event::Closed)
-				{
-					window.close();
-					return 0;
 				}
 
 			}
-
 		}
 
 	}
+
+
 
 }
