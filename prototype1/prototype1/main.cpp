@@ -18,6 +18,36 @@ bool restart = 0;
 
 sf::Font font;
 
+struct vec_n
+{
+	double x;
+	double y;
+	double z;
+};
+
+struct body
+{
+	double ax_a;    //Semimajor axis
+	double ax_b;    //Semiminor axis
+	double ecc;     //Orbital eccentrictity
+	double t_0;     //Starting timestamp
+	double t_p;
+	double t_l;     //Timestamp at a given time
+	double u;       //Gravitational parameter
+	double normal;  //angle of the major axis
+	double area;    //Orbital area
+	double SOI;
+	bool closed;
+	bool inverse;
+	vec_n vel;      //Velocity at a given time
+	vec_n pos;      //Position at a given time
+
+	double En;      //Orbital energy
+	double Ar;      //Area swept per unit of time
+	double Mn;      //Mean anomaly swept per unit of time
+
+	body* parent;
+};
 
 void option_menue() {
 
@@ -29,7 +59,7 @@ void option_menue() {
 		option_header[i].setFont(font);
 		option_header[i].setFillColor(white);
 		option_header[i].setCharacterSize(40);
-		option_header[i].setPosition(Vector2f(window.getSize().x/2 - option_header[i].getLocalBounds().width*0.5, header_pos_y[i]));
+		option_header[i].setPosition(Vector2f(window.getSize().x / 2 - option_header[i].getLocalBounds().width*0.5, header_pos_y[i]));
 	}
 
 
@@ -341,6 +371,13 @@ void collision(Sprite player, float player_radius, CircleShape sun, CircleShape 
 
 }
 
+CircleShape B_to_C(body in)
+{
+	double pos_x = in.pos.x;
+	double pos_y = in.pos.y;
+}
+
+
 int start_menue() {
 	Text title;
 	title.setFont(font);
@@ -370,7 +407,7 @@ int start_menue() {
 	bool play = 0;
 	bool selected[3] = { 0,0,0 };
 
-	while (play == 0 ) {
+	while (play == 0) {
 		Event input;
 
 		for (int i = 0; i <= 2; i++) {
@@ -435,14 +472,14 @@ int start_menue() {
 			}
 
 		}
-			window.clear();
-			for (int i = 0; i <= 2; i++) {
-				window.draw(option_header[i]);
-			}
-			window.draw(title);
-			window.draw(underline);
-			window.display();
-		
+		window.clear();
+		for (int i = 0; i <= 2; i++) {
+			window.draw(option_header[i]);
+		}
+		window.draw(title);
+		window.draw(underline);
+		window.display();
+
 
 	}
 
@@ -465,7 +502,7 @@ int main() {
 
 	Texture planet_texture2;
 	if (!planet_texture2.loadFromFile("planet texture2.png")) {
-	
+
 	}
 
 	Texture player_texture;
@@ -485,99 +522,103 @@ int main() {
 	float sun_pos_x = 1080 / 2 - sun.getRadius();
 	sun.setPosition(Vector2f(sun_pos_x, sun_pos_y));
 
+	std::vector<body*> bodies;
+
 	CircleShape planet1(40);
 	planet1.setTexture(&planet_texture1);
 
 	CircleShape planet2(55);
 	planet2.setTexture(&planet_texture2);
 
+
 	while (window.isOpen()) {
 		restart = 0;
 		start_menue();
-			float k = 0;
-			float r = 1000;
-			player.setRotation(0);
-			while (restart==0) {
+		float k = 0;
+		float r = 1000;
+		player.setRotation(0);
+		collided = 0;
+		while (restart == 0) {
 
-				float planet1_pos_x = 300 * cos(k / 100) + sun_pos_x + sun.getRadius();
-				float planet1_pos_y = 295 * sin(k / 100) + sun_pos_y + sun.getRadius();
-				planet1.setPosition(Vector2f(planet1_pos_x, planet1_pos_y));
+			float planet1_pos_x = 300 * cos(k / 100) + sun_pos_x + sun.getRadius();
+			float planet1_pos_y = 295 * sin(k / 100) + sun_pos_y + sun.getRadius();
+			planet1.setPosition(Vector2f(planet1_pos_x, planet1_pos_y));
 
-				float planet2_pos_x = 410 * cos(k / 50) + sun_pos_x + sun.getRadius();
-				float planet2_pos_y = 409 * sin(k / 50) + sun_pos_y + sun.getRadius();
-				planet2.setPosition(Vector2f(planet2_pos_x, planet2_pos_y));
+			float planet2_pos_x = 410 * cos(k / 50) + sun_pos_x + sun.getRadius();
+			float planet2_pos_y = 409 * sin(k / 50) + sun_pos_y + sun.getRadius();
+			planet2.setPosition(Vector2f(planet2_pos_x, planet2_pos_y));
 
-				float player_pos_x = (r - 0.4*k)*cos(k / 50) + sun_pos_x;
-				float player_pos_y = (r - 0.5*k)*sin(k / 50) + sun_pos_y;
-				player.setPosition(Vector2f(player_pos_x, player_pos_y));
+			float player_pos_x = (r - 0.4*k)*cos(k / 50) + sun_pos_x;
+			float player_pos_y = (r - 0.5*k)*sin(k / 50) + sun_pos_y;
+			player.setPosition(Vector2f(player_pos_x, player_pos_y));
 
-				Event input;
+			Event input;
 
-				while (window.pollEvent(input)) {
+			while (window.pollEvent(input)) {
 
-					if ((input.type == Event::KeyPressed) && (input.key.code == Keyboard::Right)) {
-						player.rotate(1);
+				if ((input.type == Event::KeyPressed) && (input.key.code == Keyboard::Right)) {
+					player.rotate(1);
+				}
+
+				if ((input.type == Event::KeyPressed) && (input.key.code == Keyboard::Left)) {
+					player.rotate(-1);
+				}
+
+				if ((input.type == Event::KeyPressed) && (input.key.code == Keyboard::Up)) {
+					r += 1;
+				}
+
+				if ((input.type == Event::KeyPressed) && (input.key.code == Keyboard::Down)) {
+					r -= 1;
+				}
+
+				if ((input.type == Event::KeyPressed) && (input.key.code == Keyboard::Escape)) {
+					ingame_menue();
+				}
+
+				if (input.type == Event::Closed) {
+					window.close();
+					return 0;
+				}
+			}
+
+			viewport_render(player, sun, planet1, planet2);
+
+			collision(player, player_radius, sun, planet1, planet2);
+
+			if (collided == 1)
+			{
+				break;
+			}
+
+			k += 0.01;
+
+		}
+		bool end = 1;
+		if (restart == 0) {
+			while (end == 1) {
+
+				Event close;
+				while (window.pollEvent(close)) {
+
+					if ((close.type == Event::KeyPressed) && (close.key.code == Keyboard::Space))
+					{
+						end = 0;
+						break;
 					}
-
-					if ((input.type == Event::KeyPressed) && (input.key.code == Keyboard::Left)) {
-						player.rotate(-1);
-					}
-
-					if ((input.type == Event::KeyPressed) && (input.key.code == Keyboard::Up)) {
-						r += 1;
-					}
-
-					if ((input.type == Event::KeyPressed) && (input.key.code == Keyboard::Down)) {
-						r -= 1;
-					}
-
-					if ((input.type == Event::KeyPressed) && (input.key.code == Keyboard::Escape)) {
-						ingame_menue();
-					}
-
-					if (input.type == Event::Closed) {
+					if (close.type == Event::Closed)
+					{
 						window.close();
 						return 0;
 					}
+
 				}
-
-				viewport_render(player, sun, planet1, planet2);
-
-				collision(player, player_radius, sun, planet1, planet2);
-
-				if (collided == 1)
-				{
-					std::cout << player.getPosition().x << "    " << planet2.getPosition().x;
-					break;
-				}
-
-				k += 0.01;
 
 			}
-
-			if (restart == 0) {
-				while (true) {
-
-					Event close;
-					while (window.pollEvent(close)) {
-
-						if ((close.type == Event::KeyPressed) && (close.key.code == Keyboard::Space))
-						{
-							break;
-						}
-						if (close.type == Event::Closed)
-						{
-							window.close();
-							return 0;
-						}
-
-					}
-
-				}
-			}
-
 		}
 
-	
+	}
+
+
 
 }
