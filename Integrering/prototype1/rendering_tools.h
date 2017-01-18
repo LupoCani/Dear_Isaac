@@ -39,3 +39,35 @@ vec_n render() {
 	return out;
 
 }
+
+void main_render(vec_n cordinats[9], std::vector<CircleShape> planets, Sprite player) {
+
+	Vector2f viewport_center;
+	viewport_center.x = window2.getSize().x / 2;
+	viewport_center.y = window2.getSize().y / 2;
+
+	Vector2f modifi_cordinates;
+	modifi_cordinates.x = cordinats[0].x-viewport_center.x;
+	modifi_cordinates.y = cordinats[0].y - viewport_center.y;
+
+
+	for (int i = 0; i < 9; i++) {
+		cordinats[i].x -= modifi_cordinates.x;
+		cordinats[i].y -= modifi_cordinates.y;
+	}
+	player.setPosition(Vector2f(cordinats[0].x, cordinats[0].y));
+	for (int i = 0; i < 9; i++) {
+		planets[i].setPosition(Vector2f(cordinats[i + 1].x, cordinats[i + 1].y));
+	}
+
+	window2.clear();
+	
+	window2.draw(player);
+
+	for (int i = 0; i < 9;i++) {
+		window2.draw(planets[i]);
+	}
+
+	window2.display();
+
+}
