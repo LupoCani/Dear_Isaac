@@ -123,6 +123,7 @@ void planetss() { //paste into begining of main function
 
 	player.setTexture(player_texture);
 	player.setOrigin(32, 32);
+	float player_radius = player.getLocalBounds().width / 2;
 
 
 	for (int i = 0; i < planets.size(); i++) {
@@ -133,15 +134,62 @@ void planetss() { //paste into begining of main function
 
 }
 
-bool collision(std::vector<CircleShape>planets, vec_n cordinats) {
+bool collision(std::vector<CircleShape>planets, std::vector<vec_n> cordinats,Sprite player, float player_radius) {
 
 	int radius[9];
+	float player_x = cordinats[cordinats.size() - 1].x;
+	float player_y = cordinats[cordinats.size() - 1].y;
+	bool collision = 0;
+
 	for (int i = 0; i < 9;i++){
 		radius[i] = planets[i].getRadius();
 	}
 	
 	float precision = 3;
+	for (float i = cordinats[cordinats.size() - 1].x - player.getLocalBounds().width / 2; i < cordinats[cordinats.size() - 1].x + player.getLocalBounds().width / 2; i += 1) {
 
+		float player_rout_collision = sqrt(player_radius*player_radius - (i - player_x)*(i - player_x));
+		float player_pos_collision = player_rout_collision + player_y;
+		float player_neg_collision = -player_rout_collision + player_y;
 
+		for (float k = 0; k < planets.size(); k++) {
 
+			float radius = planets[k].getRadius();
+			float pos_x = cordinats[k].x;
+			float pos_y = cordinats[k].y;
+
+			if (radius*radius - (i - pos_x)*(i - pos_x) >= 0) {
+
+				float rout_collision = sqrt(radius*radius - (i - pos_x)*(i - pos_x));
+				float pos_collision = rout_collision + pos_y;
+				float neg_collision = -rout_collision + pos_y;
+
+				if (pos_collision >= player_pos_collision - precision && pos_collision <= player_pos_collision + precision) {
+					collision = 1;
+					break;
+				}
+				if (pos_collision >= player_neg_collision - precision && pos_collision <= player_neg_collision + precision) {
+					collision = 1;
+					break;
+				}
+				if (neg_collision >= player_pos_collision - precision && neg_collision <= player_pos_collision + precision) {
+					collision = 1;
+					break;
+				}
+				if (neg_collision >= player_neg_collision - precision && neg_collision <= player_neg_collision + precision) {
+					collision = 1;
+					break;
+				}
+
+			}
+
+		}
+
+		if (collision == 1) {
+			break;
+		}
+
+	}
+
+	return (collision);
 }
