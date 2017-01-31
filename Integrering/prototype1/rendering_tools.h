@@ -9,6 +9,12 @@
 
 using namespace sf;
 
+sf::Font font;
+Color yellow(225, 237, 7);
+Color Red(165, 41, 13);
+Color grey(177, 190, 198);
+Color white(255, 255, 255);
+
 vec_n render() {
 
 	Event input;
@@ -75,6 +81,10 @@ void main_render(std::vector<vec_n> cordinats, std::vector<CircleShape> planets,
 
 void planetss() { //paste into begining of main function
 
+	if (!font.loadFromFile("Alger.ttf")){
+		//handle exception
+	}
+
 	std::vector<CircleShape>planets(9); //pass to render and  collision function
 	Sprite player; //pass to render and  collision function
 
@@ -135,57 +145,326 @@ void planetss() { //paste into begining of main function
 
 }
 
-bool collision(std::vector<CircleShape>planets, std::vector<vec_n> cordinats,Sprite player, float player_radius) { //function to detect if objects have colided 
+bool collision(std::vector<CircleShape>planets, std::vector<vec_n> cordinats, Sprite player, float player_radius) {
 
-	float player_x = cordinats[cordinats.size() - 1].x; //get player x position from last entry in cordinate vector
-	float player_y = cordinats[cordinats.size() - 1].y; //get player y position from last entry in cordinate vector
-	bool collision = 0; //0==no collision detected, 1==collision detected 
-	
-	float precision = 3;
-	for (float i = cordinats[cordinats.size() - 1].x - player.getLocalBounds().width / 2; i < cordinats[cordinats.size() - 1].x + player.getLocalBounds().width / 2; i += 1) {
+	Vector2f player_pos;
+	player_pos.x = cordinats[0].x;
+	player_pos.y = cordinats[0].y;
+	bool collided = 0;
 
-		float player_rout_collision = sqrt(player_radius*player_radius - (i - player_x)*(i - player_x)); //root of the circle equation for the circle containing the player (sqr(r^2-(x-x0)^2)
-		float player_pos_collision = player_rout_collision + player_y; //value given by the positiv root
-		float player_neg_collision = -player_rout_collision + player_y; //value given by the negativ root
+	for (int i = 1; i < cordinats.size; i++) {
+		Vector2f planet_pos;
+		planet_pos.x = cordinats[i].x;
+		planet_pos.y = cordinats[i].y;
 
-		for (float k = 0; k < planets.size(); k++) { //circle trough the planets vector
+		float radius_compare = planets[i-1].getRadius() + player_radius;
 
-			float radius = planets[k].getRadius();  
-			float pos_x = cordinats[k].x; //get planet x cordinate from cordinats vector
-			float pos_y = cordinats[k].y;  //get planet y cordinate from cordinats vector
+		Vector2f diference;
+		diference.x = player_pos.x - planet_pos.x;
+		diference.y = player_pos.y - planet_pos.y;
 
-			if (radius*radius - (i - pos_x)*(i - pos_x) >= 0) {
+		if (sqrt(diference.x*diference.x + diference.y*diference.y) <= radius_compare)
+		{
+			collided = 1;
+			break;
+		}
+	}
 
-				float rout_collision = sqrt(radius*radius - (i - pos_x)*(i - pos_x)); //root of the circle equation for the Circleshape planets[k] (sqr(r^2-(x-x0)^2)
-				float pos_collision = rout_collision + pos_y; //value given by the positiv root
-				float neg_collision = -rout_collision + pos_y; //value given by the negativ root
+	return (collided);
+}
 
-				if (pos_collision >= player_pos_collision - precision && pos_collision <= player_pos_collision + precision) {
-					collision = 1;
+void option_menue() {
+
+	int header_pos_y[2] = { 400,500 };
+	Text option_header[2];
+	option_header[0].setString("Sound");
+	option_header[1].setString("BACK");
+	for (int i = 0; i <= 1; i++) {
+		option_header[i].setFont(font);
+		option_header[i].setFillColor(white);
+		option_header[i].setCharacterSize(40);
+		option_header[i].setPosition(Vector2f(window2.getSize().x / 2 - option_header[i].getLocalBounds().width*0.5, header_pos_y[i]));
+	}
+
+
+	RectangleShape underline(Vector2f(option_header[0].getLocalBounds().width * 1.5, 2));
+	underline.setFillColor(white);
+	underline.setPosition(Vector2f(window2.getSize().x / 2 - underline.getSize().x*0.5, option_header[0].getPosition().y + option_header[0].getLocalBounds().height*1.3));
+	bool run_option = 1;
+	bool selected[2] = { 0,0 };
+
+	while (run_option == 1) {
+		Event input;
+
+		for (int i = 0; i <= 1; i++) {
+			float activ_header_poss = option_header[i].getPosition().y + option_header[i].getLocalBounds().height*1.3;
+			if (underline.getPosition().y == activ_header_poss) {
+				selected[i] = 1;
+			}
+			if (underline.getPosition().y != activ_header_poss) {
+				selected[i] = 0;
+			}
+		}
+
+		while (window2.pollEvent(input)) {
+
+			if ((input.type == Event::KeyPressed) && (input.key.code == Keyboard::Down)) {
+				for (int i = 0; i <= 1; i++) {
+					if (selected[i] == 1) {
+						if (i == 0) {
+							underline.setSize(Vector2f(option_header[i + 1].getLocalBounds().width * 1.5, 2));
+							underline.setPosition(Vector2f(window2.getSize().x / 2 - underline.getSize().x*0.5, option_header[i + 1].getPosition().y + option_header[i + 1].getLocalBounds().height*1.3));
+							break;
+						}
+						else {
+							underline.setSize(Vector2f(option_header[0].getLocalBounds().width * 1.5, 2));
+							underline.setPosition(Vector2f(window2.getSize().x / 2 - underline.getSize().x*0.5, option_header[0].getPosition().y + option_header[0].getLocalBounds().height*1.3));
+							break;
+						}
+					}
+				}
+			}
+
+			if ((input.type == Event::KeyPressed) && (input.key.code == Keyboard::Up)) {
+				for (int i = 0; i <= 1; i++) {
+					if (selected[i] == 1) {
+						if (i == 1) {
+							underline.setSize(Vector2f(option_header[i - 1].getLocalBounds().width * 1.5, 2));
+							underline.setPosition(Vector2f(window2.getSize().x / 2 - underline.getSize().x*0.5, header_pos_y[i - 1] + option_header[i - 1].getLocalBounds().height*1.3));
+							break;
+						}
+						else {
+							underline.setSize(Vector2f(option_header[1].getLocalBounds().width * 1.5, 2));
+							underline.setPosition(Vector2f(window2.getSize().x / 2 - underline.getSize().x*0.5, header_pos_y[1] + option_header[1].getLocalBounds().height*1.3));
+							break;
+						}
+					}
+				}
+			}
+
+			if ((input.type == Event::KeyPressed) && (input.key.code != Keyboard::Up) && (input.key.code != Keyboard::Down)) {
+				if (selected[1] == 1) {
+					run_option = 0;
 					break;
 				}
-				if (pos_collision >= player_neg_collision - precision && pos_collision <= player_neg_collision + precision) {
-					collision = 1;
-					break;
-				}
-				if (neg_collision >= player_pos_collision - precision && neg_collision <= player_pos_collision + precision) {
-					collision = 1;
-					break;
-				}
-				if (neg_collision >= player_neg_collision - precision && neg_collision <= player_neg_collision + precision) {
-					collision = 1;
-					break;
-				}
-
 			}
 
 		}
 
-		if (collision == 1) {
-			break;
+		window2.clear();
+		for (int i = 0; i <= 1; i++) {
+			window2.draw(option_header[i]);
 		}
+		window2.draw(underline);
+		window2.display();
 
 	}
 
-	return (collision);
 }
+
+void ingame_menue() {
+
+
+
+	int header_pos_y[3] = { 340,440,550 };
+	Text option_header[3];
+	option_header[0].setString("Sound");
+	option_header[1].setString("Quit to Main menue");
+	option_header[2].setString("Back");
+	for (int i = 0; i <= 2; i++) {
+		option_header[i].setFont(font);
+		option_header[i].setFillColor(white);
+		option_header[i].setCharacterSize(50);
+		option_header[i].setPosition(Vector2f(window2.getSize().x / 2 - option_header[i].getLocalBounds().width*0.5, header_pos_y[i]));
+	}
+
+
+	RectangleShape underline(Vector2f(option_header[0].getLocalBounds().width * 1.5, 2));
+	underline.setFillColor(white);
+	underline.setPosition(Vector2f(window2.getSize().x / 2 - underline.getSize().x*0.5, option_header[0].getPosition().y + option_header[0].getLocalBounds().height*1.3));
+	bool run_option = 1;
+	bool selected[3] = { 0,0,0 };
+
+	int output;
+
+	while (run_option == 1) {
+		Event input;
+
+		for (int i = 0; i <= 2; i++) {
+			float activ_header_poss = option_header[i].getPosition().y + option_header[i].getLocalBounds().height*1.3;
+			if (underline.getPosition().y == activ_header_poss) {
+				selected[i] = 1;
+			}
+			if (underline.getPosition().y != activ_header_poss) {
+				selected[i] = 0;
+			}
+		}
+
+		while (window2.pollEvent(input)) {
+
+			if ((input.type == Event::KeyPressed) && (input.key.code == Keyboard::Down)) {
+				for (int i = 0; i <= 2; i++) {
+					if (selected[i] == 1) {
+						if (i <= 1) {
+							underline.setSize(Vector2f(option_header[i + 1].getLocalBounds().width * 1.5, 2));
+							underline.setPosition(Vector2f(window2.getSize().x / 2 - underline.getSize().x*0.5, option_header[i + 1].getPosition().y + option_header[i + 1].getLocalBounds().height*1.3));
+							break;
+						}
+						else {
+							underline.setSize(Vector2f(option_header[0].getLocalBounds().width * 1.5, 2));
+							underline.setPosition(Vector2f(window2.getSize().x / 2 - underline.getSize().x*0.5, option_header[0].getPosition().y + option_header[0].getLocalBounds().height*1.3));
+							break;
+						}
+					}
+				}
+			}
+
+			if ((input.type == Event::KeyPressed) && (input.key.code == Keyboard::Up)) {
+				for (int i = 0; i <= 2; i++) {
+					if (selected[i] == 1) {
+						if (i >= 1) {
+							underline.setSize(Vector2f(option_header[i - 1].getLocalBounds().width * 1.5, 2));
+							underline.setPosition(Vector2f(window2.getSize().x / 2 - underline.getSize().x*0.5, header_pos_y[i - 1] + option_header[i - 1].getLocalBounds().height*1.3));
+							break;
+						}
+						else {
+							underline.setSize(Vector2f(option_header[2].getLocalBounds().width * 1.5, 2));
+							underline.setPosition(Vector2f(window2.getSize().x / 2 - underline.getSize().x*0.5, header_pos_y[2] + option_header[2].getLocalBounds().height*1.3));
+							break;
+						}
+					}
+				}
+			}
+
+			if ((input.type == Event::KeyPressed) && (input.key.code != Keyboard::Up) && (input.key.code != Keyboard::Down)) {
+				if (selected[2] == 1) {
+					run_option = 0;
+
+					break;
+				}
+				if (selected[1] == 1) {
+					run_option = 0;
+					
+					break;
+				}
+			}
+
+		}
+
+		window2.clear();
+		for (int i = 0; i <= 2; i++) {
+			window2.draw(option_header[i]);
+		}
+		window2.draw(underline);
+		window2.display();
+
+	}
+
+	}
+
+int start_menue() {
+	Text title;
+	title.setFont(font);
+	title.setString("Dear Isaac");
+	title.setCharacterSize(60);
+	title.setFillColor(white);
+	title.setPosition(Vector2f(window2.getSize().x / 2 - title.getLocalBounds().width*0.5, 200));
+
+	int header_pos_y[3] = { 400,500,600 };
+
+	
+
+	Text option_header[3];
+	option_header[0].setString("PLAY");
+	option_header[1].setString("OPTION");
+	option_header[2].setString("QUIT");
+	for (int i = 0; i <= 2; i++) {
+		option_header[i].setFont(font);
+		option_header[i].setFillColor(white);
+		option_header[i].setCharacterSize(40);
+		option_header[i].setPosition(Vector2f(window2.getSize().x / 2 - option_header[i].getLocalBounds().width*0.5, header_pos_y[i]));
+	}
+
+
+	RectangleShape underline(Vector2f(option_header[0].getLocalBounds().width * 1.5, 2));
+	underline.setFillColor(white);
+	underline.setPosition(Vector2f(window2.getSize().x / 2 - underline.getSize().x*0.5, option_header[0].getPosition().y + option_header[0].getLocalBounds().height*1.3));
+
+	bool play = 0;
+	bool selected[3] = { 0,0,0 };
+
+	while (play == 0) {
+		Event input;
+
+		for (int i = 0; i <= 2; i++) {
+			float activ_header_poss = option_header[i].getPosition().y + option_header[i].getLocalBounds().height*1.3;
+			if (underline.getPosition().y == activ_header_poss) {
+				selected[i] = 1;
+			}
+			if (underline.getPosition().y != activ_header_poss) {
+				selected[i] = 0;
+
+			}
+		}
+
+		while (window2.pollEvent(input)) {
+
+			if ((input.type == Event::KeyPressed) && (input.key.code == Keyboard::Down)) {
+				for (int i = 0; i <= 2; i++) {
+					if (selected[i] == 1) {
+						if (i <= 1) {
+							underline.setSize(Vector2f(option_header[i + 1].getLocalBounds().width * 1.5, 2));
+							underline.setPosition(Vector2f(window2.getSize().x / 2 - underline.getSize().x*0.5, option_header[i + 1].getPosition().y + option_header[i + 1].getLocalBounds().height*1.3));
+							break;
+						}
+						else {
+							underline.setSize(Vector2f(option_header[0].getLocalBounds().width * 1.5, 2));
+							underline.setPosition(Vector2f(window2.getSize().x / 2 - underline.getSize().x*0.5, option_header[0].getPosition().y + option_header[0].getLocalBounds().height*1.3));
+							break;
+						}
+					}
+				}
+			}
+
+			if ((input.type == Event::KeyPressed) && (input.key.code == Keyboard::Up)) {
+				for (int i = 0; i <= 2; i++) {
+					if (selected[i] == 1) {
+						if (i >= 1) {
+							underline.setSize(Vector2f(option_header[i - 1].getLocalBounds().width * 1.5, 2));
+							underline.setPosition(Vector2f(window2.getSize().x / 2 - underline.getSize().x*0.5, header_pos_y[i - 1] + option_header[i - 1].getLocalBounds().height*1.3));
+							break;
+						}
+						else {
+							underline.setSize(Vector2f(option_header[2].getLocalBounds().width * 1.5, 2));
+							underline.setPosition(Vector2f(window2.getSize().x / 2 - underline.getSize().x*0.5, header_pos_y[2] + option_header[2].getLocalBounds().height*1.3));
+							break;
+						}
+					}
+				}
+			}
+
+			if ((input.type == Event::KeyPressed) && (input.key.code != Keyboard::Up) && (input.key.code != Keyboard::Down)) {
+				if (selected[0] == 1) {
+					play = 1;
+				}
+				if (selected[2] == 1) {
+					window2.close();
+					return 0;
+					break;
+				}
+				if (selected[1] == 1) {
+					option_menue();
+				}
+			}
+
+		}
+		window2.clear();
+		for (int i = 0; i <= 2; i++) {
+			window2.draw(option_header[i]);
+		}
+		window2.draw(title);
+		window2.draw(underline);
+		window2.display();
+
+
+	}

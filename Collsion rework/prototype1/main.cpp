@@ -18,86 +18,24 @@ bool collided = 0;
 
 void collision(Sprite player, float player_radius, CircleShape sun, CircleShape planet1) {
 
-	Vector2f player_center(player.getPosition().x, player.getPosition().y);
-	float collision_box_begin = player_center.x - player_radius;
-	float collision_box_end = collision_box_begin + player_radius * 2;
+	Vector2f player_pos;
+	player_pos.x = player.getPosition().x;
+	player_pos.y = player.getPosition().y;
 
-	float sun_radius = sun.getRadius();
-	Vector2f sun_center(sun.getPosition().x + sun_radius, sun.getPosition().y + sun_radius);
+	Vector2f planet_pos;
+	planet_pos.x = planet1.getPosition().x;
+	planet_pos.y = planet1.getPosition().y;
 
-	float planet1_radius = planet1.getRadius();
-	Vector2f planet1_center(planet1.getPosition().x + planet1_radius, planet1.getPosition().y + planet1_radius);
+	float radius_compare = planet1.getRadius() + player_radius;
 
+	Vector2f diference;
+	diference.x = player_pos.x - planet_pos.x;
+	diference.y = player_pos.y - planet_pos.y;
 
-
-	float precision = 3;
-	for (int i = collision_box_begin; i <= collision_box_end; i += 1) {
-
-		float rout_collision = sqrt(player_radius*player_radius - (i - player_center.x)*(i - player_center.x));
-		float pos_collision = rout_collision + player_center.y;
-		float neg_collision = -rout_collision + player_center.y;
-
-
-		if (sun_radius*sun_radius - (i - sun_center.x)*(i - sun_center.x) >= 0) {
-
-			float rout_sun_collision = sqrt(sun_radius*sun_radius - (i - sun_center.x)*(i - sun_center.x));
-			float pos_sun_collision = rout_sun_collision + sun_center.y;
-			float neg_sun_collision = -rout_sun_collision + sun_center.y;
-
-			if (pos_sun_collision >= pos_collision - precision && pos_sun_collision <= pos_collision + precision)
-			{
-				collided = 1;
-				break;
-			}
-			if (pos_sun_collision >= neg_collision - precision && pos_sun_collision <= neg_collision + precision)
-			{
-				collided = 1;
-				break;
-			}
-			if (neg_sun_collision >= pos_collision - precision && neg_sun_collision <= pos_collision + precision)
-			{
-				collided = 1;
-				break;
-			}
-			if (neg_sun_collision >= neg_collision - precision && neg_sun_collision <= neg_collision + precision)
-			{
-				collided = 1;
-				break;
-			}
-
-		}
-
-		if (planet1_radius*planet1_radius - (i - planet1_center.x)*(i - planet1_center.x) >= 0) {
-
-			float rout_planet1_collision = sqrt(planet1_radius*planet1_radius - (i - planet1_center.x)*(i - planet1_center.x));
-			float pos_planet1_collision = rout_planet1_collision + planet1_center.y;
-			float neg_planet1_collision = -rout_planet1_collision + planet1_center.y;
-
-			if (pos_planet1_collision >= pos_collision - precision && pos_planet1_collision <= pos_collision + precision)
-			{
-				collided = 1;
-				break;
-			}
-			if (pos_planet1_collision >= neg_collision - precision && pos_planet1_collision <= neg_collision + precision)
-			{
-				collided = 1;
-				break;
-			}
-			if (neg_planet1_collision >= pos_collision - precision && neg_planet1_collision <= pos_collision + precision)
-			{
-				collided = 1;
-				break;
-			}
-			if (neg_planet1_collision >= neg_collision - precision &&  neg_planet1_collision <= neg_collision + precision)
-			{
-				collided = 1;
-				break;
-			}
-
-		}
-
+	if (sqrt(diference.x*diference.x+diference.y*diference.y)<=radius_compare)
+	{
+		collided = 1;
 	}
-
 }
 
 int main() {
@@ -138,12 +76,12 @@ int main() {
 
 		while (true) {
 
-			float planet1_pos_x = 300 * cos(k / 1000) + sun_pos_x + sun.getRadius();
-			float planet1_pos_y = 295 * sin(k / 1000) + sun_pos_y + sun.getRadius();
+			float planet1_pos_x = 300 * cos(k / 100) + sun_pos_x + sun.getRadius();
+			float planet1_pos_y = 295 * sin(k / 100) + sun_pos_y + sun.getRadius();
 			planet1.setPosition(Vector2f(planet1_pos_x, planet1_pos_y));
 
 			float player_pos_x = k;
-			float player_pos_y = 300 * -sin(k / 50) + 500;
+			float player_pos_y = 200 * -sin(k / 10) + 500;
 			player.setPosition(Vector2f(player_pos_x, player_pos_y));
 			player.setRotation(2 * k);
 

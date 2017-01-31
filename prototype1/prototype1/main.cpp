@@ -261,121 +261,47 @@ void viewport_render(Sprite player, CircleShape sun, CircleShape planet1, Circle
 
 void collision(Sprite player, float player_radius, CircleShape sun, CircleShape planet1, CircleShape planet2) {
 
-	Vector2f player_center(player.getPosition().x, player.getPosition().y);
-	float collision_box_begin = player_center.x - player_radius;
-	float collision_box_end = collision_box_begin + player_radius * 2;
+	Vector2f player_pos;
+	player_pos.x = player.getPosition().x;
+	player_pos.y = player.getPosition().y;
 
-	float sun_radius = sun.getRadius();
-	Vector2f sun_center(sun.getPosition().x + sun_radius, sun.getPosition().y + sun_radius);
+	Vector2f planet_pos;
+	planet_pos.x = planet1.getPosition().x;
+	planet_pos.y = planet1.getPosition().y;
 
-	float planet1_radius = planet1.getRadius();
-	Vector2f planet1_center(planet1.getPosition().x + planet1_radius, planet1.getPosition().y + planet1_radius);
+	float radius_compare = planet1.getRadius() + player_radius;
 
-	float planet2_radius = planet2.getRadius();
-	Vector2f planet2_center(planet2.getPosition().x + planet2_radius, planet2.getPosition().y + planet2_radius);
+	Vector2f diference;
+	diference.x = player_pos.x - planet_pos.x;
+	diference.y = player_pos.y - planet_pos.y;
 
-	float precision = 1;
-	for (int i = collision_box_begin; i <= collision_box_end; i += 1) {
-
-		float rout_collision = sqrt(player_radius*player_radius - (i - player_center.x)*(i - player_center.x));
-		float pos_collision = rout_collision + player_center.y;
-		float neg_collision = -rout_collision + player_center.y;
-
-
-		if (sun_radius*sun_radius - (i - sun_center.x)*(i - sun_center.x) >= 0) {
-
-			float rout_sun_collision = sqrt(sun_radius*sun_radius - (i - sun_center.x)*(i - sun_center.x));
-			float pos_sun_collision = rout_sun_collision + sun_center.y;
-			float neg_sun_collision = -rout_sun_collision + sun_center.y;
-
-			if (pos_sun_collision >= pos_collision - precision && pos_sun_collision <= pos_collision + precision)
-			{
-				collided = 1;
-				break;
-			}
-			if (pos_sun_collision >= neg_collision - precision && pos_sun_collision <= neg_collision + precision)
-			{
-				collided = 1;
-				break;
-			}
-			if (neg_sun_collision >= pos_collision - precision && neg_sun_collision <= pos_collision + precision)
-			{
-				collided = 1;
-				break;
-			}
-			if (neg_sun_collision >= neg_collision - precision && neg_sun_collision <= neg_collision + precision)
-			{
-				collided = 1;
-				break;
-			}
-
-		}
-
-		if (planet1_radius*planet1_radius - (i - planet1_center.x)*(i - planet1_center.x) >= 0) {
-
-			float rout_planet1_collision = sqrt(planet1_radius*planet1_radius - (i - planet1_center.x)*(i - planet1_center.x));
-			float pos_planet1_collision = rout_planet1_collision + planet1_center.y;
-			float neg_planet1_collision = -rout_planet1_collision + planet1_center.y;
-
-			if (pos_planet1_collision >= pos_collision - precision && pos_planet1_collision <= pos_collision + precision)
-			{
-				collided = 1;
-				break;
-			}
-			if (pos_planet1_collision >= neg_collision - precision && pos_planet1_collision <= neg_collision + precision)
-			{
-				collided = 1;
-				break;
-			}
-			if (neg_planet1_collision >= pos_collision - precision && neg_planet1_collision <= pos_collision + precision)
-			{
-				collided = 1;
-				break;
-			}
-			if (neg_planet1_collision >= neg_collision - precision &&  neg_planet1_collision <= neg_collision + precision)
-			{
-				collided = 1;
-				break;
-			}
-		}
-
-		if (planet2_radius*planet2_radius - (i - planet2_center.x)*(i - planet2_center.x) >= 0) {
-
-			float rout_planet2_collision = sqrt(planet2_radius*planet2_radius - (i - planet2_center.x)*(i - planet2_center.x));
-			float pos_planet2_collision = rout_planet2_collision + planet2_center.y;
-			float neg_planet2_collision = -rout_planet2_collision + planet2_center.y;
-
-			if (pos_planet2_collision >= pos_collision - precision && pos_planet2_collision <= pos_collision + precision)
-			{
-				collided = 1;
-				break;
-			}
-			if (pos_planet2_collision >= neg_collision - precision && pos_planet2_collision <= neg_collision + precision)
-			{
-				collided = 1;
-				break;
-			}
-			if (neg_planet2_collision >= pos_collision - precision && neg_planet2_collision <= pos_collision + precision)
-			{
-				collided = 1;
-				break;
-			}
-			if (neg_planet2_collision >= neg_collision - precision &&  neg_planet2_collision <= neg_collision + precision)
-			{
-				collided = 1;
-				break;
-			}
-		}
-
+	if (sqrt(diference.x*diference.x + diference.y*diference.y) < radius_compare)
+	{
+	//	collided = 1;
 	}
 
+    radius_compare = planet2.getRadius() + player_radius;
+	planet_pos.x = planet2.getPosition().x;
+	planet_pos.y = planet2.getPosition().y;
+	diference.x = player_pos.x - planet_pos.x;
+	diference.y = player_pos.y - planet_pos.y;
+	//if (sqrt(diference.x*diference.x + diference.y*diference.y) < radius_compare)
+	{
+		//collided = 1;
+	}
+
+	radius_compare = sun.getRadius() + player_radius;
+	planet_pos.x = sun.getPosition().x;
+	planet_pos.y = sun.getPosition().y;
+	diference.x = player_pos.x - planet_pos.x;
+	diference.y = player_pos.y - planet_pos.y;
+	if (sqrt(diference.x*diference.x + diference.y*diference.y) < radius_compare)
+	{
+	//	collided = 1;
+	}
 }
 
-CircleShape B_to_C(body in)
-{
-	double pos_x = in.pos.x;
-	double pos_y = in.pos.y;
-}
+
 
 
 int start_menue() {
@@ -518,18 +444,20 @@ int main() {
 
 	CircleShape sun(75);
 	sun.setFillColor(yellow);
-	float sun_pos_y = 860 / 2 - sun.getRadius();
-	float sun_pos_x = 1080 / 2 - sun.getRadius();
+	sun.setOrigin(75,75);
+	float sun_pos_y = 860 / 2;
+	float sun_pos_x = 1080 / 2;
 	sun.setPosition(Vector2f(sun_pos_x, sun_pos_y));
 
 	std::vector<body*> bodies;
 
 	CircleShape planet1(40);
 	planet1.setTexture(&planet_texture1);
+	planet1.setOrigin(40, 40);
 
 	CircleShape planet2(55);
 	planet2.setTexture(&planet_texture2);
-
+	planet2.setOrigin(55, 55);
 
 	while (window.isOpen()) {
 		restart = 0;
@@ -540,12 +468,12 @@ int main() {
 		collided = 0;
 		while (restart == 0) {
 
-			float planet1_pos_x = 300 * cos(k / 100) + sun_pos_x + sun.getRadius();
-			float planet1_pos_y = 295 * sin(k / 100) + sun_pos_y + sun.getRadius();
+			float planet1_pos_x = (400*sin(k/100)+700) * cos(k / 100) + sun_pos_x;
+			float planet1_pos_y = (400 * cos(k / 100) + 700) * sin(k / 100) + sun_pos_y ;
 			planet1.setPosition(Vector2f(planet1_pos_x, planet1_pos_y));
 
-			float planet2_pos_x = 410 * cos(k / 50) + sun_pos_x + sun.getRadius();
-			float planet2_pos_y = 409 * sin(k / 50) + sun_pos_y + sun.getRadius();
+			float planet2_pos_x = (600 * sin(k / 100) + 900)  * cos(k / 50) + sun_pos_x ;
+			float planet2_pos_y = (600 * cos(k / 100)+900) * sin(k / 50) + sun_pos_y ;
 			planet2.setPosition(Vector2f(planet2_pos_x, planet2_pos_y));
 
 			float player_pos_x = (r - 0.4*k)*cos(k / 50) + sun_pos_x;
