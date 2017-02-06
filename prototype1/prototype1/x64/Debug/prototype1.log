@@ -1,53 +1,72 @@
-﻿Build started 2017-01-31 13:04:30.
+﻿Build started 2017-02-06 15:22:41.
      1>Project "C:\Users\alex.modee\Git\Daer-Isac2\Dear_Isaac\prototype1\prototype1\prototype1.vcxproj" on node 2 (Build target(s)).
      1>ClCompile:
          C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin\x86_amd64\CL.exe /c /IC:\GitHub\prototype1\sfml\include /ZI /nologo /W3 /WX- /Od /D _DEBUG /D _CONSOLE /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /Fo"x64\Debug\\" /Fd"x64\Debug\vc140.pdb" /Gd /TP /errorReport:prompt main.cpp
          main.cpp
-     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\prototype1\prototype1\main.cpp(62): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\prototype1\prototype1\main.cpp(62): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\prototype1\prototype1\main.cpp(66): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\prototype1\prototype1\main.cpp(68): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\prototype1\prototype1\main.cpp(76): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\prototype1\prototype1\main.cpp(32): warning C4838: conversion from 'unsigned int' to 'int' requires a narrowing conversion
+     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\prototype1\prototype1\main.cpp(40): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\prototype1\prototype1\main.cpp(40): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\prototype1\prototype1\main.cpp(44): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\prototype1\prototype1\main.cpp(46): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\prototype1\prototype1\main.cpp(54): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\prototype1\prototype1\main.cpp(69): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\prototype1\prototype1\main.cpp(70): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\prototype1\prototype1\main.cpp(74): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\prototype1\prototype1\main.cpp(75): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\prototype1\prototype1\main.cpp(86): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\prototype1\prototype1\main.cpp(87): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
      1>c:\users\alex.modee\git\daer-isac2\dear_isaac\prototype1\prototype1\main.cpp(91): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
      1>c:\users\alex.modee\git\daer-isac2\dear_isaac\prototype1\prototype1\main.cpp(92): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\prototype1\prototype1\main.cpp(96): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\prototype1\prototype1\main.cpp(97): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\prototype1\prototype1\main.cpp(108): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\prototype1\prototype1\main.cpp(109): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\prototype1\prototype1\main.cpp(113): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\prototype1\prototype1\main.cpp(114): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\prototype1\prototype1\main.cpp(155): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\prototype1\prototype1\main.cpp(155): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\prototype1\prototype1\main.cpp(159): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\prototype1\prototype1\main.cpp(161): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\prototype1\prototype1\main.cpp(169): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\prototype1\prototype1\main.cpp(124): warning C4838: conversion from 'unsigned int' to 'int' requires a narrowing conversion
+     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\prototype1\prototype1\main.cpp(133): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\prototype1\prototype1\main.cpp(133): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\prototype1\prototype1\main.cpp(137): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\prototype1\prototype1\main.cpp(139): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\prototype1\prototype1\main.cpp(147): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\prototype1\prototype1\main.cpp(162): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\prototype1\prototype1\main.cpp(163): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\prototype1\prototype1\main.cpp(167): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\prototype1\prototype1\main.cpp(168): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\prototype1\prototype1\main.cpp(179): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\prototype1\prototype1\main.cpp(180): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
      1>c:\users\alex.modee\git\daer-isac2\dear_isaac\prototype1\prototype1\main.cpp(184): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
      1>c:\users\alex.modee\git\daer-isac2\dear_isaac\prototype1\prototype1\main.cpp(185): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\prototype1\prototype1\main.cpp(189): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\prototype1\prototype1\main.cpp(190): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\prototype1\prototype1\main.cpp(201): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\prototype1\prototype1\main.cpp(202): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\prototype1\prototype1\main.cpp(206): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\prototype1\prototype1\main.cpp(207): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\prototype1\prototype1\main.cpp(313): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\prototype1\prototype1\main.cpp(325): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\prototype1\prototype1\main.cpp(325): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\prototype1\prototype1\main.cpp(329): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\prototype1\prototype1\main.cpp(331): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\prototype1\prototype1\main.cpp(340): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\prototype1\prototype1\main.cpp(356): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\prototype1\prototype1\main.cpp(220): warning C4244: '=': conversion from 'unsigned int' to 'float', possible loss of data
+     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\prototype1\prototype1\main.cpp(221): warning C4244: '=': conversion from 'unsigned int' to 'float', possible loss of data
+     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\prototype1\prototype1\main.cpp(224): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\prototype1\prototype1\main.cpp(225): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\prototype1\prototype1\main.cpp(234): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\prototype1\prototype1\main.cpp(236): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\prototype1\prototype1\main.cpp(255): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\prototype1\prototype1\main.cpp(256): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\prototype1\prototype1\main.cpp(261): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\prototype1\prototype1\main.cpp(262): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\prototype1\prototype1\main.cpp(292): warning C4244: 'argument': conversion from 'unsigned int' to 'float', possible loss of data
+     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\prototype1\prototype1\main.cpp(292): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\prototype1\prototype1\main.cpp(294): warning C4838: conversion from 'float' to 'int' requires a narrowing conversion
+     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\prototype1\prototype1\main.cpp(294): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
+     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\prototype1\prototype1\main.cpp(304): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\prototype1\prototype1\main.cpp(304): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\prototype1\prototype1\main.cpp(308): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\prototype1\prototype1\main.cpp(310): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\prototype1\prototype1\main.cpp(319): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\prototype1\prototype1\main.cpp(335): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\prototype1\prototype1\main.cpp(336): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\prototype1\prototype1\main.cpp(340): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\prototype1\prototype1\main.cpp(341): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\prototype1\prototype1\main.cpp(352): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\prototype1\prototype1\main.cpp(353): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
      1>c:\users\alex.modee\git\daer-isac2\dear_isaac\prototype1\prototype1\main.cpp(357): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\prototype1\prototype1\main.cpp(361): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\prototype1\prototype1\main.cpp(362): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\prototype1\prototype1\main.cpp(373): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\prototype1\prototype1\main.cpp(374): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\prototype1\prototype1\main.cpp(378): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\prototype1\prototype1\main.cpp(379): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\prototype1\prototype1\main.cpp(441): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\prototype1\prototype1\main.cpp(479): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\prototype1\prototype1\main.cpp(480): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\prototype1\prototype1\main.cpp(522): warning C4305: '+=': truncation from 'double' to 'float'
-     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\prototype1\prototype1\main.cpp(412): warning C4715: 'start_menue': not all control paths return a value
+     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\prototype1\prototype1\main.cpp(358): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\prototype1\prototype1\main.cpp(443): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\prototype1\prototype1\main.cpp(447): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\prototype1\prototype1\main.cpp(449): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\prototype1\prototype1\main.cpp(455): warning C4244: 'argument': conversion from 'unsigned int' to 'float', possible loss of data
+     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\prototype1\prototype1\main.cpp(458): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\prototype1\prototype1\main.cpp(459): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\prototype1\prototype1\main.cpp(484): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\prototype1\prototype1\main.cpp(526): warning C4305: '+=': truncation from 'double' to 'float'
+     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\prototype1\prototype1\main.cpp(391): warning C4715: 'start_menue': not all control paths return a value
        Link:
          C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin\x86_amd64\link.exe /ERRORREPORT:PROMPT /OUT:"C:\Users\alex.modee\Git\Daer-Isac2\Dear_Isaac\prototype1\x64\Debug\prototype1.exe" /INCREMENTAL /NOLOGO /LIBPATH:C:\GitHub\prototype1\sfml\lib "sfml-system-d.lib" "sfml-graphics-d.lib" "sfml-audio-d.lib" "sfml-network-d.lib" "sfml-window-d.lib" kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /Debug /PDB:"C:\Users\alex.modee\Git\Daer-Isac2\Dear_Isaac\prototype1\x64\Debug\prototype1.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\Users\alex.modee\Git\Daer-Isac2\Dear_Isaac\prototype1\x64\Debug\prototype1.lib" /MACHINE:X64 x64\Debug\main.obj
          prototype1.vcxproj -> C:\Users\alex.modee\Git\Daer-Isac2\Dear_Isaac\prototype1\x64\Debug\prototype1.exe
@@ -55,4 +74,4 @@
 
 Build succeeded.
 
-Time Elapsed 00:00:01.12
+Time Elapsed 00:00:01.09
