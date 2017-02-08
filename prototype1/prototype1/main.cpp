@@ -5,10 +5,13 @@
 #include <vector>
 #include <string>
 #include <windows.h>
+#include <ctime>
 
 using namespace sf;
 
-sf::RenderWindow window2(sf::VideoMode(810, 540), "Orbitals");
+
+
+sf::RenderWindow window2(sf::VideoMode(810*2, 540*2), "Orbitals");
 Color yellow(225, 237, 7);
 Color Red(165, 41, 13);
 Color grey(177, 190, 198);
@@ -395,12 +398,12 @@ int main() {
 	if (!font.loadFromFile("ALGER.ttf")) {
 		//handle exception
 	}
-
+	float player_scale;
 	std::vector<CircleShape>planets(9); //pass to render and  collision function
 	Sprite player; //pass to render and  collision function
 	int modifi_scale = 10;
 	int radius[9] = { 20 * modifi_scale, 10 * modifi_scale, 10 * modifi_scale, 10 * modifi_scale, 10 * modifi_scale, 10 * modifi_scale, 10 * modifi_scale, 10 * modifi_scale, 10 * modifi_scale }; //radius for the planets 
-
+	float scale = 0.5;
 
 
 	Texture planet_textures[9];
@@ -437,7 +440,7 @@ int main() {
 	if (!player_texture.loadFromFile("Character_sprite.png")) {
 		//handle exception
 	}
-
+	player.setScale(1 * scale, 1 * scale);
 	player.setTexture(player_texture);
 	player.setOrigin(32, 32); //center the origin of the player (half the with, half the height)
 	float player_radius = player.getLocalBounds().width / 2.5; // radius of circle containing sprite; pass to collision function
@@ -507,6 +510,15 @@ int main() {
 
 				if ((input.type == Event::KeyPressed) && (input.key.code == Keyboard::Escape)) {
 					ingame_menue();
+				}
+
+				if ((input.type == Event::KeyPressed) && (input.key.code == Keyboard::Space)) {
+					std::cin >> scale;
+					player.setScale(scale,scale);
+					for (int i = 0; i < planets.size(); i++) {
+						planets[i].setScale(scale, scale);
+					}
+				
 				}
 
 				if (input.type == Event::Closed) {
