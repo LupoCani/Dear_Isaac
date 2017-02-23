@@ -1,0 +1,87 @@
+﻿Build started 2017-02-23 12:16:51.
+     1>Project "C:\Users\gunnar.wickbom\Local Misc\VS express\Projects\Duo-body - Kopia\Orbitals\Orbitals.vcxproj" on node 2 (Build target(s)).
+     1>ClCompile:
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\CL.exe /c /Zi /nologo /W3 /WX- /sdl /O2 /Oi /Oy- /GL /D WIN32 /D NDEBUG /D _CONSOLE /D _LIB /D _UNICODE /D UNICODE /Gm- /EHsc /MD /GS /Gy /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Release\\" /Fd"Release\vc120.pdb" /Gd /TP /analyze- /errorReport:prompt Source.cpp
+         Source.cpp
+     1>c:\users\gunnar.wickbom\local misc\vs express\projects\duo-body - kopia\orbitals\orbital_tools.h(38): warning C4244: 'argument' : conversion from 'long double' to 'float', possible loss of data
+     1>c:\users\gunnar.wickbom\local misc\vs express\projects\duo-body - kopia\orbitals\orbital_tools.h(78): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>c:\users\gunnar.wickbom\local misc\vs express\projects\duo-body - kopia\orbitals\orbital_tools.h(79): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>c:\users\gunnar.wickbom\local misc\vs express\projects\duo-body - kopia\orbitals\orbital_tools.h(81): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>c:\users\gunnar.wickbom\local misc\vs express\projects\duo-body - kopia\orbitals\orbital_tools.h(111): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>c:\users\gunnar.wickbom\local misc\vs express\projects\duo-body - kopia\orbitals\orbital_tools.h(112): warning C4305: 'argument' : truncation from 'double' to 'float'
+     1>c:\users\gunnar.wickbom\local misc\vs express\projects\duo-body - kopia\orbitals\orbital_tools.h(113): warning C4305: 'argument' : truncation from 'double' to 'float'
+     1>c:\users\gunnar.wickbom\local misc\vs express\projects\duo-body - kopia\orbitals\orbital_tools.h(128): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\gunnar.wickbom\local misc\vs express\projects\duo-body - kopia\orbitals\orbital_tools.h(265): warning C4305: 'argument' : truncation from 'double' to 'float'
+     1>c:\users\gunnar.wickbom\local misc\vs express\projects\duo-body - kopia\orbitals\orbital_tools.h(582): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\gunnar.wickbom\local misc\vs express\projects\duo-body - kopia\orbitals\orbital_tools.h(593): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\gunnar.wickbom\local misc\vs express\projects\duo-body - kopia\orbitals\orbital_tools.h(611): warning C4244: 'argument' : conversion from 'double' to 'int', possible loss of data
+     1>c:\users\gunnar.wickbom\local misc\vs express\projects\duo-body - kopia\orbitals\orbital_tools.h(661): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\gunnar.wickbom\local misc\vs express\projects\duo-body - kopia\orbitals\orbital_tools.h(817): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\gunnar.wickbom\local misc\vs express\projects\duo-body - kopia\orbitals\render_tools.h(63): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\gunnar.wickbom\local misc\vs express\projects\duo-body - kopia\orbitals\render_tools.h(85): warning C4244: '=' : conversion from 'unsigned int' to 'float', possible loss of data
+     1>c:\users\gunnar.wickbom\local misc\vs express\projects\duo-body - kopia\orbitals\render_tools.h(86): warning C4244: '=' : conversion from 'unsigned int' to 'float', possible loss of data
+     1>c:\users\gunnar.wickbom\local misc\vs express\projects\duo-body - kopia\orbitals\render_tools.h(105): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>c:\users\gunnar.wickbom\local misc\vs express\projects\duo-body - kopia\orbitals\render_tools.h(111): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>c:\users\gunnar.wickbom\local misc\vs express\projects\duo-body - kopia\orbitals\render_tools.h(117): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\gunnar.wickbom\local misc\vs express\projects\duo-body - kopia\orbitals\render_tools.h(125): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>c:\users\gunnar.wickbom\local misc\vs express\projects\duo-body - kopia\orbitals\render_tools.h(186): warning C4244: 'initializing' : conversion from 'double' to 'float', possible loss of data
+     1>c:\users\gunnar.wickbom\local misc\vs express\projects\duo-body - kopia\orbitals\render_tools.h(189): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\gunnar.wickbom\local misc\vs express\projects\duo-body - kopia\orbitals\render_tools.h(190): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>c:\users\gunnar.wickbom\local misc\vs express\projects\duo-body - kopia\orbitals\render_tools.h(192): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>c:\users\gunnar.wickbom\local misc\vs express\projects\duo-body - kopia\orbitals\render_tools.h(198): warning C4244: 'argument' : conversion from 'unsigned int' to 'float', possible loss of data
+     1>c:\users\gunnar.wickbom\local misc\vs express\projects\duo-body - kopia\orbitals\render_tools.h(201): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>c:\users\gunnar.wickbom\local misc\vs express\projects\duo-body - kopia\orbitals\render_tools.h(202): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>c:\users\gunnar.wickbom\local misc\vs express\projects\duo-body - kopia\orbitals\render_tools.h(251): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>c:\users\gunnar.wickbom\local misc\vs express\projects\duo-body - kopia\orbitals\render_tools.h(251): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>c:\users\gunnar.wickbom\local misc\vs express\projects\duo-body - kopia\orbitals\render_tools.h(255): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>c:\users\gunnar.wickbom\local misc\vs express\projects\duo-body - kopia\orbitals\render_tools.h(257): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>c:\users\gunnar.wickbom\local misc\vs express\projects\duo-body - kopia\orbitals\render_tools.h(265): warning C4244: 'initializing' : conversion from 'double' to 'float', possible loss of data
+     1>c:\users\gunnar.wickbom\local misc\vs express\projects\duo-body - kopia\orbitals\render_tools.h(280): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>c:\users\gunnar.wickbom\local misc\vs express\projects\duo-body - kopia\orbitals\render_tools.h(281): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>c:\users\gunnar.wickbom\local misc\vs express\projects\duo-body - kopia\orbitals\render_tools.h(285): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>c:\users\gunnar.wickbom\local misc\vs express\projects\duo-body - kopia\orbitals\render_tools.h(286): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>c:\users\gunnar.wickbom\local misc\vs express\projects\duo-body - kopia\orbitals\render_tools.h(297): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>c:\users\gunnar.wickbom\local misc\vs express\projects\duo-body - kopia\orbitals\render_tools.h(298): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>c:\users\gunnar.wickbom\local misc\vs express\projects\duo-body - kopia\orbitals\render_tools.h(302): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>c:\users\gunnar.wickbom\local misc\vs express\projects\duo-body - kopia\orbitals\render_tools.h(303): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>c:\users\gunnar.wickbom\local misc\vs express\projects\duo-body - kopia\orbitals\render_tools.h(342): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>c:\users\gunnar.wickbom\local misc\vs express\projects\duo-body - kopia\orbitals\render_tools.h(342): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>c:\users\gunnar.wickbom\local misc\vs express\projects\duo-body - kopia\orbitals\render_tools.h(346): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>c:\users\gunnar.wickbom\local misc\vs express\projects\duo-body - kopia\orbitals\render_tools.h(348): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>c:\users\gunnar.wickbom\local misc\vs express\projects\duo-body - kopia\orbitals\render_tools.h(358): warning C4244: 'initializing' : conversion from 'double' to 'float', possible loss of data
+     1>c:\users\gunnar.wickbom\local misc\vs express\projects\duo-body - kopia\orbitals\render_tools.h(373): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>c:\users\gunnar.wickbom\local misc\vs express\projects\duo-body - kopia\orbitals\render_tools.h(374): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>c:\users\gunnar.wickbom\local misc\vs express\projects\duo-body - kopia\orbitals\render_tools.h(378): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>c:\users\gunnar.wickbom\local misc\vs express\projects\duo-body - kopia\orbitals\render_tools.h(379): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>c:\users\gunnar.wickbom\local misc\vs express\projects\duo-body - kopia\orbitals\render_tools.h(390): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>c:\users\gunnar.wickbom\local misc\vs express\projects\duo-body - kopia\orbitals\render_tools.h(391): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>c:\users\gunnar.wickbom\local misc\vs express\projects\duo-body - kopia\orbitals\render_tools.h(395): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>c:\users\gunnar.wickbom\local misc\vs express\projects\duo-body - kopia\orbitals\render_tools.h(396): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>c:\users\gunnar.wickbom\local misc\vs express\projects\duo-body - kopia\orbitals\render_tools.h(352): warning C4101: 'output' : unreferenced local variable
+     1>c:\users\gunnar.wickbom\local misc\vs express\projects\duo-body - kopia\orbitals\render_tools.h(435): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>c:\users\gunnar.wickbom\local misc\vs express\projects\duo-body - kopia\orbitals\render_tools.h(449): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+     1>c:\users\gunnar.wickbom\local misc\vs express\projects\duo-body - kopia\orbitals\render_tools.h(449): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>c:\users\gunnar.wickbom\local misc\vs express\projects\duo-body - kopia\orbitals\render_tools.h(453): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>c:\users\gunnar.wickbom\local misc\vs express\projects\duo-body - kopia\orbitals\render_tools.h(455): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>c:\users\gunnar.wickbom\local misc\vs express\projects\duo-body - kopia\orbitals\render_tools.h(464): warning C4244: 'initializing' : conversion from 'double' to 'float', possible loss of data
+     1>c:\users\gunnar.wickbom\local misc\vs express\projects\duo-body - kopia\orbitals\render_tools.h(480): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>c:\users\gunnar.wickbom\local misc\vs express\projects\duo-body - kopia\orbitals\render_tools.h(481): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>c:\users\gunnar.wickbom\local misc\vs express\projects\duo-body - kopia\orbitals\render_tools.h(485): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>c:\users\gunnar.wickbom\local misc\vs express\projects\duo-body - kopia\orbitals\render_tools.h(486): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>c:\users\gunnar.wickbom\local misc\vs express\projects\duo-body - kopia\orbitals\render_tools.h(497): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>c:\users\gunnar.wickbom\local misc\vs express\projects\duo-body - kopia\orbitals\render_tools.h(498): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>c:\users\gunnar.wickbom\local misc\vs express\projects\duo-body - kopia\orbitals\render_tools.h(502): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>c:\users\gunnar.wickbom\local misc\vs express\projects\duo-body - kopia\orbitals\render_tools.h(503): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Source.cpp(31): warning C4244: 'argument' : conversion from 'time_t' to 'unsigned int', possible loss of data
+     1>Source.cpp(35): warning C4018: '<' : signed/unsigned mismatch
+     1>Source.cpp(173): warning C4018: '<' : signed/unsigned mismatch
+       Link:
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"C:\Users\gunnar.wickbom\Local Misc\VS express\Projects\Duo-body - Kopia\Release\Orbitals.exe" /INCREMENTAL:NO /NOLOGO /LIBPATH:"U:\SFML-2.3.2\lib" "sfml-graphics.lib" "sfml-window.lib" "sfml-system.lib" kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:\Users\gunnar.wickbom\Local Misc\VS express\Projects\Duo-body - Kopia\Release\Orbitals.pdb" /SUBSYSTEM:CONSOLE /OPT:REF /OPT:ICF /LTCG /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\Users\gunnar.wickbom\Local Misc\VS express\Projects\Duo-body - Kopia\Release\Orbitals.lib" /MACHINE:X86 /SAFESEH Release\Source.obj
+         Generating code
+         Finished generating code
+         Orbitals.vcxproj -> C:\Users\gunnar.wickbom\Local Misc\VS express\Projects\Duo-body - Kopia\Release\Orbitals.exe
+     1>Done Building Project "C:\Users\gunnar.wickbom\Local Misc\VS express\Projects\Duo-body - Kopia\Orbitals\Orbitals.vcxproj" (Build target(s)).
+
+Build succeeded.
+
+Time Elapsed 00:00:58.02
