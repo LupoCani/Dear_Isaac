@@ -7,11 +7,11 @@
 #include <windows.h>
 #define setFillColor2 setColor
 
-using namespace sf;
-
 namespace graph{
 
 	using namespace phys;
+	using namespace sf;
+
 	sf::Font font;
 	Color yellow(225, 237, 7);
 	Color Red(165, 41, 13);
@@ -235,7 +235,7 @@ namespace graph{
 
 	void graph_init()
 	{
-
+		render_init();
 	}
 
 	void option_menue() {
@@ -533,6 +533,11 @@ namespace graph{
 
 		}
 
+	}
+
+	void do_render()
+	{
+		main_render(phys::positions, 1, 1);
 	}
 }
 

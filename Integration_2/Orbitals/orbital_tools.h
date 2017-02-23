@@ -171,6 +171,19 @@ namespace phys{
 	body sun, moon, planet, pluto, dune, yavin, plyr;
 	vector<body*> bodies;
 
+
+
+	struct world_state
+	{
+		vector<vec_n> bodies;
+		vector<string> names;
+		vector<vector<vec_n>> lines;
+
+		double rotation;
+		double throttle;
+	};
+
+
 	double clamp(double in)
 	{
 		return in > 1 ? 1 : (in < -1 ? -1 : in);
@@ -634,8 +647,6 @@ namespace phys{
 			}
 		}
 
-		if (expire_true)
-			countdown = w_time_end;
 	}
 
 	body* get_parent(body sat, vector<body*> list)
@@ -834,10 +845,11 @@ namespace phys{
 		return out;
 	}
 
+	vector<vec_n> positions;
+
 	void run_engine()
 	{
-		update_all_and_convert(bodies, shared::r_time, 0, 0, 0, 0);
-
+		positions = update_all_and_convert(bodies, shared::r_time, 0, 0, 0, 0);
 	}
 
 

@@ -6,25 +6,49 @@
 #include <vector>
 #include <string>
 #include <windows.h>
-#include "orbital_tools.h"
-#include "render_tools.h"
 #define skip if (false)
 
 using namespace std;
 
+namespace shared{
+	clock_t r_time;
+	clock_t l_time = 0;
+	const clock_t s_time = clock();
+	const double cps = CLOCKS_PER_SEC;
+
+	//phys::world_state state;
+}
+
+#include "orbital_tools.h"
+#include "render_tools.h"
 
 void main()
 {
-	using namespace phys;
-
-
-	phys_init();
+	phys::phys_init();
 	graph::graph_init();
 
-	graph::render_init();
+
+
+	while (true)
+	{
+		using namespace shared;
+		r_time = clock() - shared::s_time;
+
+		if (l_time + cps * 0.01 < r_time)
+		{
+			l_time = r_time;
+
+			phys::run_engine();
+
+			graph::do_render();
+		}
+	}
+
+
+	return;
 
 	//fill_tail();
-
+	using namespace phys;
 	int steps = 1000;
 	int render_subdiv = 5;
 
@@ -203,30 +227,6 @@ void main()
 
 		w_time += 0.0001;
 		Sleep(1);
-		tick_count++;
-
-
-		double pause_time = 0;
-		skip if (floor(log10(tick_count)) > floor(log10(tick_count - 1)) || !(tick_count % 1000))
-		{
-			tick_counts.push_back(tick_count);
-			tick_times.push_back((tick_time - clock()) /CLOCKS_PER_SEC);
-		}
-
-		skip if (tick_counts.size() > 10)
-		{
-			for (int i = 0; i < 11; i++)
-			{
-				double pause_time_begin = clock();
-				cout << "Tick count: " << tick_counts[i] << endl;
-				cout << "Time since: " << tick_times[i] << endl;
-				cout << "Ticks per Second: " << tick_counts[i] / tick_times[i] << endl;
-				cout << "Seconds per Tick: " << tick_times[i] / tick_counts[i] << endl;
-				cout << "_________________________________________________\n";
-				pause_time += clock() - pause_time_begin;
-			}
-			std::system("pause");
-		}
 
 	} while (true);
 

@@ -1,22 +1,22 @@
-﻿Build started 2017-02-23 15:44:02.
+﻿Build started 2017-02-23 17:25:38.
      1>Project "C:\Users\gunnar.wickbom\Local Misc\GitHub\Integration_2\Orbitals\Orbitals.vcxproj" on node 2 (Build target(s)).
      1>ClCompile:
          C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\CL.exe /c /Zi /nologo /W3 /WX- /sdl /O2 /Oi /Oy- /GL /D WIN32 /D NDEBUG /D _CONSOLE /D _LIB /D _UNICODE /D UNICODE /Gm- /EHsc /MD /GS /Gy /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Release\\" /Fd"Release\vc120.pdb" /Gd /TP /analyze- /errorReport:prompt Source.cpp
          Source.cpp
-     1>c:\users\gunnar.wickbom\local misc\github\integration_2\orbitals\orbital_tools.h(39): warning C4244: 'argument' : conversion from 'long double' to 'float', possible loss of data
+     1>c:\users\gunnar.wickbom\local misc\github\integration_2\orbitals\orbital_tools.h(36): warning C4244: 'argument' : conversion from 'long double' to 'float', possible loss of data
+     1>c:\users\gunnar.wickbom\local misc\github\integration_2\orbitals\orbital_tools.h(76): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>c:\users\gunnar.wickbom\local misc\github\integration_2\orbitals\orbital_tools.h(77): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
      1>c:\users\gunnar.wickbom\local misc\github\integration_2\orbitals\orbital_tools.h(79): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
-     1>c:\users\gunnar.wickbom\local misc\github\integration_2\orbitals\orbital_tools.h(80): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
-     1>c:\users\gunnar.wickbom\local misc\github\integration_2\orbitals\orbital_tools.h(82): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
-     1>c:\users\gunnar.wickbom\local misc\github\integration_2\orbitals\orbital_tools.h(112): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
-     1>c:\users\gunnar.wickbom\local misc\github\integration_2\orbitals\orbital_tools.h(113): warning C4305: 'argument' : truncation from 'double' to 'float'
-     1>c:\users\gunnar.wickbom\local misc\github\integration_2\orbitals\orbital_tools.h(114): warning C4305: 'argument' : truncation from 'double' to 'float'
-     1>c:\users\gunnar.wickbom\local misc\github\integration_2\orbitals\orbital_tools.h(129): warning C4018: '<' : signed/unsigned mismatch
-     1>c:\users\gunnar.wickbom\local misc\github\integration_2\orbitals\orbital_tools.h(266): warning C4305: 'argument' : truncation from 'double' to 'float'
-     1>c:\users\gunnar.wickbom\local misc\github\integration_2\orbitals\orbital_tools.h(583): warning C4018: '<' : signed/unsigned mismatch
-     1>c:\users\gunnar.wickbom\local misc\github\integration_2\orbitals\orbital_tools.h(594): warning C4018: '<' : signed/unsigned mismatch
-     1>c:\users\gunnar.wickbom\local misc\github\integration_2\orbitals\orbital_tools.h(612): warning C4244: 'argument' : conversion from 'double' to 'int', possible loss of data
-     1>c:\users\gunnar.wickbom\local misc\github\integration_2\orbitals\orbital_tools.h(662): warning C4018: '<' : signed/unsigned mismatch
-     1>c:\users\gunnar.wickbom\local misc\github\integration_2\orbitals\orbital_tools.h(818): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\gunnar.wickbom\local misc\github\integration_2\orbitals\orbital_tools.h(108): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>c:\users\gunnar.wickbom\local misc\github\integration_2\orbitals\orbital_tools.h(109): warning C4305: 'argument' : truncation from 'double' to 'float'
+     1>c:\users\gunnar.wickbom\local misc\github\integration_2\orbitals\orbital_tools.h(110): warning C4305: 'argument' : truncation from 'double' to 'float'
+     1>c:\users\gunnar.wickbom\local misc\github\integration_2\orbitals\orbital_tools.h(125): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\gunnar.wickbom\local misc\github\integration_2\orbitals\orbital_tools.h(275): warning C4305: 'argument' : truncation from 'double' to 'float'
+     1>c:\users\gunnar.wickbom\local misc\github\integration_2\orbitals\orbital_tools.h(592): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\gunnar.wickbom\local misc\github\integration_2\orbitals\orbital_tools.h(603): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\gunnar.wickbom\local misc\github\integration_2\orbitals\orbital_tools.h(621): warning C4244: 'argument' : conversion from 'double' to 'int', possible loss of data
+     1>c:\users\gunnar.wickbom\local misc\github\integration_2\orbitals\orbital_tools.h(667): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\gunnar.wickbom\local misc\github\integration_2\orbitals\orbital_tools.h(813): warning C4018: '<' : signed/unsigned mismatch
      1>c:\users\gunnar.wickbom\local misc\github\integration_2\orbitals\render_tools.h(63): warning C4018: '<' : signed/unsigned mismatch
      1>c:\users\gunnar.wickbom\local misc\github\integration_2\orbitals\render_tools.h(85): warning C4244: '=' : conversion from 'unsigned int' to 'float', possible loss of data
      1>c:\users\gunnar.wickbom\local misc\github\integration_2\orbitals\render_tools.h(86): warning C4244: '=' : conversion from 'unsigned int' to 'float', possible loss of data
@@ -72,8 +72,8 @@
      1>c:\users\gunnar.wickbom\local misc\github\integration_2\orbitals\render_tools.h(498): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
      1>c:\users\gunnar.wickbom\local misc\github\integration_2\orbitals\render_tools.h(502): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
      1>c:\users\gunnar.wickbom\local misc\github\integration_2\orbitals\render_tools.h(503): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
-     1>Source.cpp(33): warning C4244: 'argument' : conversion from 'time_t' to 'unsigned int', possible loss of data
-     1>Source.cpp(37): warning C4018: '<' : signed/unsigned mismatch
+     1>Source.cpp(57): warning C4244: 'argument' : conversion from 'time_t' to 'unsigned int', possible loss of data
+     1>Source.cpp(61): warning C4018: '<' : signed/unsigned mismatch
        Link:
          C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"C:\Users\gunnar.wickbom\Local Misc\GitHub\Integration_2\Release\Orbitals.exe" /INCREMENTAL:NO /NOLOGO /LIBPATH:"U:\SFML-2.3.2\lib" "sfml-graphics.lib" "sfml-window.lib" "sfml-system.lib" kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:\Users\gunnar.wickbom\Local Misc\GitHub\Integration_2\Release\Orbitals.pdb" /SUBSYSTEM:CONSOLE /OPT:REF /OPT:ICF /LTCG /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\Users\gunnar.wickbom\Local Misc\GitHub\Integration_2\Release\Orbitals.lib" /MACHINE:X86 /SAFESEH Release\Source.obj
          Generating code
@@ -83,4 +83,4 @@
 
 Build succeeded.
 
-Time Elapsed 00:00:09.20
+Time Elapsed 00:00:09.80
