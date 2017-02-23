@@ -8,10 +8,10 @@
 #define setFillColor2 setColor
 
 using namespace sf;
-using namespace phys;
-
 
 namespace graph{
+
+	using namespace phys;
 	sf::Font font;
 	Color yellow(225, 237, 7);
 	Color Red(165, 41, 13);

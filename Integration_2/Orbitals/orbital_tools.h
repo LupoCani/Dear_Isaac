@@ -13,6 +13,7 @@ sf::RenderWindow window2(sf::VideoMode(1080, 860), "Orbitals");
 
 namespace phys{
 	using namespace std;
+
 	double w_time = 0;
 
 	clock_t cur_time = clock();
@@ -24,9 +25,6 @@ namespace phys{
 	const long double M_3PI2 = M_PI2 * 3L;
 
 	const long double M_E = exp(1.0);
-
-	double countdown = -1;
-	double approach = HUGE_VAL;
 
 	struct vec_n
 	{
@@ -83,7 +81,6 @@ namespace phys{
 
 		window2.draw(planet);
 	}
-
 
 	vec_n handle_scale_single(vec_n list, vec_n origo, double scale = 1, double mid_x = 500, double mid_y = 500)
 	{
@@ -637,8 +634,6 @@ namespace phys{
 			}
 		}
 
-		approach = dist_end;
-		countdown = -1;
 		if (expire_true)
 			countdown = w_time_end;
 	}
@@ -794,16 +789,6 @@ namespace phys{
 		return out;
 	}
 
-	struct engine_memory
-	{
-		vector<body*> bodies;
-	};
-
-	void run_engine(engine_memory &stat)
-	{
-
-
-	}
 
 	vector<vec_n> update_all_and_convert(vector<body*> bodies, double w_time, bool e_mode, double vel_x, double vel_y, double fact)
 	{
@@ -848,6 +833,13 @@ namespace phys{
 		//get_expiry(*bodies[bodies.size() - 1], bodies, w_time);
 		return out;
 	}
+
+	void run_engine()
+	{
+		update_all_and_convert(bodies, shared::r_time, 0, 0, 0, 0);
+
+	}
+
 
 	void phys_init()
 	{
@@ -923,6 +915,5 @@ namespace phys{
 		make_orbit(yavin, w_time);
 		make_orbit(plyr, w_time);
 	}
-
 }
 

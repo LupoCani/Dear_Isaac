@@ -15,6 +15,8 @@ using namespace std;
 
 void main()
 {
+	using namespace phys;
+
 
 	phys_init();
 	graph::graph_init();
@@ -160,7 +162,7 @@ void main()
 
 		positions = update_all_and_convert(bodies, w_time, e_mode, inp_in.x, inp_in.y, fact);
 
-		//graph::main_render(positions, zoom, focus);/*
+		graph::main_render(positions, zoom, focus);/*
 
 		focus = focus % positions.size();
 
@@ -169,7 +171,7 @@ void main()
 		if (0 || (f_time_cache + 50) < f_time)
 		{ 
 			positions = graph::handle_scale(positions, focus, zoom, 500, 500);
-			//window2.clear();
+			window2.clear();
 			for (int i = 0; i < positions.size(); i++)
 			{
 				vec_n sat_pos = positions[i];
