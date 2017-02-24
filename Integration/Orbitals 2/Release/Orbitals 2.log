@@ -1,0 +1,88 @@
+﻿Build started 2017-02-24 20:06:57.
+     1>Project "C:\Users\Admin\Bibliotek\Programvara\C++\Two-Body\Orbitals 2\Orbitals 2.vcxproj" on node 2 (Build target(s)).
+     1>C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\V140\Microsoft.CppBuild.targets(392,5): warning MSB8028: The intermediate directory (Release\) contains files shared from another project (Orbitals 2.vcxproj).  This can lead to incorrect clean and rebuild behavior.
+     1>ClCompile:
+         C:\Program\Microsoft Visual Studio 14.0\VC\bin\CL.exe /c /I"C:\Program Files\SFML-2.4.0\include" /Zi /nologo /W3 /WX- /sdl /O2 /Oi /Oy- /GL /D _MBCS /Gm- /EHsc /MD /GS /Gy /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /Fo"Release\\" /Fd"Release\vc140.pdb" /Gd /TP /analyze- /errorReport:prompt Source.cpp
+         Source.cpp
+     1>c:\users\admin\bibliotek\programvara\c++\two-body\orbitals 2\orbital_tools.h(36): warning C4244: 'argument': conversion from 'long double' to 'float', possible loss of data
+     1>c:\users\admin\bibliotek\programvara\c++\two-body\orbitals 2\orbital_tools.h(76): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+     1>c:\users\admin\bibliotek\programvara\c++\two-body\orbitals 2\orbital_tools.h(77): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+     1>c:\users\admin\bibliotek\programvara\c++\two-body\orbitals 2\orbital_tools.h(79): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+     1>c:\users\admin\bibliotek\programvara\c++\two-body\orbitals 2\orbital_tools.h(108): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+     1>c:\users\admin\bibliotek\programvara\c++\two-body\orbitals 2\orbital_tools.h(109): warning C4305: 'argument': truncation from 'double' to 'float'
+     1>c:\users\admin\bibliotek\programvara\c++\two-body\orbitals 2\orbital_tools.h(110): warning C4305: 'argument': truncation from 'double' to 'float'
+     1>c:\users\admin\bibliotek\programvara\c++\two-body\orbitals 2\orbital_tools.h(125): warning C4018: '<': signed/unsigned mismatch
+     1>c:\users\admin\bibliotek\programvara\c++\two-body\orbitals 2\orbital_tools.h(275): warning C4305: 'argument': truncation from 'double' to 'float'
+     1>c:\users\admin\bibliotek\programvara\c++\two-body\orbitals 2\orbital_tools.h(592): warning C4018: '<': signed/unsigned mismatch
+     1>c:\users\admin\bibliotek\programvara\c++\two-body\orbitals 2\orbital_tools.h(603): warning C4018: '<': signed/unsigned mismatch
+     1>c:\users\admin\bibliotek\programvara\c++\two-body\orbitals 2\orbital_tools.h(621): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+     1>c:\users\admin\bibliotek\programvara\c++\two-body\orbitals 2\orbital_tools.h(667): warning C4018: '<': signed/unsigned mismatch
+     1>c:\users\admin\bibliotek\programvara\c++\two-body\orbitals 2\orbital_tools.h(813): warning C4018: '<': signed/unsigned mismatch
+     1>c:\users\admin\bibliotek\programvara\c++\two-body\orbitals 2\render_tools.h(63): warning C4018: '<': signed/unsigned mismatch
+     1>c:\users\admin\bibliotek\programvara\c++\two-body\orbitals 2\render_tools.h(85): warning C4244: '=': conversion from 'unsigned int' to 'float', possible loss of data
+     1>c:\users\admin\bibliotek\programvara\c++\two-body\orbitals 2\render_tools.h(86): warning C4244: '=': conversion from 'unsigned int' to 'float', possible loss of data
+     1>c:\users\admin\bibliotek\programvara\c++\two-body\orbitals 2\render_tools.h(105): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+     1>c:\users\admin\bibliotek\programvara\c++\two-body\orbitals 2\render_tools.h(111): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+     1>c:\users\admin\bibliotek\programvara\c++\two-body\orbitals 2\render_tools.h(117): warning C4018: '<': signed/unsigned mismatch
+     1>c:\users\admin\bibliotek\programvara\c++\two-body\orbitals 2\render_tools.h(125): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+     1>c:\users\admin\bibliotek\programvara\c++\two-body\orbitals 2\render_tools.h(186): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+     1>c:\users\admin\bibliotek\programvara\c++\two-body\orbitals 2\render_tools.h(189): warning C4018: '<': signed/unsigned mismatch
+     1>c:\users\admin\bibliotek\programvara\c++\two-body\orbitals 2\render_tools.h(190): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+     1>c:\users\admin\bibliotek\programvara\c++\two-body\orbitals 2\render_tools.h(192): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+     1>c:\users\admin\bibliotek\programvara\c++\two-body\orbitals 2\render_tools.h(198): warning C4244: 'argument': conversion from 'unsigned int' to 'float', possible loss of data
+     1>c:\users\admin\bibliotek\programvara\c++\two-body\orbitals 2\render_tools.h(201): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+     1>c:\users\admin\bibliotek\programvara\c++\two-body\orbitals 2\render_tools.h(202): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+     1>c:\users\admin\bibliotek\programvara\c++\two-body\orbitals 2\render_tools.h(251): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+     1>c:\users\admin\bibliotek\programvara\c++\two-body\orbitals 2\render_tools.h(251): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+     1>c:\users\admin\bibliotek\programvara\c++\two-body\orbitals 2\render_tools.h(255): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+     1>c:\users\admin\bibliotek\programvara\c++\two-body\orbitals 2\render_tools.h(257): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+     1>c:\users\admin\bibliotek\programvara\c++\two-body\orbitals 2\render_tools.h(265): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+     1>c:\users\admin\bibliotek\programvara\c++\two-body\orbitals 2\render_tools.h(280): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+     1>c:\users\admin\bibliotek\programvara\c++\two-body\orbitals 2\render_tools.h(281): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+     1>c:\users\admin\bibliotek\programvara\c++\two-body\orbitals 2\render_tools.h(285): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+     1>c:\users\admin\bibliotek\programvara\c++\two-body\orbitals 2\render_tools.h(286): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+     1>c:\users\admin\bibliotek\programvara\c++\two-body\orbitals 2\render_tools.h(297): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+     1>c:\users\admin\bibliotek\programvara\c++\two-body\orbitals 2\render_tools.h(298): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+     1>c:\users\admin\bibliotek\programvara\c++\two-body\orbitals 2\render_tools.h(302): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+     1>c:\users\admin\bibliotek\programvara\c++\two-body\orbitals 2\render_tools.h(303): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+     1>c:\users\admin\bibliotek\programvara\c++\two-body\orbitals 2\render_tools.h(342): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+     1>c:\users\admin\bibliotek\programvara\c++\two-body\orbitals 2\render_tools.h(342): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+     1>c:\users\admin\bibliotek\programvara\c++\two-body\orbitals 2\render_tools.h(346): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+     1>c:\users\admin\bibliotek\programvara\c++\two-body\orbitals 2\render_tools.h(348): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+     1>c:\users\admin\bibliotek\programvara\c++\two-body\orbitals 2\render_tools.h(358): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+     1>c:\users\admin\bibliotek\programvara\c++\two-body\orbitals 2\render_tools.h(373): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+     1>c:\users\admin\bibliotek\programvara\c++\two-body\orbitals 2\render_tools.h(374): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+     1>c:\users\admin\bibliotek\programvara\c++\two-body\orbitals 2\render_tools.h(378): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+     1>c:\users\admin\bibliotek\programvara\c++\two-body\orbitals 2\render_tools.h(379): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+     1>c:\users\admin\bibliotek\programvara\c++\two-body\orbitals 2\render_tools.h(390): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+     1>c:\users\admin\bibliotek\programvara\c++\two-body\orbitals 2\render_tools.h(391): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+     1>c:\users\admin\bibliotek\programvara\c++\two-body\orbitals 2\render_tools.h(395): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+     1>c:\users\admin\bibliotek\programvara\c++\two-body\orbitals 2\render_tools.h(396): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+     1>c:\users\admin\bibliotek\programvara\c++\two-body\orbitals 2\render_tools.h(352): warning C4101: 'output': unreferenced local variable
+     1>c:\users\admin\bibliotek\programvara\c++\two-body\orbitals 2\render_tools.h(435): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+     1>c:\users\admin\bibliotek\programvara\c++\two-body\orbitals 2\render_tools.h(449): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+     1>c:\users\admin\bibliotek\programvara\c++\two-body\orbitals 2\render_tools.h(449): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+     1>c:\users\admin\bibliotek\programvara\c++\two-body\orbitals 2\render_tools.h(453): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+     1>c:\users\admin\bibliotek\programvara\c++\two-body\orbitals 2\render_tools.h(455): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+     1>c:\users\admin\bibliotek\programvara\c++\two-body\orbitals 2\render_tools.h(464): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+     1>c:\users\admin\bibliotek\programvara\c++\two-body\orbitals 2\render_tools.h(480): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+     1>c:\users\admin\bibliotek\programvara\c++\two-body\orbitals 2\render_tools.h(481): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+     1>c:\users\admin\bibliotek\programvara\c++\two-body\orbitals 2\render_tools.h(485): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+     1>c:\users\admin\bibliotek\programvara\c++\two-body\orbitals 2\render_tools.h(486): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+     1>c:\users\admin\bibliotek\programvara\c++\two-body\orbitals 2\render_tools.h(497): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+     1>c:\users\admin\bibliotek\programvara\c++\two-body\orbitals 2\render_tools.h(498): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+     1>c:\users\admin\bibliotek\programvara\c++\two-body\orbitals 2\render_tools.h(502): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+     1>c:\users\admin\bibliotek\programvara\c++\two-body\orbitals 2\render_tools.h(503): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+     1>Source.cpp(57): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
+     1>Source.cpp(61): warning C4018: '<': signed/unsigned mismatch
+       Link:
+         C:\Program\Microsoft Visual Studio 14.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"C:\Users\Admin\Bibliotek\Programvara\C++\Two-Body\Release\Orbitals.exe" /NOLOGO /LIBPATH:"C:\Program Files\SFML-2.4.0\lib" "sfml-graphics.lib" "sfml-window.lib" "sfml-system.lib" kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /Debug /PDB:"C:\Users\Admin\Bibliotek\Programvara\C++\Two-Body\Release\Orbitals.pdb" /OPT:REF /OPT:ICF /LTCG:incremental /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\Users\Admin\Bibliotek\Programvara\C++\Two-Body\Release\Orbitals.lib" /MACHINE:X86 /SAFESEH Release\Source.obj
+         Generating code
+         All 848 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
+         Finished generating code
+         Orbitals 2.vcxproj -> C:\Users\Admin\Bibliotek\Programvara\C++\Two-Body\Release\Orbitals.exe
+     1>Done Building Project "C:\Users\Admin\Bibliotek\Programvara\C++\Two-Body\Orbitals 2\Orbitals 2.vcxproj" (Build target(s)).
+
+Build succeeded.
+
+Time Elapsed 00:00:03.95
