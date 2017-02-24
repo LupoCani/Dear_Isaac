@@ -1,0 +1,183 @@
+#include <iostream>
+#include <time.h>
+#include <SFML\Graphics.hpp>
+#include <math.h>
+#include <vector>
+#include <string>
+#include <windows.h>
+
+using namespace std;
+
+clock_t cur_time = clock();
+vector <sf::CircleShape> tail;
+int cps = CLOCKS_PER_SEC;
+
+
+sf::RenderWindow window(sf::VideoMode(1080, 860), "Orbitals");
+
+void draw_circle(double x, double y, bool beblue)
+{
+
+	sf::CircleShape planet;
+
+	planet.setPosition(x - 5, y - 5);
+	planet.setFillColor(beblue ? sf::Color::Blue : sf::Color::Red);
+	planet.setRadius(10);
+
+
+	window.draw(planet);
+}
+
+void draw_tail(double x, double y, bool beblue)
+{
+	sf::CircleShape holder;
+	holder.setPosition(x, y);
+	holder.setRadius(1.5);
+	holder.setFillColor((beblue ? sf::Color::Green : sf::Color::Cyan));
+	holder.time = time(0);
+	tail.push_back(holder);
+
+	tail.erase(tail.begin());
+
+	for (unsigned short i = 0; i < tail.size(); i++)
+		window.draw(tail[i]);
+
+}
+
+void fill_tail()
+{
+	for (int i = 0; i < 10000; i++)
+	{
+		sf::CircleShape holder;
+		holder.setPosition(0, 0);
+		holder.setRadius(1.5);
+		holder.setFillColor(sf::Color::Green);
+		holder.time = time(0);
+		tail.push_back(holder);
+	}
+}
+
+struct vec_2 {
+	double x = 0;
+	double y = 0;
+};
+
+struct body {
+	vec_2 pos;
+	vec_2 vel;
+	double mass = 1;
+};
+
+
+void update_pos(body &bd1, body bd2)
+{
+	vec_2 pos = bd1.pos;
+	vec_2 vel = bd1.vel;
+	vec_2 C = bd2.pos;
+
+	double r = sqrt(pow((500 - pos.x), 2) + pow((500 - pos.y), 2));
+	double F = bd2.mass / pow(r, 2);
+
+	double rel_x = abs(500 - pos.x);
+	double rel_y = abs(500 - pos.y);
+	double k = rel_x / rel_y;
+
+	char p_y = -(500 - pos.y < 0) + (500 - pos.y > 0);
+	char p_x = -(500 - pos.x < 0) + (500 - pos.x > 0);
+
+	double fx = p_x * sqrt(pow(1, 2) / (1 + 1 / pow(k, 2)));
+	double fy = p_y * sqrt(pow(1, 2) / (1 + pow(k, 2)));
+
+	bd1.vel.x += fx * F / 1000;
+	bd1.vel.y += fy * F / 1000;
+
+	bd1.pos.x = pos.x + vel.x / 1000;
+	bd1.pos.y = pos.y + vel.y / 1000;
+}
+
+
+
+void main()
+{
+	int fcount = 0;
+	int scount = 0;
+	long tcount = 0;
+
+	body mb;
+	body center;
+
+	clock_t r_time = cur_time;
+	clock_t fc_time = cur_time;
+
+	mb.vel.x = 80;
+	mb.pos.x = 500;
+	mb.pos.y = 600;
+	mb.mass = 1;
+
+	center.pos.x = 500;
+	center.pos.y = 500;
+	center.mass = 500000;
+
+	fill_tail();
+
+	while (true)
+	{
+		cur_time = clock();
+		
+		/*
+		vec_2 pos = mb.pos;
+		vec_2 vel = mb.vel;
+		vec_2 C = mb.pos;
+
+		double r = sqrt(pow((500 - pos.x), 2) + pow((500 - pos.y), 2));
+		double F = 500000 / pow(r, 2);
+
+		double rel_x = abs(500 - pos.x);
+		double rel_y = abs(500 - pos.y);
+		double k = rel_x / rel_y;
+
+		char p_y = -(500 - pos.y < 0) + (500 - pos.y > 0);
+		char p_x = -(500 - pos.x < 0) + (500 - pos.x > 0);
+
+		double fx = p_x * sqrt(pow(1, 2) / (1 + 1 / pow(k, 2)));
+		double fy = p_y * sqrt(pow(1, 2) / (1 + pow(k, 2)));
+
+		mb.vel.x += fx * F / 1000;
+		mb.vel.y += fy * F / 1000;
+
+		mb.pos.x = pos.x + vel.x / 1000;
+		mb.pos.y = pos.y + vel.y / 1000;
+		*/
+
+		update_pos(mb, center);
+		//update_pos(center, mb);
+
+		fcount++;
+		scount++;
+
+		if (cur_time - r_time > 0.02 * cps)
+		{
+			window.clear();
+
+			draw_circle(center.pos.x, center.pos.y, 0);
+			draw_circle(mb.pos.x, mb.pos.y, 1);
+
+			draw_tail(mb.pos.x, mb.pos.y, 1);
+			draw_tail(center.pos.x, center.pos.y, 0);
+
+			window.display();
+			r_time = cur_time;
+		}
+		if (cur_time - fc_time > 10 * cps)
+		{
+			cout << fcount / 10 << endl;
+			fcount = 0;
+			fc_time = cur_time;
+		}
+		if (scount > 25)
+		{
+			scount = 0;
+			Sleep(1);
+		}
+	}
+}
