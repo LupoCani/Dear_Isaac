@@ -7,12 +7,101 @@
 #include <string>
 #include <windows.h>
 #define skip if (false)
+#define ORBITAL_TOOLS_LOADED true
+
+//sf::RenderWindow window2(sf::VideoMode(1080, 860), "Orbitals");
+
+namespace shared {
+	struct vec_n
+	{
+		long double x = 0;
+		long double y = 0;
+		long double z = 0;
+
+		operator sf::Vector2f() {
+			return sf::Vector2f(x, y);
+		}
+	};
+
+	struct world_state
+	{
+		vector<vec_n> bodies;
+		vector<string> names;
+		vector<vector<vec_n>> paths;
+
+		double zoom = 1;
+		int focus = 0;
+		
+		double player_rotation; //Angle in radians, sweeping counter-clockwise.
+	};
 
 
-sf::RenderWindow window2(sf::VideoMode(1080, 860), "Orbitals");
+	sf::RenderWindow window2;
+
+	clock_t r_time;
+	clock_t l_time;
+	clock_t s_time;
+	const double cps = CLOCKS_PER_SEC;
+
+	//phys::world_state state;
+}
+
+namespace input {
+	using namespace sf;
+	
+	struct key_state {
+
+		short scroll = 0;
+		vector<int> pressed;
+		struct list : sf::Keyboard {
+			using Keyboard::Key;
+		};
+
+		bool isPressed(int key)
+		{
+			for (int i = 0; i < pressed.size(); i++)
+				if (key == pressed[i])
+					return true;
+
+			return false;
+		}
+	};
+
+	key_state keyboard;
+
+	void run_input()
+	{
+		sf::Event input;
+		keyboard.scroll = 0;
+
+		while (shared::window2.pollEvent(input)) {
+
+			if (input.type == sf::Event::KeyPressed)
+			{
+				bool isAdded = false;
+
+				for (int i = 0; i < keyboard.pressed.size(); i++)
+					if (input.key.code == keyboard.pressed[i])
+						isAdded = true;
+
+				if (!isAdded)
+					keyboard.pressed.push_back(input.key.code);
+			}
+
+			if (input.type == sf::Event::KeyReleased)
+				for (int i = 0; i < keyboard.pressed.size(); i++)
+					if (input.key.code == keyboard.pressed[i])
+						keyboard.pressed.erase(keyboard.pressed.begin() + i);
+
+			if (input.type == sf::Event::MouseWheelMoved)
+				keyboard.scroll = input.mouseWheel.delta;
+		}
+	}
+}
 
 namespace phys{
 	using namespace std;
+	using namespace shared;
 
 	double w_time = 0;
 
@@ -26,16 +115,6 @@ namespace phys{
 
 	const long double M_E = exp(1.0);
 
-	struct vec_n
-	{
-		long double x = 0;
-		long double y = 0;
-		long double z = 0;
-
-		operator sf::Vector2f() {
-			return sf::Vector2f(x, y);
-		}
-	};
 	vector <vec_n> tail_coord;
 
 
@@ -79,7 +158,7 @@ namespace phys{
 		planet.setRadius(6 * zoom);
 
 
-		window2.draw(planet);
+		shared::window2.draw(planet);
 	}
 
 	vec_n handle_scale_single(vec_n list, vec_n origo, double scale = 1, double mid_x = 500, double mid_y = 500)
@@ -134,7 +213,7 @@ namespace phys{
 			}
 
 			holder.setPosition(handle_scale_single(pos, origo, zoom));
-			window2.draw(holder); //Draw all tail particles
+			shared::window2.draw(holder); //Draw all tail particles
 		}
 	}
 
@@ -170,18 +249,6 @@ namespace phys{
 
 	body sun, moon, planet, pluto, dune, yavin, plyr;
 	vector<body*> bodies;
-
-
-
-	struct world_state
-	{
-		vector<vec_n> bodies;
-		vector<string> names;
-		vector<vector<vec_n>> lines;
-
-		double rotation;
-		double throttle;
-	};
 
 
 	double clamp(double in)
@@ -278,15 +345,13 @@ namespace phys{
 		}
 	}
 
-
-
 	struct dual_val
 	{
 		long double one = 0;
 		long double two = 0;
 	};
 
-	double switch_co(double in)
+	double switch_co(double in) //Changes cos x to sin x and vice versa. No guarantees as to the sign of the output.
 	{
 		return sqrt(1 - pow(in, 2));
 	}
@@ -754,51 +819,6 @@ namespace phys{
 		}
 	}
 
-	struct keys{
-		double y = 0;
-		double x = 0;
-		double z = 0;
-		double lc = 0;
-		double pause;
-
-
-		vector<int> pressed;
-		struct list : sf::Keyboard{
-			using Keyboard::Key;
-		};
-	};
-
-	keys render_cst() {
-
-		sf::Event input;
-		keys out;
-
-		while (window2.pollEvent(input)) {
-
-			if ((input.type == sf::Event::KeyPressed) && (input.key.code == keys::list::Up)) {
-				out.y += 1;
-			}
-			if ((input.type == sf::Event::KeyPressed) && (input.key.code == sf::Keyboard::Down)) {
-				out.y += -1;
-			}
-			if ((input.type == sf::Event::KeyPressed) && (input.key.code == sf::Keyboard::Right)) {
-				out.x += 1;
-			}
-			if ((input.type == sf::Event::KeyPressed) && (input.key.code == sf::Keyboard::Left)) {
-				out.x += -1;
-			}
-			if (input.type == sf::Event::MouseWheelMoved) {
-				out.z = input.mouseWheel.delta;
-			}
-			if ((input.type == sf::Event::KeyPressed) && (input.key.code == sf::Keyboard::RControl)) {
-				out.lc = 1;
-			}
-			if ((input.type == sf::Event::KeyPressed) && (input.key.code == sf::Keyboard::RShift)) {
-				out.pause = 1;
-			}
-		}
-		return out;
-	}
 
 
 	vector<vec_n> update_all_and_convert(vector<body*> bodies, double w_time, bool e_mode, double vel_x, double vel_y, double fact)
@@ -845,11 +865,15 @@ namespace phys{
 		return out;
 	}
 
-	vector<vec_n> positions;
+	world_state world_state_out;
+	double zoom_mem =1;
 
 	void run_engine()
 	{
-		positions = update_all_and_convert(bodies, shared::r_time, 0, 0, 0, 0);
+		zoom_mem *= pow(1.1, input::keyboard.scroll);
+
+		world_state_out.zoom = zoom_mem;
+		world_state_out.bodies = update_all_and_convert(bodies, shared::r_time * 0.0001, 0, 0, 0, 0);
 	}
 
 
@@ -927,5 +951,10 @@ namespace phys{
 		make_orbit(yavin, w_time);
 		make_orbit(plyr, w_time);
 	}
-}
 
+	void engine_init()
+	{
+		phys_init();
+	}
+
+}

@@ -5,7 +5,12 @@
 #include <vector>
 #include <string>
 #include <windows.h>
-#define setFillColor2 setFillColor
+
+#ifndef ORBITAL_TOOLS_LOADED
+#include "orbital_tools.h"
+#endif
+
+
 
 namespace graph{
 
@@ -18,10 +23,12 @@ namespace graph{
 	Color grey(177, 190, 198);
 	Color white(255, 255, 255);
 
-	struct init_out
-	{
 
-	};
+	//window2 = sf::RenderWindow(sf::VideoMode(1080, 860), "Orbitals");
+
+	//if (shared::window2.create(sf::VideoMode(1080, 860), "Orbitals") );
+
+	world_state world_state_in;
 
 	vec_n render() {
 
@@ -78,8 +85,11 @@ namespace graph{
 	Texture player_s;
 	double player_radius;
 
-	void main_render(std::vector<vec_n> coordinates, double zoom, int last_i = 0) {
+	void main_render() {
 
+		std::vector<vec_n> coordinates = phys::world_state_out.bodies;
+		double zoom = world_state_in.zoom;
+		int last_i = world_state_in.focus;
 
 		Vector2f viewport_center; //cordinates at the center of the viewport/window
 		viewport_center.x = window2.getSize().x / 2;
@@ -109,7 +119,11 @@ namespace graph{
 
 			scales.push_back(planets[i].getRadius());
 			planets[i].setRadius(scales[i] * zoom);
-			planets[i].setOrigin(planets[i].getRadius() / 2, planets[i].getRadius() / 2);
+
+			if (planets[i].getRadius() < 5)
+				planets[i].setRadius(5);
+
+			planets[i].setOrigin(planets[i].getRadius() / 1, planets[i].getRadius() / 1);
 		}
 
 		window2.clear();
@@ -137,6 +151,8 @@ namespace graph{
 		if (!font.loadFromFile("ALGER.ttf")) {
 			//handle exception
 		}
+
+		shared::window2.create(sf::VideoMode(1080, 860), "Orbitals");
 
 		std::vector<CircleShape>planets_out(9); //pass to render and  collision function
 		planets = planets_out;
@@ -337,7 +353,7 @@ namespace graph{
 		option_header[2].setString("Back");
 		for (int i = 0; i <= 2; i++) {
 			option_header[i].setFont(font);
-			option_header[i].setFillColor2(white);
+			option_header[i].setFillColor(white);
 			option_header[i].setCharacterSize(50);
 			option_header[i].setPosition(Vector2f(window2.getSize().x / 2 - option_header[i].getLocalBounds().width*0.5, header_pos_y[i]));
 		}
@@ -431,7 +447,7 @@ namespace graph{
 		title.setFont(font);
 		title.setString("Dear Isaac");
 		title.setCharacterSize(60);
-		title.setFillColor2(white);
+		title.setFillColor(white);
 		title.setPosition(Vector2f(window2.getSize().x / 2 - title.getLocalBounds().width*0.5, 200));
 
 		int header_pos_y[3] = { 400, 500, 600 };
@@ -444,7 +460,7 @@ namespace graph{
 		option_header[2].setString("QUIT");
 		for (int i = 0; i <= 2; i++) {
 			option_header[i].setFont(font);
-			option_header[i].setFillColor2(white);
+			option_header[i].setFillColor(white);
 			option_header[i].setCharacterSize(40);
 			option_header[i].setPosition(Vector2f(window2.getSize().x / 2 - option_header[i].getLocalBounds().width*0.5, header_pos_y[i]));
 		}
@@ -537,7 +553,7 @@ namespace graph{
 
 	void do_render()
 	{
-		main_render(phys::positions, 1, 1);
+		main_render();
 	}
 }
 

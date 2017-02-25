@@ -10,24 +10,17 @@
 
 using namespace std;
 
-namespace shared{
-	clock_t r_time;
-	clock_t l_time = 0;
-	const clock_t s_time = clock();
-	const double cps = CLOCKS_PER_SEC;
 
-	//phys::world_state state;
-}
 
 #include "orbital_tools.h"
 #include "render_tools.h"
 
 void main()
 {
-	phys::phys_init();
+	phys::engine_init();
 	graph::graph_init();
 
-
+	shared::s_time = clock();
 
 	while (true)
 	{
@@ -38,7 +31,11 @@ void main()
 		{
 			l_time = r_time;
 
+			input::run_input();
+
 			phys::run_engine();
+
+			graph::world_state_in = phys::world_state_out;
 
 			graph::do_render();
 		}
@@ -47,6 +44,7 @@ void main()
 
 	return;
 
+	/*
 	//fill_tail();
 	using namespace phys;
 	int steps = 1000;
@@ -86,7 +84,7 @@ void main()
 	draw_tail(0, 0, true);
 
 	draw_tail(500, 500, true);
-	window2.display();
+	graph::window2.display();
 
 	cout << endl;
 	long f_time_cache = 0;
@@ -186,7 +184,7 @@ void main()
 
 		positions = update_all_and_convert(bodies, w_time, e_mode, inp_in.x, inp_in.y, fact);
 
-		graph::main_render(positions, zoom, focus);/*
+		graph::main_render();/*
 
 		focus = focus % positions.size();
 
@@ -223,6 +221,7 @@ void main()
 			window2.display();
 			f_time_cache = f_time;
 		}//*/
+		/*
 
 
 		w_time += 0.0001;
@@ -231,9 +230,5 @@ void main()
 	} while (true);
 
 	std::system("pause");
-}
-
-void main_new()
-{
-	
+	std::system("pause"); */
 }
