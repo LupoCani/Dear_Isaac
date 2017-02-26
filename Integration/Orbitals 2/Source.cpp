@@ -22,12 +22,16 @@ void main()
 
 	shared::s_time = clock();
 
+	long long i = 0;
+	int t_cap = 5;
+
 	while (true)
 	{
+		i++;
 		using namespace shared;
 		r_time = clock() - shared::s_time;
 
-		if (l_time + cps * 0.01 < r_time)
+		if (l_time + cps * 0.01 < r_time || true)
 		{
 			l_time = r_time;
 
@@ -38,6 +42,12 @@ void main()
 			graph::world_state_in = phys::world_state_out;
 
 			graph::do_render();
+		}
+
+		if ((r_time - s_time) / cps > t_cap)
+		{
+			cout << "Ticks per second: " << i / t_cap << endl;
+			t_cap += 5;
 		}
 	}
 

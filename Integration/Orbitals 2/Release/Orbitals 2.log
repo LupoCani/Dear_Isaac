@@ -1,26 +1,27 @@
-﻿Build started 2017-02-25 18:54:43.
+﻿Build started 2017-02-26 01:17:03.
      1>Project "C:\Users\Admin\Bibliotek\Programvara\C++\Dear_Isaac\Integration\Orbitals 2\Orbitals 2.vcxproj" on node 2 (Build target(s)).
      1>C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\V140\Microsoft.CppBuild.targets(392,5): warning MSB8028: The intermediate directory (Release\) contains files shared from another project (Orbitals 2.vcxproj).  This can lead to incorrect clean and rebuild behavior.
      1>ClCompile:
          C:\Program\Microsoft Visual Studio 14.0\VC\bin\CL.exe /c /I"C:\Program Files\SFML-2.4.0\include" /Zi /nologo /W3 /WX- /sdl /O2 /Oi /Oy- /GL /D _MBCS /Gm- /EHsc /MD /GS /Gy /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /Fo"Release\\" /Fd"Release\vc140.pdb" /Gd /TP /analyze- /errorReport:prompt Source.cpp
          Source.cpp
-     1>c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration\orbitals 2\orbital_tools.h(22): warning C4244: 'argument': conversion from 'long double' to 'float', possible loss of data
+     1>c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration\orbitals 2\orbital_tools.h(41): warning C4018: '<': signed/unsigned mismatch
      1>c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration\orbitals 2\orbital_tools.h(62): warning C4018: '<': signed/unsigned mismatch
-     1>c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration\orbitals 2\orbital_tools.h(83): warning C4018: '<': signed/unsigned mismatch
-     1>c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration\orbitals 2\orbital_tools.h(92): warning C4018: '<': signed/unsigned mismatch
-     1>c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration\orbitals 2\orbital_tools.h(155): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-     1>c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration\orbitals 2\orbital_tools.h(156): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-     1>c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration\orbitals 2\orbital_tools.h(158): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-     1>c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration\orbitals 2\orbital_tools.h(187): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-     1>c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration\orbitals 2\orbital_tools.h(188): warning C4305: 'argument': truncation from 'double' to 'float'
-     1>c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration\orbitals 2\orbital_tools.h(189): warning C4305: 'argument': truncation from 'double' to 'float'
-     1>c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration\orbitals 2\orbital_tools.h(204): warning C4018: '<': signed/unsigned mismatch
-     1>c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration\orbitals 2\orbital_tools.h(342): warning C4305: 'argument': truncation from 'double' to 'float'
-     1>c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration\orbitals 2\orbital_tools.h(657): warning C4018: '<': signed/unsigned mismatch
-     1>c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration\orbitals 2\orbital_tools.h(668): warning C4018: '<': signed/unsigned mismatch
-     1>c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration\orbitals 2\orbital_tools.h(686): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
-     1>c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration\orbitals 2\orbital_tools.h(732): warning C4018: '<': signed/unsigned mismatch
-     1>c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration\orbitals 2\orbital_tools.h(833): warning C4018: '<': signed/unsigned mismatch
+     1>c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration\orbitals 2\orbital_tools.h(71): warning C4018: '<': signed/unsigned mismatch
+     1>c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration\orbitals 2\orbital_tools.h(115): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+     1>c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration\orbitals 2\orbital_tools.h(246): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+     1>c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration\orbitals 2\orbital_tools.h(247): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+     1>c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration\orbitals 2\orbital_tools.h(249): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+     1>c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration\orbitals 2\orbital_tools.h(278): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+     1>c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration\orbitals 2\orbital_tools.h(279): warning C4305: 'argument': truncation from 'double' to 'float'
+     1>c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration\orbitals 2\orbital_tools.h(280): warning C4305: 'argument': truncation from 'double' to 'float'
+     1>c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration\orbitals 2\orbital_tools.h(295): warning C4018: '<': signed/unsigned mismatch
+     1>c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration\orbitals 2\orbital_tools.h(443): warning C4305: 'argument': truncation from 'double' to 'float'
+     1>c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration\orbitals 2\orbital_tools.h(670): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+     1>c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration\orbitals 2\orbital_tools.h(735): warning C4018: '<': signed/unsigned mismatch
+     1>c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration\orbitals 2\orbital_tools.h(746): warning C4018: '<': signed/unsigned mismatch
+     1>c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration\orbitals 2\orbital_tools.h(764): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+     1>c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration\orbitals 2\orbital_tools.h(810): warning C4018: '<': signed/unsigned mismatch
+     1>c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration\orbitals 2\orbital_tools.h(901): warning C4018: '<': signed/unsigned mismatch
      1>c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration\orbitals 2\render_tools.h(70): warning C4018: '<': signed/unsigned mismatch
      1>c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration\orbitals 2\render_tools.h(95): warning C4244: '=': conversion from 'unsigned int' to 'float', possible loss of data
      1>c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration\orbitals 2\render_tools.h(96): warning C4244: '=': conversion from 'unsigned int' to 'float', possible loss of data
@@ -79,13 +80,13 @@
        Link:
          C:\Program\Microsoft Visual Studio 14.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"C:\Users\Admin\Bibliotek\Programvara\C++\Dear_Isaac\Integration\Release\Orbitals.exe" /NOLOGO /LIBPATH:"C:\Program Files\SFML-2.4.0\lib" "sfml-graphics.lib" "sfml-window.lib" "sfml-system.lib" kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /Debug /PDB:"C:\Users\Admin\Bibliotek\Programvara\C++\Dear_Isaac\Integration\Release\Orbitals.pdb" /OPT:REF /OPT:ICF /LTCG:incremental /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\Users\Admin\Bibliotek\Programvara\C++\Dear_Isaac\Integration\Release\Orbitals.lib" /MACHINE:X86 /SAFESEH Release\Source.obj
          Generating code
-         131 of 953 functions (13.7%) were compiled, the rest were copied from previous compilation.
-           2 functions were new in current compilation
-           21 functions had inline decision re-evaluated but remain unchanged
+         80 of 947 functions ( 8.4%) were compiled, the rest were copied from previous compilation.
+           0 functions were new in current compilation
+           1 functions had inline decision re-evaluated but remain unchanged
          Finished generating code
          Orbitals 2.vcxproj -> C:\Users\Admin\Bibliotek\Programvara\C++\Dear_Isaac\Integration\Release\Orbitals.exe
      1>Done Building Project "C:\Users\Admin\Bibliotek\Programvara\C++\Dear_Isaac\Integration\Orbitals 2\Orbitals 2.vcxproj" (Build target(s)).
 
 Build succeeded.
 
-Time Elapsed 00:00:03.78
+Time Elapsed 00:00:03.53

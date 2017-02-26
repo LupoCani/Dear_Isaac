@@ -12,28 +12,7 @@
 //sf::RenderWindow window2(sf::VideoMode(1080, 860), "Orbitals");
 
 namespace shared {
-	struct vec_n
-	{
-		long double x = 0;
-		long double y = 0;
-		long double z = 0;
 
-		operator sf::Vector2f() {
-			return sf::Vector2f(x, y);
-		}
-	};
-
-	struct world_state
-	{
-		vector<vec_n> bodies;
-		vector<string> names;
-		vector<vector<vec_n>> paths;
-
-		double zoom = 1;
-		int focus = 0;
-		
-		double player_rotation; //Angle in radians, sweeping counter-clockwise.
-	};
 
 
 	sf::RenderWindow window2;
@@ -48,7 +27,7 @@ namespace shared {
 
 namespace input {
 	using namespace sf;
-	
+
 	struct key_state {
 
 		short scroll = 0;
@@ -99,7 +78,120 @@ namespace input {
 	}
 }
 
-namespace phys{
+namespace phys
+{
+	struct vec_n;
+	struct vec_r;
+
+	double clamp(double in);
+	double sqr(double in);
+	double sqrt_a(double in);
+	vec_n vec_to_pos(double v, double r);
+	double atan2(vec_n pos);
+	vec_n t_to_screen(vec_n in, double zoom = 1);
+	double ang_wrap(double in, int quad = 4);
+	double vmag(double x, double y);
+	double vmag(vec_n in);
+	vec_n rot_vec(vec_n in, double rot);
+	double to_rad(double ang, double scale);
+
+	using std::atan2;
+
+
+	struct vec_r
+	{
+		double ang = 0;
+		double mag = 0;
+	};
+
+	
+
+	struct vec_n
+	{
+		double x = 0;
+		double y = 0;
+
+		operator sf::Vector2f() {
+			return sf::Vector2f(x, y);
+		}
+		
+		operator vec_r() {
+			vec_r lhs;
+			lhs.ang = atan2(*this);
+			lhs.mag = vmag(*this);
+			return lhs;
+		}
+
+		vec_n& operator +=(const vec_n& rhs)
+		{
+			(*this).x = (*this).x + rhs.x;
+			(*this).y = (*this).y + rhs.y;
+			return *this;
+		}
+
+		vec_n& operator-=(const vec_n& rhs)
+		{
+			(*this).x = (*this).x - rhs.x;
+			(*this).y = (*this).y - rhs.y;
+			return *this;
+		}
+		vec_n& operator*=(const vec_n& rhs)
+		{
+			(*this).x = (*this).x * rhs.x;
+			(*this).y = (*this).y * rhs.y;
+			return *this;
+		}
+		vec_n& operator*=(const double& rhs)
+		{
+			(*this).x = (*this).x * rhs;
+			(*this).y = (*this).y * rhs;
+			return *this;
+		}
+	};
+	
+	inline vec_n operator+(vec_n lhs, const vec_n& rhs)
+	{
+		lhs += rhs;
+		return lhs;
+	}
+
+	inline vec_n operator-(vec_n lhs, const vec_n& rhs)
+	{
+		lhs -= rhs;
+		return lhs;
+	}
+	
+	inline vec_n operator*(vec_n lhs, const vec_n& rhs)
+	{
+		lhs *= rhs;
+		return lhs;
+	}
+	inline vec_n operator*(vec_n lhs, const double& rhs)
+	{
+		lhs *= rhs;
+		return lhs;
+	}
+
+	//vec_n & vec_r::operator vec_n(const vec_r& ohs) {
+	//	return vec_to_pos(ohs.ang, ohs.mag);
+	//}
+
+	struct world_state
+	{
+		vector<vec_n> bodies;
+		vector<string> names;
+		vector<vector<vec_n>> paths;
+
+		double zoom = 1;
+		int focus = 0;
+
+		double player_rotation; //Angle in radians, sweeping counter-clockwise.
+	};
+}
+
+
+namespace phys
+{
 	using namespace std;
 	using namespace shared;
 
@@ -141,7 +233,6 @@ namespace phys{
 
 	void draw_circle(double x, double y, int beblue, double zoom) //Render either of the planets
 	{
-
 		sf::CircleShape planet;
 
 		zoom *= 10;
@@ -274,7 +365,12 @@ namespace phys{
 		return out;
 	}
 
-	vec_n t_to_screen(vec_n in, double zoom = 1)
+	double atan2(vec_n pos)
+	{
+		return std::atan2(pos.y, pos.x);
+	}
+
+	vec_n t_to_screen(vec_n in, double zoom)
 	{
 		zoom = 100;
 		vec_n out;
@@ -284,7 +380,7 @@ namespace phys{
 		return out;
 	}
 
-	double ang_wrap(double in, int quad = 4)
+	double ang_wrap(double in, int quad)
 	{
 		double ceil = double(quad) * M_PI2;
 		double floor = ceil - M_2PI;
@@ -300,32 +396,37 @@ namespace phys{
 		return in;
 	}
 
-	vec_n get_rel(vec_n point, vec_n orig)
-	{
-		vec_n out;
-		out.x = point.x - orig.x;
-		out.y = point.y - orig.y;
-		return out;
-	}
-
-	double dist(double x, double y)
+	double vmag(double x, double y)
 	{
 		return sqrt(sqr(x) + sqr(y));
 	}
 
-	double dist_v(vec_n in)
+	double vmag(vec_n in)
 	{
-		return dist(in.x, in.y);
+		return vmag(in.x, in.y);
 	}
 
-	double get_r(double ang, body sat)
+	vec_n rot_vec(vec_n in, double rot)
 	{
-		return sat.ax_a * (1 - sqr(sat.ecc)) / (1 + sat.ecc * cos(ang));
+		double l = vmag(in);
+		double angle = atan2(in);
+
+		angle += rot;
+
+		in.y = l * sin(angle);
+		in.x = l * cos(angle);
+
+		return in;
 	}
 
 	double to_rad(double ang, double scale)
 	{
 		return M_2PI * ang / scale;
+	}
+
+	double get_r(double ang, body sat)
+	{
+		return sat.ax_a * (1 - sqr(sat.ecc)) / (1 + sat.ecc * cos(ang));
 	}
 
 	double get_V_r(double r, body sat)
@@ -461,19 +562,6 @@ namespace phys{
 		return (ceil + floor) / 2;
 	}
 
-	vec_n rot_vec(vec_n in, double rot)
-	{
-		double l = dist_v(in);
-		double angle = atan2(in.y, in.x);
-
-		angle += rot;
-
-		in.y = l * sin(angle);
-		in.x = l * cos(angle);
-
-		return in;
-	}
-
 	double get_esc_vel(body parent, double r)
 	{
 		return sqrt(2 * parent.u / r);
@@ -519,28 +607,21 @@ namespace phys{
 		return mid;
 	}
 
-	void do_orbit_phys(body &sat, double d_time, double px, double py)
+	void do_orbit_phys(body &sat, double w_time, vec_n force_add)
 	{
-		double m_time = d_time - sat.t_l;
-		sat.t_l = d_time;
-
+		double d_time = w_time - sat.t_l;
 		body &parent = *sat.parent;
-		vec_n pos_rel;
+		vec_r pos_r = sat.pos - parent.pos;
 		vec_n force_vec;
-		pos_rel = get_rel(sat.pos, parent.pos);
 
-		double angle = atan2(pos_rel.y, pos_rel.x);
-		double pos_mag = dist_v(pos_rel);
-		double F = -parent.u / sqr(pos_mag);
+		double F = -parent.u / sqr(pos_r.mag);
 
-		force_vec.x = F * cos(angle);
-		force_vec.y = F * sin(angle);
+		force_vec = vec_to_pos(pos_r.ang, F);
 
-		sat.vel.x += force_vec.x * m_time *px;
-		sat.vel.y += force_vec.y * m_time *py;
+		sat.vel += force_vec * d_time;
+		sat.vel += force_add * d_time;
 
-		sat.pos.x += sat.vel.x * m_time;
-		sat.pos.y += sat.vel.y * m_time;
+		sat.pos += sat.vel * d_time;
 	}
 
 
@@ -570,9 +651,8 @@ namespace phys{
 		return w_time;
 	}
 
-	void do_orbit(body &sat, double w_time)
+	vector<vec_n> do_orbit(body &sat, double w_time)
 	{
-		sat.t_l = w_time;
 		double d_time = w_time - sat.epoch;
 
 		body &parent = *sat.parent;
@@ -580,21 +660,20 @@ namespace phys{
 		double part = d_time * sat.Mn;
 		double V;
 		double radius;
+		vector<vec_n> out(2);
+		if (sat.isSun)
+			return out;
 
 		if (sat.shape == 0)
 			part = ang_wrap(part);
 
-		V = do_orbit_precise(part, sat, 100);
+		V = do_orbit_precise(part, sat, log2(pow(10, 10)));
 		if (sat.inverse)
 			V = M_2PI - V;
 
 		radius = get_r(V, sat);
 
-		sat.pos = vec_to_pos(-V, radius);
-		sat.pos = rot_vec(sat.pos, sat.normal);
-
-		sat.pos.x += parent.pos.x;
-		sat.pos.y += parent.pos.y;
+		out[0] = vec_to_pos(sat.normal - V, radius);
 
 		double vel_mag = sqrt(2 * (sat.En + parent.u / radius));
 		double vel_ang = acos(sat.Ar / (radius * vel_mag));
@@ -606,11 +685,10 @@ namespace phys{
 
 		vel_ang = ang_wrap(-V - vel_ang + sat.normal + M_PI2);
 
-		sat.vel.x = -vel_mag * cos(vel_ang);
-		sat.vel.y = -vel_mag * sin(vel_ang);
+		out[1].x = -vel_mag * cos(vel_ang);
+		out[1].y = -vel_mag * sin(vel_ang);
 
-		sat.vel.x += parent.vel.x;
-		sat.vel.y += parent.vel.y;
+		return out;
 	}
 
 	double Mn_from_V(double ecc, double r, double v)
@@ -662,14 +740,14 @@ namespace phys{
 		}
 
 		double w_time_end = HUGE_VAL;
-		double dist_end = HUGE_VAL;
+		double vmag_end = HUGE_VAL;
 		bool expire_true = false;
 
 		for (int i = 0; i < list.size(); i++)
 		{
 			body sat_2 = (*(list[i]));
 			double SOI = sat_2.SOI;
-			double dist_min = HUGE_VAL;
+			double vmag_min = HUGE_VAL;
 			double w_time_close;
 			bool expire = false;
 
@@ -687,14 +765,14 @@ namespace phys{
 				double r_2 = get_r(V_2, sat_2);
 				vec_n pos_2 = vec_to_pos(sat_2.normal - V_2, r_2);
 
-				double dist = dist_v(get_rel(pos, pos_2));
+				double dist = vmag(pos - pos_2);
 
 				if (expire_true && w_time_pot > w_time_end)
 					break;
 
-				if (dist < dist_min)
+				if (dist < vmag_min)
 				{
-					dist_min = dist;
+					vmag_min = dist;
 					w_time_close = w_time_pot;
 				}
 				if (dist < SOI)
@@ -707,7 +785,7 @@ namespace phys{
 			if (expire)
 			{
 				w_time_end = w_time_close;
-				dist_end = dist_min;
+				vmag_end = vmag_min;
 				expire_true = true;
 			}
 		}
@@ -734,9 +812,9 @@ namespace phys{
 			body &parent_pot = *(list[i]);
 			body &parent_cur = *parent_presumed;
 
-			double dist = dist_v(get_rel(sat.pos, parent_pot.pos));
+			double r = vmag(sat.pos - parent_pot.pos);
 
-			if (dist < parent_pot.SOI)
+			if (r < parent_pot.SOI)
 				if (parent_pot.SOI < parent_cur.SOI)
 					parent_presumed = list[i];
 		}
@@ -749,11 +827,10 @@ namespace phys{
 		body &sat = *sat_in.self;
 		body &parent = *(sat.parent);
 
-		vec_n pos, vel;
-		double pos_mag, pos_ang, vel_mag, vel_ang, rel_ang, u;
+		double rel_ang, u;
 
-		pos = get_rel(sat.pos, parent.pos);
-		vel = get_rel(sat.vel, parent.vel);
+		vec_r pos_r = sat.pos - parent.pos;
+		vec_r vel_r = sat.vel - parent.vel;
 		sat.inverse = false;
 		u = parent.u;
 
@@ -761,32 +838,25 @@ namespace phys{
 		do
 		{
 			repeat = false;
-			pos_mag = dist_v(pos);
-			pos_ang = atan2(pos.y, pos.x);
 
-			vel_mag = dist_v(vel);
-			vel_ang = atan2(vel.y, vel.x);
-
-			rel_ang = M_PI2 + vel_ang - pos_ang;
+			rel_ang = M_PI2 + vel_r.ang - pos_r.ang;
 			rel_ang = ang_wrap(rel_ang, 2);
 
 			if (abs(rel_ang) > M_PI2)
 			{
-				vel.x = -vel.x;
-				vel.y = -vel.y;
+				vel_r.mag *= -1;
 				sat.inverse = true;
 				repeat = true;
 			}
-			if (vel_mag == get_esc_vel(parent, pos_mag))
+			if (vel_r.mag == get_esc_vel(parent, pos_r.mag))
 			{
-				vel.x = vel.x * 1.00001;
-				vel.y = vel.y * 1.00001;
+				vel_r.mag = nextafter(vel_r.mag, 0);
 				repeat = true;
 			}
 
 		} while (repeat);
 
-		vector<dual_val> r_vec_vector = get_extremes(vel_mag, rel_ang, pos_mag, u);
+		vector<dual_val> r_vec_vector = get_extremes(vel_r.mag, rel_ang, pos_r.mag, u);
 
 		dual_val r_vec = r_vec_vector[0];
 		dual_val r_vec_vel = r_vec_vector[1];
@@ -798,16 +868,16 @@ namespace phys{
 		sat.SOI = sat.ax_a * pow(sat.u / u, 0.4);
 
 
-		double tV = get_V_r(pos_mag, sat);
+		double tV = get_V_r(pos_r.mag, sat);
 		if (rel_ang < 0)
 			tV = ang_wrap(-tV);
 
-		sat.normal = pos_ang + tV;
+		sat.normal = pos_r.ang + tV;
 
 		if (sat.inverse)
 			tV = ang_wrap(-tV);
-		sat.En = sqr(vel_mag) / 2 - u / pos_mag;			//Store orbital Energy, velocital energy plus gravitational energy
-		sat.Ar = vel_mag * pos_mag * cos(rel_ang);			//Store area swept per unit of time, altitude times velocity times cosine-of-the-angle
+		sat.En = sqr(vel_r.mag) / 2 - u / pos_r.mag;			//Store orbital Energy, velocital energy plus gravitational energy
+		sat.Ar = vel_r.mag * pos_r.mag * cos(rel_ang);			//Store area swept per unit of time, altitude times velocity times cosine-of-the-angle
 		sat.Mn = Mn_from_r(sat.ax_a, u);					//Store mean angular motion of the body, as per yet another equation dug up from obscure wikipedia stubs
 		sat.epoch = w_time - get_M(tV, sat.ecc) / sat.Mn;
 
@@ -821,59 +891,38 @@ namespace phys{
 
 
 
-	vector<vec_n> update_all_and_convert(vector<body*> bodies, double w_time, bool e_mode, double vel_x, double vel_y, double fact)
+	vector<vec_n> do_phys_tick(vector<body*> bodies, double w_time, bool phys_mode = 0)
 	{
 		vector<vec_n> out(1);
-		out[0] = (*bodies[0]).pos;
+		vector<vec_n> out2;
 		bool emodelast = false;
 
 
-		out[0].x = 500;
-		out[0].y = 500;
-		for (int i = 1; i < bodies.size(); i++)
+		for (int i = 0; i < bodies.size(); i++)
 		{
-			body &sat = *((*bodies[i]).self);
+			body &sat = *bodies[i];
+			vector<vec_n> pos_vel = do_orbit(sat, w_time);
 
-			if (sat.isPlayer)
-			{
-				body* parent_new = get_parent(sat, bodies);
-				if (parent_new != sat.parent)
-				{
-					sat.parent = parent_new;
-					make_orbit(sat, w_time);
-				}
-			}
+			sat.pos = pos_vel[0] + (*sat.parent).pos;
+			sat.vel = pos_vel[0] + (*sat.parent).vel;
+			sat.t_l = w_time;
 
-			if (!sat.isPlayer || !e_mode)
-			{
-				do_orbit(sat, w_time);
-			}
-			else
-			{
-				do_orbit_phys(sat, w_time, vel_x * fact, vel_y*fact);
-				make_orbit(sat, w_time);
-				//do_orbit(newsat, w_time);
-			}
-			//change_parent(sat, bodies);
-			emodelast = e_mode;
-			vec_n pos_temp = sat.pos;
-			//pos_temp = t_to_screen(pos_temp);
-			out.push_back(pos_temp);
+			out2.push_back(sat.pos);
 		}
 
 		//get_expiry(*bodies[bodies.size() - 1], bodies, w_time);
-		return out;
+		return out2;
 	}
 
 	world_state world_state_out;
-	double zoom_mem =1;
+	double zoom_mem = 1;
 
 	void run_engine()
 	{
 		zoom_mem *= pow(1.1, input::keyboard.scroll);
 
 		world_state_out.zoom = zoom_mem;
-		world_state_out.bodies = update_all_and_convert(bodies, shared::r_time * 0.0001, 0, 0, 0, 0);
+		world_state_out.bodies = do_phys_tick(bodies, shared::r_time * 0.0001, 0);
 	}
 
 
@@ -886,6 +935,7 @@ namespace phys{
 		sun.u = pow(10, 14);
 		sun.SOI = HUGE_VAL;
 		sun.isSun = true;
+		sun.parent = &sun;
 		sun.name = "Sun";
 
 		moon.pos.x = -25100;
