@@ -12,7 +12,6 @@
 
 namespace shared 					//Declare basic shared parameters
 {	
-	using std::vector;
 	sf::RenderWindow window2;
 
 	clock_t r_time;
@@ -20,7 +19,6 @@ namespace shared 					//Declare basic shared parameters
 	clock_t s_time;
 	const double cps = CLOCKS_PER_SEC;
 
-	struct vec_n;
 	struct world_state;
 }
 
@@ -32,7 +30,7 @@ namespace input					//Declare the input system. In a namespace becuse putting sf
 
 		short scroll = 0;
 		std::vector<int> pressed;
-		struct list : sf::Keyboard {
+		struct keys : sf::Keyboard {
 			using Keyboard::Key;
 		};
 
@@ -50,12 +48,12 @@ namespace input					//Declare the input system. In a namespace becuse putting sf
 
 	void run_input()
 	{
-		sf::Event input;
+		Event input;
 		keyboard.scroll = 0;
 
 		while (shared::window2.pollEvent(input)) {
 
-			if (input.type == sf::Event::KeyPressed)
+			if (input.type == Event::KeyPressed)
 			{
 				bool isAdded = false;
 
@@ -67,12 +65,12 @@ namespace input					//Declare the input system. In a namespace becuse putting sf
 					keyboard.pressed.push_back(input.key.code);
 			}
 
-			if (input.type == sf::Event::KeyReleased)
+			if (input.type == Event::KeyReleased)
 				for (int i = 0; i < keyboard.pressed.size(); i++)
 					if (input.key.code == keyboard.pressed[i])
 						keyboard.pressed.erase(keyboard.pressed.begin() + i);
 
-			if (input.type == sf::Event::MouseWheelMoved)
+			if (input.type == Event::MouseWheelMoved)
 				keyboard.scroll = input.mouseWheel.delta;
 		}
 	}
@@ -80,7 +78,7 @@ namespace input					//Declare the input system. In a namespace becuse putting sf
 
 namespace phys					//Declare various classes and functions
 {
-	using shared::vec_n;
+	struct vec_n;
 
 	double clamp(double in);
 	double sqr(double in);
@@ -93,7 +91,6 @@ namespace phys					//Declare various classes and functions
 	double vmag(vec_n in);
 	vec_n rot_vec(vec_n in, double rot);
 	double to_rad(double ang, double scale);
-
 	using std::atan2;
 
 	struct vec_r
@@ -102,10 +99,6 @@ namespace phys					//Declare various classes and functions
 		double mag = 0;
 	};
 
-}
-
-namespace shared				//Declare the ever-so-important vec_n. In shared because render_tools needs to use it.
-{
 	struct vec_n
 	{
 		double x = 0;
@@ -172,11 +165,17 @@ namespace shared				//Declare the ever-so-important vec_n. In shared because ren
 		return lhs;
 	}
 
+}
+
+namespace shared				//Declare the ever-so-important vec_n. In shared because render_tools needs to use it.
+{
+	using phys::vec_n;
+
 	struct world_state
 	{
-		vector<vec_n> bodies;
-		vector<std::string> names;
-		vector<vector<vec_n>> paths;
+		std::vector<vec_n> bodies;
+		std::vector<std::string> names;
+		std::vector<std::vector<vec_n>> paths;
 
 		double zoom = 1;
 		int focus = 0;
@@ -190,7 +189,6 @@ namespace shared				//Declare the ever-so-important vec_n. In shared because ren
 namespace phys
 {
 	using std::vector;
-	using namespace shared;
 
 	double w_time = 0;
 
@@ -916,6 +914,8 @@ namespace phys
 
 	void run_engine()
 	{
+		using shared::screen_state;
+
 		zoom_mem *= pow(1.1, input::keyboard.scroll);
 
 		screen_state.zoom = zoom_mem;

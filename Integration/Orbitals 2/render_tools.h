@@ -32,6 +32,7 @@ namespace graph{
 	vec_n render() {
 
 		Event input;
+		using shared::window2;
 
 		double out_x = 0;
 		double out_y = 0;
@@ -85,8 +86,11 @@ namespace graph{
 	double player_radius;
 
 	void main_render() {
+		using shared::screen_state;
+		using shared::window2;
 
-		std::vector<vec_n> coordinates = phys::screen_state.bodies;
+
+		std::vector<vec_n> coordinates = screen_state.bodies;
 		double zoom = screen_state.zoom;
 		int last_i = screen_state.focus;
 
@@ -145,7 +149,7 @@ namespace graph{
 
 
 	void render_init() { //paste into begining of main function
-
+		using shared::window2;
 
 		if (!font.loadFromFile("ALGER.ttf")) {
 			//handle exception
@@ -254,6 +258,7 @@ namespace graph{
 	}
 
 	void option_menue() {
+		using shared::window2;
 
 		int header_pos_y[2] = { 400, 500 };
 		Text option_header[2];
@@ -343,7 +348,7 @@ namespace graph{
 	}
 
 	void ingame_menue() {
-
+		using shared::window2;
 
 		int header_pos_y[3] = { 340, 440, 550 };
 		Text option_header[3];
@@ -442,6 +447,7 @@ namespace graph{
 	}
 
 	int start_menue() {
+		using shared::window2;
 		Text title;
 		title.setFont(font);
 		title.setString("Dear Isaac");
