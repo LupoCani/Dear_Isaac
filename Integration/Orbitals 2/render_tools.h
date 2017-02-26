@@ -28,7 +28,6 @@ namespace graph{
 
 	//if (shared::window2.create(sf::VideoMode(1080, 860), "Orbitals") );
 
-	world_state world_state_in;
 
 	vec_n render() {
 
@@ -87,9 +86,9 @@ namespace graph{
 
 	void main_render() {
 
-		std::vector<vec_n> coordinates = phys::world_state_out.bodies;
-		double zoom = world_state_in.zoom;
-		int last_i = world_state_in.focus;
+		std::vector<vec_n> coordinates = phys::screen_state.bodies;
+		double zoom = screen_state.zoom;
+		int last_i = screen_state.focus;
 
 		Vector2f viewport_center; //cordinates at the center of the viewport/window
 		viewport_center.x = window2.getSize().x / 2;

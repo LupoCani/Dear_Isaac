@@ -6,14 +6,12 @@
 #include <vector>
 #include <string>
 #include <windows.h>
+#include "orbital_tools.h"
+#include "render_tools.h"
 #define skip if (false)
 
 using namespace std;
 
-
-
-#include "orbital_tools.h"
-#include "render_tools.h"
 
 void main()
 {
@@ -38,8 +36,6 @@ void main()
 			input::run_input();
 
 			phys::run_engine();
-
-			graph::world_state_in = phys::world_state_out;
 
 			graph::do_render();
 		}

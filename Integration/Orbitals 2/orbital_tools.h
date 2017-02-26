@@ -9,12 +9,10 @@
 #define skip if (false)
 #define ORBITAL_TOOLS_LOADED true
 
-//sf::RenderWindow window2(sf::VideoMode(1080, 860), "Orbitals");
 
-namespace shared {
-
-
-
+namespace shared 					//Declare basic shared parameters
+{	
+	using std::vector;
 	sf::RenderWindow window2;
 
 	clock_t r_time;
@@ -22,16 +20,18 @@ namespace shared {
 	clock_t s_time;
 	const double cps = CLOCKS_PER_SEC;
 
-	//phys::world_state state;
+	struct vec_n;
+	struct world_state;
 }
 
-namespace input {
+namespace input					//Declare the input system. In a namespace becuse putting sf:: in phys feels unclean
+{
 	using namespace sf;
 
 	struct key_state {
 
 		short scroll = 0;
-		vector<int> pressed;
+		std::vector<int> pressed;
 		struct list : sf::Keyboard {
 			using Keyboard::Key;
 		};
@@ -78,10 +78,9 @@ namespace input {
 	}
 }
 
-namespace phys
+namespace phys					//Declare various classes and functions
 {
-	struct vec_n;
-	struct vec_r;
+	using shared::vec_n;
 
 	double clamp(double in);
 	double sqr(double in);
@@ -97,15 +96,16 @@ namespace phys
 
 	using std::atan2;
 
-
 	struct vec_r
 	{
 		double ang = 0;
 		double mag = 0;
 	};
 
-	
+}
 
+namespace shared				//Declare the ever-so-important vec_n. In shared because render_tools needs to use it.
+{
 	struct vec_n
 	{
 		double x = 0;
@@ -114,11 +114,11 @@ namespace phys
 		operator sf::Vector2f() {
 			return sf::Vector2f(x, y);
 		}
-		
-		operator vec_r() {
-			vec_r lhs;
-			lhs.ang = atan2(*this);
-			lhs.mag = vmag(*this);
+
+		operator phys::vec_r() {
+			phys::vec_r lhs;
+			lhs.ang = phys::atan2(*this);
+			lhs.mag = phys::vmag(*this);
 			return lhs;
 		}
 
@@ -148,7 +148,7 @@ namespace phys
 			return *this;
 		}
 	};
-	
+
 	inline vec_n operator+(vec_n lhs, const vec_n& rhs)
 	{
 		lhs += rhs;
@@ -160,7 +160,7 @@ namespace phys
 		lhs -= rhs;
 		return lhs;
 	}
-	
+
 	inline vec_n operator*(vec_n lhs, const vec_n& rhs)
 	{
 		lhs *= rhs;
@@ -172,14 +172,10 @@ namespace phys
 		return lhs;
 	}
 
-	//vec_n & vec_r::operator vec_n(const vec_r& ohs) {
-	//	return vec_to_pos(ohs.ang, ohs.mag);
-	//}
-
 	struct world_state
 	{
 		vector<vec_n> bodies;
-		vector<string> names;
+		vector<std::string> names;
 		vector<vector<vec_n>> paths;
 
 		double zoom = 1;
@@ -187,12 +183,13 @@ namespace phys
 
 		double player_rotation; //Angle in radians, sweeping counter-clockwise.
 	};
-}
 
+	world_state screen_state;
+}
 
 namespace phys
 {
-	using namespace std;
+	using std::vector;
 	using namespace shared;
 
 	double w_time = 0;
@@ -254,14 +251,14 @@ namespace phys
 
 	vec_n handle_scale_single(vec_n list, vec_n origo, double scale = 1, double mid_x = 500, double mid_y = 500)
 	{
-		origo.x *= scale;
-		origo.y *= scale;
+		origo *= scale;
 
-		list.x *= scale;
-		list.y *= scale;
+		list *= scale;
 
-		list.x = 500 + (list.x - origo.x);
-		list.y = 500 - (list.y - origo.y);
+		list -= origo;
+
+		list.x = 500 + list.x;
+		list.y = 500 - list.y;
 
 		return list;
 	}
@@ -335,7 +332,7 @@ namespace phys
 
 		body* parent;		//Pointer to parent body
 		body* self = this;	//Pointer to self
-		string name;		//Name of body
+		std::string name;		//Name of body
 	};
 
 	body sun, moon, planet, pluto, dune, yavin, plyr;
@@ -914,15 +911,15 @@ namespace phys
 		return out2;
 	}
 
-	world_state world_state_out;
+
 	double zoom_mem = 1;
 
 	void run_engine()
 	{
 		zoom_mem *= pow(1.1, input::keyboard.scroll);
 
-		world_state_out.zoom = zoom_mem;
-		world_state_out.bodies = do_phys_tick(bodies, shared::r_time * 0.0001, 0);
+		screen_state.zoom = zoom_mem;
+		screen_state.bodies = do_phys_tick(bodies, shared::r_time * 0.0001, 0);
 	}
 
 
