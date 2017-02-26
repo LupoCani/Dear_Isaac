@@ -13,6 +13,7 @@
 namespace shared 					//Declare basic shared parameters
 {	
 	sf::RenderWindow window2;
+	bool window_is_clear = false;
 
 	clock_t r_time;
 	clock_t l_time;
@@ -79,11 +80,13 @@ namespace input					//Declare the input system. In a namespace becuse putting sf
 namespace phys					//Declare various classes and functions
 {
 	struct vec_n;
+	struct vec_r;
 
 	double clamp(double in);
 	double sqr(double in);
 	double sqrt_a(double in);
 	vec_n vec_to_pos(double v, double r);
+	vec_n vec_to_pos(vec_r in);
 	double atan2(vec_n pos);
 	vec_n t_to_screen(vec_n in, double zoom = 1);
 	double ang_wrap(double in, int quad = 4);
@@ -97,12 +100,19 @@ namespace phys					//Declare various classes and functions
 	{
 		double ang = 0;
 		double mag = 0;
+		operator vec_n();
 	};
 
 	struct vec_n
 	{
 		double x = 0;
 		double y = 0;
+
+		vec_n(double in_x = 0, double in_y =0)
+		{
+			x = in_x;
+			y = in_y;
+		}
 
 		operator sf::Vector2f() {
 			return sf::Vector2f(x, y);
@@ -165,10 +175,15 @@ namespace phys					//Declare various classes and functions
 		return lhs;
 	}
 
+	vec_r::operator vec_n()
+	{
+		return vec_to_pos(*this);
+	}
 }
 
-namespace shared				//Declare the ever-so-important vec_n. In shared because render_tools needs to use it.
+namespace shared				
 {
+	//struct vec_n : phys::vec_n {};//Copy the ever-so-important vec_n into shared
 	using phys::vec_n;
 
 	struct world_state
@@ -186,6 +201,70 @@ namespace shared				//Declare the ever-so-important vec_n. In shared because ren
 	world_state screen_state;
 }
 
+#define RENDER_DEBUG_INSTALLED true
+#ifdef RENDER_DEBUG_INSTALLED
+namespace render_debug			//To be removed once the neccesary render_tools functions are implemented
+{
+	using sf::Vertex;
+	using sf::Color;
+	using sf::Vector2f;
+	using std::vector;
+	using shared::vec_n;
+	using shared::window2;
+
+	bool window_is_clear = false;
+
+	vector<vec_n> handle_scale(vector<vec_n> list, vec_n origo, double scale = 1, double mid_x = 500, double mid_y = 500)
+	{
+		origo.x *= scale;
+		origo.y *= scale;
+
+		for (int i = 0; i < list.size(); i++)
+		{
+			list[i].x *= scale;
+			list[i].y *= -scale;
+
+			vec_n mid(mid_x, mid_y);
+
+			list[i] += mid - origo;
+		}
+
+		return list;
+	}
+
+	void render_line(vector<vec_n> in, vec_n origo, double zoom)
+	{
+		sf::VertexArray lines(sf::LinesStrip, in.size());
+
+		in = handle_scale(in, origo, zoom);
+
+		for (int i = 0; i < in.size(); i++)
+		{
+			lines[i].position = in[i];
+			lines[i].color = Color::Cyan;
+		}
+
+		window2.draw(lines);
+	}
+	void render_lines(vector<vector<vec_n>> in, vec_n origo, double zoom)
+	{
+		for (int i = 0; i < in.size(); i++)
+		{
+			render_line(in[i], origo, zoom);
+		}
+	}
+
+	void render_all(shared::world_state in)
+	{
+		window2.clear();
+		window_is_clear = true;
+		render_lines(in.paths, in.bodies[in.focus], in.zoom);
+	}
+}
+#endif // RENDER_DEBUG_INSTALLED
+
+
+
 namespace phys
 {
 	using std::vector;
@@ -193,7 +272,6 @@ namespace phys
 	double w_time = 0;
 
 	clock_t cur_time = clock();
-	vector <sf::RectangleShape> tail;
 	int cps = CLOCKS_PER_SEC;
 	const long double M_PI = acos(-1.0L);
 	const long double M_2PI = M_PI * 2L;
@@ -203,7 +281,7 @@ namespace phys
 	const long double M_E = exp(1.0);
 
 	vector <vec_n> tail_coord;
-
+	vector <sf::RectangleShape> tail;
 
 	sf::Color color_enum(int in)
 	{
@@ -250,10 +328,8 @@ namespace phys
 	vec_n handle_scale_single(vec_n list, vec_n origo, double scale = 1, double mid_x = 500, double mid_y = 500)
 	{
 		origo *= scale;
-
-		list *= scale;
-
-		list -= origo;
+		list  *= scale;
+		list  -= origo;
 
 		list.x = 500 + list.x;
 		list.y = 500 - list.y;
@@ -335,7 +411,7 @@ namespace phys
 
 	body sun, moon, planet, pluto, dune, yavin, plyr;
 	vector<body*> bodies;
-
+	vector<vector<vec_n>> tails;
 
 	double clamp(double in)
 	{
@@ -358,6 +434,11 @@ namespace phys
 		out.x = cos(v) * r;
 		out.y = sin(v) * r;
 		return out;
+	}
+
+	vec_n vec_to_pos(vec_r in)
+	{
+		return vec_to_pos(in.ang, in.mag);
 	}
 
 	double atan2(vec_n pos)
@@ -910,7 +991,7 @@ namespace phys
 	}
 
 
-	double zoom_mem = 1;
+	double zoom_mem = 0.01;
 
 	void run_engine()
 	{
@@ -920,8 +1001,46 @@ namespace phys
 
 		screen_state.zoom = zoom_mem;
 		screen_state.bodies = do_phys_tick(bodies, shared::r_time * 0.0001, 0);
-	}
 
+		vector<vector<vec_n>> tails_out;
+
+		for (int i = 0; i < tails.size(); i++)
+		{
+			vector<vec_n> temp;
+			vec_n par_pos = (*(*bodies[i]).parent).pos;
+			tails_out.push_back(temp);
+			for (int i2 = 0; i2 < tails.size(); i2++)
+			{
+				tails_out[i].push_back(tails[i][i2] +  par_pos);
+			}
+		}
+
+
+		if (!(int(shared::r_time) % 1000))
+		{
+			int subdiv = int(shared::r_time)/1000;
+			vector<vector<vec_n>> new_tails;
+			tails = new_tails;
+
+			for (int i = 0; i < bodies.size(); i++)
+			{
+				vector<vec_n> planet;
+				tails.push_back(planet);
+
+				for (int i2 = 0; i2 <= subdiv; i2++)
+				{
+					vec_r particle;
+					particle.ang = to_rad(i2, subdiv);
+					particle.mag = get_r(particle.ang, *bodies[i]);
+					particle.ang += (*bodies[i]).normal;
+
+					tails[i].push_back(vec_to_pos(particle));
+				}
+			}
+		}
+
+		screen_state.paths = tails;
+	}
 
 	void phys_init()
 	{
@@ -952,7 +1071,7 @@ namespace phys
 		planet.name = "planet";
 
 		pluto.pos.x = -30000;
-		pluto.pos.y = 0;
+		pluto.pos.y = -0000;
 		pluto.vel.x = 0;
 		pluto.vel.y = 40000;
 		pluto.u = pow(10, 10);
@@ -997,6 +1116,24 @@ namespace phys
 		make_orbit(dune, w_time);
 		make_orbit(yavin, w_time);
 		make_orbit(plyr, w_time);
+
+		int subdiv = 5;
+
+		for (int i = 0; i < bodies.size(); i++)
+		{
+			vector<vec_n> planet;
+			tails.push_back(planet);
+
+			for (int i2 = 0; i2 <= subdiv; i2++)
+			{
+				vec_r particle;
+				particle.ang = to_rad(i2, subdiv);
+				particle.mag = get_r(particle.ang, *bodies[i]);
+				particle.ang += (*bodies[i]).normal;
+
+				tails[i].push_back( vec_to_pos(particle)  );
+			}
+		}
 	}
 
 	void engine_init()

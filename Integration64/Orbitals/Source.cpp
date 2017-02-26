@@ -37,6 +37,9 @@ void main()
 
 			phys::run_engine();
 
+#ifdef RENDER_DEBUG_INSTALLED
+			render_debug::render_all(shared::screen_state);
+#endif
 			graph::do_render();
 		}
 

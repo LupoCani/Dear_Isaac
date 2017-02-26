@@ -129,7 +129,15 @@ namespace graph{
 			planets[i].setOrigin(planets[i].getRadius() / 1, planets[i].getRadius() / 1);
 		}
 
+#ifdef RENDER_DEBUG_INSTALLED
+		if (!render_debug::window_is_clear)
+			window2.clear();
+		render_debug::window_is_clear = false;
+#else
 		window2.clear();
+#endif // RENDER_DEBUG_INSTALLED
+
+		
 
 		for (int i = 0; i < planets.size(); i++) {
 			window2.draw(planets[i]);
