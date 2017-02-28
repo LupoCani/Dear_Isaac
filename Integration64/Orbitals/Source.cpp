@@ -31,8 +31,6 @@ void main()
 
 		if (l_time + cps * 0.01 < r_time || true)
 		{
-			l_time = r_time;
-
 			input::run_input();
 
 			phys::run_engine();
@@ -41,6 +39,8 @@ void main()
 			render_debug::render_all(shared::screen_state);
 #endif
 			graph::do_render();
+
+			l_time = r_time;
 		}
 
 		if ((r_time - s_time) / cps > t_cap)

@@ -8,10 +8,11 @@
 #include <windows.h>
 #define skip if (false)
 #define ORBITAL_TOOLS_LOADED true
+#define RENDER_DEBUG_INSTALLED true
 
 
 namespace shared 					//Declare basic shared parameters
-{	
+{
 	sf::RenderWindow window2;
 	bool window_is_clear = false;
 
@@ -30,18 +31,48 @@ namespace input					//Declare the input system. In a namespace becuse putting sf
 	struct key_state {
 
 		short scroll = 0;
-		std::vector<int> pressed;
+		std::vector<int>  pressed;
+		std::vector<int>  pressed_last;
+		std::vector<bool> buttons;
+		std::vector<bool> buttons_last;
 		struct keys : sf::Keyboard {
 			using Keyboard::Key;
 		};
+		struct btns : sf::Mouse {
+			using Mouse::Button;
+		};
+
+		int isAt(int key, std::vector<int> list)
+		{
+			for (int i = 0; i < list.size(); i++)
+				if (key == list[i])
+					return i;
+
+			return -1;
+		}
 
 		bool isPressed(int key)
 		{
-			for (int i = 0; i < pressed.size(); i++)
-				if (key == pressed[i])
-					return true;
+			return isAt(key, pressed) >= 0;
+		}
 
-			return false;
+		int pressedAt(int key)
+		{
+			return isAt(key, pressed);
+		}
+
+		bool wasPressed(int key)
+		{
+			return isAt(key, pressed) >= 0 && isAt(key, pressed_last) < 0;
+		}
+
+		bool msDown(short button)
+		{
+			return buttons[button] && !buttons_last[button];
+		}
+		bool msPressed(short button)
+		{
+			return buttons[button];
 		}
 	};
 
@@ -51,25 +82,24 @@ namespace input					//Declare the input system. In a namespace becuse putting sf
 	{
 		Event input;
 		keyboard.scroll = 0;
+		keyboard.pressed_last = keyboard.pressed;
+		keyboard.buttons_last = keyboard.buttons;
+		keyboard.buttons = std::vector<bool>(Mouse::Button::ButtonCount);
 
 		while (shared::window2.pollEvent(input)) {
 
 			if (input.type == Event::KeyPressed)
-			{
-				bool isAdded = false;
-
-				for (int i = 0; i < keyboard.pressed.size(); i++)
-					if (input.key.code == keyboard.pressed[i])
-						isAdded = true;
-
-				if (!isAdded)
+				if (!keyboard.isPressed(input.key.code))
 					keyboard.pressed.push_back(input.key.code);
-			}
 
 			if (input.type == Event::KeyReleased)
-				for (int i = 0; i < keyboard.pressed.size(); i++)
-					if (input.key.code == keyboard.pressed[i])
-						keyboard.pressed.erase(keyboard.pressed.begin() + i);
+				keyboard.pressed.erase(keyboard.pressed.begin() + keyboard.pressedAt(input.key.code));
+
+			keyboard.buttons[Mouse::Button::Left] = Mouse::isButtonPressed(Mouse::Button::Left);
+			keyboard.buttons[Mouse::Button::Right] = Mouse::isButtonPressed(Mouse::Button::Right);
+			keyboard.buttons[Mouse::Button::Middle] = Mouse::isButtonPressed(Mouse::Button::Middle);
+			keyboard.buttons[Mouse::Button::XButton1] = Mouse::isButtonPressed(Mouse::Button::XButton1);
+			keyboard.buttons[Mouse::Button::XButton2] = Mouse::isButtonPressed(Mouse::Button::XButton2);
 
 			if (input.type == Event::MouseWheelMoved)
 				keyboard.scroll = input.mouseWheel.delta;
@@ -107,6 +137,8 @@ namespace phys					//Declare various classes and functions
 		double ang = 0;
 		double mag = 0;
 		operator vec_n();
+
+		void normalize();
 	};
 
 	struct vec_n
@@ -114,7 +146,7 @@ namespace phys					//Declare various classes and functions
 		double x = 0;
 		double y = 0;
 
-		vec_n(double in_x = 0, double in_y =0)
+		vec_n(double in_x = 0, double in_y = 0)
 		{
 			x = in_x;
 			y = in_y;
@@ -185,9 +217,15 @@ namespace phys					//Declare various classes and functions
 	{
 		return vec_to_pos(*this);
 	}
+	void vec_r::normalize()
+	{
+		vec_n norm = *this;
+		*this = norm;
+	}
+
 }
 
-namespace shared				
+namespace shared
 {
 	//struct vec_n : phys::vec_n {};//Copy the ever-so-important vec_n into shared
 	using phys::vec_n;
@@ -207,65 +245,6 @@ namespace shared
 	world_state screen_state;
 }
 
-#define RENDER_DEBUG_INSTALLED true
-#ifdef RENDER_DEBUG_INSTALLED
-namespace render_debug			//To be removed once the neccesary render_tools functions are implemented
-{
-	using sf::Vertex;
-	using sf::Color;
-	using sf::Vector2f;
-	using std::vector;
-	using shared::vec_n;
-	using shared::window2;
-
-	bool window_is_clear = false;
-
-	vector<vec_n> handle_scale(vector<vec_n> list, vec_n origo, double scale = 1, double mid_x = 500, double mid_y = 500)
-	{
-		for (int i = 0; i < list.size(); i++)
-		{
-			list[i] -= origo;
-			list[i] *= scale;
-			list[i].y *= -1;
-
-			list[i] += vec_n(mid_x, mid_y);
-		}
-
-		return list;
-	}
-
-	void render_line(vector<vec_n> in, vec_n origo, double zoom)
-	{
-		sf::VertexArray lines(sf::LinesStrip, in.size());
-
-		in = handle_scale(in, origo, zoom);
-
-		for (int i = 0; i < in.size(); i++)
-		{
-			lines[i].position = in[i];
-			lines[i].color = Color::Cyan;
-		}
-
-		window2.draw(lines);
-	}
-	void render_lines(vector<vector<vec_n>> in, vec_n origo, double zoom)
-	{
-		for (int i = 0; i < in.size(); i++)
-		{
-			render_line(in[i], origo, zoom);
-		}
-	}
-
-	void render_all(shared::world_state in)
-	{
-		window2.clear();
-		window_is_clear = true;
-		render_lines(in.paths, in.bodies[in.focus], in.zoom);
-	}
-}
-#endif // RENDER_DEBUG_INSTALLED
-
-
 
 namespace phys
 {
@@ -284,8 +263,10 @@ namespace phys
 		double SOI;		//Radius of the sphere of influence
 		short shape;	//Shape of the orbit. 0 denotes elliptical orbits, 1 denotes hyperbolic orbits
 		bool inverse;	//Whether or not the orbit is counter-clockwise, with all the special cases that entails
-		double expiry;	//The last point in time where the current orbital parameters are guaranteed accurate
+
 		short expire;	//Whether or not there is a predicted expiry. 0 = no confirmed expiry, 1 = expiry by leaving SOI, 2 = expiry by entering SOI
+		double expiry;	//The upper bound on the time of expiry. For expire = 0, use t_l + t_p
+		double safe;	//The lower bound on the time of expiry.
 
 		vec_n vel;		//Velocity at t_l
 		vec_n pos;		//Position at t_l
@@ -302,17 +283,39 @@ namespace phys
 		std::string name;	//Name of body
 	};
 
-	body sun, moon, planet, pluto, yavin, dune, plyr;
-	vector<body*> bodies;
-	vector<body> bodies_actual;
-	vector<vector<vec_n>> tails;
-	double zoom_mem = 0.01;
-
 	struct dual_val
 	{
 		long double one = 0;
 		long double two = 0;
 	};
+
+	struct vars_struct
+	{
+		vector<body*> bodies;
+		vector<vector<vec_n>> tails;
+		double zoom_mem = 2;
+		double last_predict = 0;
+		double w_time = 0;
+		double w_time_last = 0;
+		double w_time_diff = 0;
+	};
+
+	struct plyr_struct
+	{
+		double spin = 0;
+		double gyro = 0;
+		double rot = 0;
+
+		double thrust = 0;
+		double fuel = 0;
+
+		double mass = 0;
+		double f_p_t = 1;
+		double eng_F = 1;
+	};
+
+	plyr_struct plr;
+	vars_struct gen;
 
 	//Begin generic vector math functions
 	double clamp(double in)
@@ -573,7 +576,7 @@ namespace phys
 		vector<dual_val> out(2);
 
 		double part_div = u / (cos(ang) * vel * r);
-		double part_root = sqrt(pow(-part_div, 2) - 2 * u / r + pow(vel, 2));
+		double part_root = sqrt(sqr(part_div) - 2 * u / r + pow(vel, 2));
 		double part_area = cos(ang) * vel * r;
 
 		out_v.one = part_div + part_root;
@@ -641,21 +644,23 @@ namespace phys
 		return get_V(mid, sat.ecc);
 	}
 
-	void do_orbit_phys(body &sat, double w_time, vec_n force_add)
+	void do_orbit_phys(body &sat, double w_time, vec_n force_add, vec_n &pos_out, vec_n &vel_out)
 	{
 		double d_time = w_time - sat.t_l;
 		body &parent = *sat.parent;
 		vec_r pos_r = sat.pos - parent.pos;
+		vec_r vel_r = sat.vel - parent.vel;
 		vec_n force_vec;
 
 		double F = -parent.u / sqr(pos_r.mag);
 
 		force_vec = vec_to_pos(pos_r.ang, F);
 
-		sat.vel += force_vec * d_time;
-		sat.vel += force_add * d_time;
+		vel_out = vel_r + force_vec * d_time;
 
-		sat.pos += sat.vel * d_time;
+		vel_out += force_add * d_time;
+
+		pos_out = pos_r + vel_out * d_time;
 	}
 
 	void do_orbit(body &sat, double w_time, vec_n &pos_out, vec_n &vel_out = vec_n())
@@ -681,21 +686,23 @@ namespace phys
 
 		pos_out = get_pos_ang(V, sat);
 
-		double vel_mag = sqrt(2 * (sat.En + parent.u / radius));
-		double vel_ang = acos(sat.Ar / (radius * vel_mag));
+		vec_r vel;
+
+		vel.mag = sqrt(2 * (sat.En + parent.u / radius));
+		vel.ang = acos(sat.Ar / (radius * vel.mag));
 		if (V < M_PI)
-			vel_ang = -vel_ang;
+			vel.ang = -vel.ang;
 
 		if (sat.inverse)
-			vel_mag = -vel_mag;
+			vel.mag = -vel.mag;
 
-		vel_ang = ang_wrap(-V - vel_ang + sat.normal + M_PI2);
+		vel.ang = -V -vel.ang + sat.normal + M_PI2;
+		vel.ang = ang_wrap(vel.ang);
 
-		vel_out.x = -vel_mag * cos(vel_ang);
-		vel_out.y = -vel_mag * sin(vel_ang);
+		vel_out = vel;
 	}
 
-	void get_expiry(body &sat, vector<body*> list, double w_time, vector<body*> &list_out, vector<vector<double>> &mins_out, bool &will_expire, int &new_parent, double &expire_time)
+	void get_expiry(body &sat, vector<body*> list, vector<body*> &list_out, vector<vector<double>> &mins_out, bool &will_expire, int &new_parent)
 	{
 		vector<body*> list_in = list;
 		vector<double> starts;			//Current V-values for bodies
@@ -715,7 +722,10 @@ namespace phys
 			body &pln = *list_in[i];
 			if (pln.parent == sat.parent && pln.self != sat.self && !pln.isSun)
 			{
-				vec_n pln_pos = pln.pos - (*pln.parent).pos;
+				vec_n pln_pos = pln.pos - (*pln.parent).pos;;
+				if (sat.safe - sat.t_l > 0.00001)
+					do_orbit(pln, sat.safe, pln_pos);
+
 				vec_n end_pos;
 				list.push_back(pln.self);
 				starts.push_back(pln.normal - atan2(pln_pos));		//Get the current true anomaly of the body. atan2(pos) = normal - V --> V = normal - atan2(pos)
@@ -734,15 +744,15 @@ namespace phys
 		vec_n end_pos_plyr;
 		do_orbit(sat, sat.expiry, end_pos_plyr);
 		double end = sat.normal - atan2(end_pos_plyr);
-		
+
 		vec_n sat_pos_old;
-		double sat_tim_old;
+		double sat_tim_old = 0;
 
 		for (int i2 = 0; i2 < precision; i2++)
 		{
 			int i_sat = 0;
 			int i_pln = 0;
-			double Vs = to_rad(i2, precision, end-start);
+			double Vs = to_rad(i2, precision, end - start);
 
 			vec_n sat_pos = get_pos_ang(start + Vs, sat);
 			double sat_tim = M_to_time(sat, get_M(Vs, sat.ecc), sat.t_l);
@@ -781,10 +791,9 @@ namespace phys
 			sat_tim_old = sat_tim;
 		}
 
-
 		body *parent_next_p = (*sat.parent).parent;
-		double end_time = sat.expiry;
 		double end_body = -1;
+		double end_time = sat.expiry;
 		bool ending = false;
 
 		for (int i = 0; i < list.size(); i++)
@@ -800,7 +809,6 @@ namespace phys
 					if (pairs_time[i][i2] < end_time)
 					{
 						ending = true;
-						end_time = pairs_time[i][i2];
 						end_body = i;
 						break;
 					}
@@ -809,7 +817,6 @@ namespace phys
 
 		list_out = list;
 		will_expire = ending;
-		expire_time = end_time;
 		new_parent = end_body;
 
 		mins_out.push_back(min_dists);
@@ -826,7 +833,7 @@ namespace phys
 		{
 			body &parent_pot = *list[i];
 			body &parent_cur = *parent_presumed;
-			
+
 			double r = vmag(sat.pos - parent_pot.pos);
 
 			if (list[i] == sat.self || (*list[i]).u <= sat.u)
@@ -850,8 +857,9 @@ namespace phys
 
 		vec_r pos_r = sat.pos - parent.pos;		//The radial vector position of the sat, relative the parent
 		vec_r vel_r = sat.vel - parent.vel;		//The radial vector velocity of the sat, relative the parent
-		sat.inverse = false;					
+		sat.inverse = false;
 		u = parent.u;
+
 
 		bool repeat;
 		do
@@ -863,7 +871,7 @@ namespace phys
 
 			if (abs(rel_ang) > M_PI2)
 			{
-				vel_r.mag *= -1;
+				vel_r.ang += M_PI;
 				sat.inverse = true;
 				repeat = true;
 			}
@@ -900,6 +908,7 @@ namespace phys
 		sat.epoch = w_time - get_M(tV, sat.ecc) / sat.Mn;
 		sat.t_p = M_2PI / sat.Mn;
 		sat.expiry = w_time + sat.t_p;
+		sat.safe = w_time;
 
 		if (sat.shape || r_vec.two > parent.SOI)
 		{
@@ -911,7 +920,7 @@ namespace phys
 
 	//End orbital algorithms
 
-	vector<vec_n> do_phys_tick(vector<body*> bodies, double w_time, bool phys_mode = 0)
+	vector<vec_n> do_phys_tick(vector<body*> bodies, double w_time, bool phys_mode, vec_n thrust = vec_n())
 	{
 		vector<vec_n> out;
 		bool emodelast = false;
@@ -922,11 +931,21 @@ namespace phys
 			body &sat = *bodies[i];
 			vec_n pos;
 			vec_n vel;
-			do_orbit(sat, w_time, pos, vel);
+			if (!phys_mode || !sat.isPlayer)
+				do_orbit(sat, w_time, pos, vel);
+			else
+			{
+				do_orbit_phys(sat, w_time, thrust, pos, vel);
+				make_orbit(sat, w_time);
+				gen.tails.back().clear();
+				for (int i2 = 0; i2 <= 100; i2++)
+					gen.tails.back().push_back(get_pos_ang(to_rad(i2, 100), *bodies.back()));
+			}
 
 			sat.pos = pos + (*sat.parent).pos;
 			sat.vel = vel + (*sat.parent).vel;
 			sat.t_l = w_time;
+			sat.safe = w_time;
 			if (!sat.expire)
 				sat.expiry = sat.t_l + sat.t_p;
 
@@ -937,30 +956,96 @@ namespace phys
 		return out;
 	}
 
+	vec_n do_game_tick()
+	{
+		using namespace input;
+
+		gen.zoom_mem *= pow(1.1, keyboard.scroll);
+
+		plr.spin -= plr.gyro * gen.w_time_diff * keyboard.isPressed(key_state::keys::Left);
+		plr.spin += plr.gyro * gen.w_time_diff * keyboard.isPressed(key_state::keys::Right);
+
+		plr.rot += gen.w_time_diff * plr.spin;
+
+		plr.thrust += keyboard.isPressed(key_state::keys::Up);
+		plr.thrust -= keyboard.isPressed(key_state::keys::Down);
+
+		double thrust_actual = 0;
+		vec_r acceleration_actual_r;
+
+		if (plr.thrust < 0)
+			plr.thrust = 0;
+
+		if (plr.fuel > 0)
+			thrust_actual = plr.thrust * plr.eng_F;
+
+		plr.fuel -= thrust_actual * plr.f_p_t;
+		if (plr.fuel < 0)
+			plr.fuel = 0;
+
+		acceleration_actual_r.mag = -thrust_actual / (plr.mass + plr.fuel);
+		acceleration_actual_r.ang = plr.rot;
+
+		using shared::screen_state;
+		screen_state.focus = 6;
+		screen_state.zoom = gen.zoom_mem;
+		screen_state.player_rotation = plr.rot;
+
+		return acceleration_actual_r;
+	}
+
+#ifdef RENDER_DEBUG_INSTALLED
+	bool emode = 0;
+#endif
+
 	void run_engine()
 	{
 		using shared::screen_state;
 
-		zoom_mem *= pow(1.1, input::keyboard.scroll);
+		gen.w_time_last = gen.w_time;
+		gen.w_time += (shared::r_time - shared::l_time) / 100.0 / shared::cps / gen.zoom_mem;
+		gen.w_time_diff = gen.w_time - gen.w_time_last;
 
-		screen_state.zoom = zoom_mem;
-		screen_state.focus = 4;
-		screen_state.bodies = do_phys_tick(bodies, shared::r_time * 0.0001, 0);
+		vec_n eng_thrust = do_game_tick();
+		bool eng_mode = vmag(eng_thrust);
 
-		vector<vector<vec_n>> tails_out;
+		screen_state.bodies = do_phys_tick(gen.bodies, gen.w_time, eng_mode, eng_thrust);
 
-		for (int i = 0; i < tails.size(); i++)
+		if (gen.last_predict + 0.1 / shared::cps < shared::r_time)
 		{
-			vector<vec_n> temp;
-			vec_n par_pos = (*(*bodies[i]).parent).pos;
-			tails_out.push_back(temp);
-			for (int i2 = 0; i2 < tails.size(); i2++)
+			vector<vector<double>> pairs;
+			body &plyr = *gen.bodies.back();
+			vector<body*> co_sats;
+			bool expiring;
+			int new_parent;
+			double expire_time;
+
+			get_expiry(plyr, gen.bodies, co_sats, pairs, expiring, new_parent);
+
+			if (expiring)
 			{
-				tails_out[i].push_back(tails[i][i2] + par_pos);
+				plyr.expire = 2;
+				plyr.expiry = pairs[1][new_parent];
+			}
+			gen.last_predict = shared::r_time;
+		}
+
+		vector<vector<vec_n>> tails_out = gen.tails;
+
+		for (int i = 0; i < tails_out.size(); i++)
+		{
+			vec_n par_pos = (*(*gen.bodies[i]).parent).pos;
+			for (int i2 = 0; i2 < tails_out[i].size(); i2++)
+			{
+				tails_out[i][i2] += par_pos;
 			}
 		}
 
-		screen_state.paths = tails;
+		screen_state.paths = tails_out;
+
+#ifdef RENDER_DEBUG_INSTALLED
+		emode = eng_mode;
+#endif
 	}
 
 	vector<body*> sort_bodies(vector<body*> unsorted)
@@ -1006,13 +1091,14 @@ namespace phys
 			paths.push_back(planet);
 
 			for (int i2 = 0; i2 <= subdiv; i2++)
-				paths[i].push_back( get_pos_ang( to_rad(i2, subdiv), *list[i] ) );
+				paths[i].push_back(get_pos_ang(to_rad(i2, subdiv), *list[i]));
 		}
 		return paths;
 	}
 
 	void phys_init()
 	{
+		body& sun = *new body;
 		sun.pos.x = 0;
 		sun.pos.y = 0;
 		sun.vel.x = 0;
@@ -1020,6 +1106,7 @@ namespace phys
 		sun.u = pow(10, 14);
 		sun.name = "Sun";
 
+		body& moon = *new body;
 		moon.pos.x = -25300;
 		moon.pos.y = 0;
 		moon.vel.x = 0;
@@ -1027,6 +1114,7 @@ namespace phys
 		moon.u = pow(10, 8);
 		moon.name = "moon";
 
+		body& planet = *new body;
 		planet.pos.x = -25000;
 		planet.pos.y = 0;
 		planet.vel.x = 0;
@@ -1034,6 +1122,7 @@ namespace phys
 		planet.u = pow(10, 10);
 		planet.name = "planet";
 
+		body& pluto = *new body;
 		pluto.pos.x = -30000;
 		pluto.pos.y = -0;
 		pluto.vel.x = 0;
@@ -1041,6 +1130,7 @@ namespace phys
 		pluto.u = pow(10, 10);
 		pluto.name = "pluto";
 
+		body& dune = *new body;
 		dune.pos.x = -35000;
 		dune.pos.y = 0;
 		dune.vel.x = 0;
@@ -1048,6 +1138,7 @@ namespace phys
 		dune.u = pow(10, 10);
 		dune.name = "dune";
 
+		body& yavin = *new body;
 		yavin.pos.x = -40000;
 		yavin.pos.y = 0;
 		yavin.vel.x = 0;
@@ -1055,11 +1146,13 @@ namespace phys
 		yavin.u = pow(10, 10);
 		yavin.name = "yavin";
 
+		body& plyr = *new body;
 		plyr.pos.x = -40200;
 		plyr.pos.y = 0;
 		plyr.vel.x = 0;
-		plyr.vel.y = 43000;
+		plyr.vel.y = 45000;
 		plyr.u = 1;
+		plyr.isPlayer = true;
 		plyr.name = "plyr";
 
 		vector<body*> unsorted;
@@ -1072,16 +1165,22 @@ namespace phys
 		unsorted.push_back(&yavin);		//Magenta
 		unsorted.push_back(&plyr);		//Red
 
-		bodies = sort_bodies(unsorted);
+		gen.bodies = sort_bodies(unsorted);
 
 		for (int i2 = 0; i2 < 5; i2++)
-			for (int i = 0; i < bodies.size(); i++)
+			for (int i = 0; i < gen.bodies.size(); i++)
 			{
-				make_orbit(*bodies[i], 0);								//Get everything's orbit around the sun
-				(*bodies[i]).parent = get_parent(*bodies[i], bodies);	//Check if the newly-determined SOIs make them into moons
+				make_orbit(*gen.bodies[i], 0);								//Get everything's orbit around the sun
+				(*gen.bodies[i]).parent = get_parent(*gen.bodies[i], gen.bodies);	//Check if the newly-determined SOIs make them into moons
 			}
 
-		tails = get_tails_basic(bodies);
+		gen.tails = get_tails_basic(gen.bodies);
+
+		plr.fuel = 10;
+		plr.mass = 1000000;
+		plr.f_p_t = 0.0000000000001;
+		plr.gyro = 1000;
+		plr.eng_F = 0.0001;
 	}
 
 	void engine_init()
@@ -1089,3 +1188,91 @@ namespace phys
 		phys_init();
 	}
 }
+
+#ifdef RENDER_DEBUG_INSTALLED
+namespace render_debug			//To be removed once the neccesary render_tools functions are implemented
+{
+	using sf::Vertex;
+	using sf::Color;
+	using sf::Vector2f;
+	using std::vector;
+	using shared::vec_n;
+	using shared::window2;
+	sf::Font debug_font;
+	bool nonsense = debug_font.loadFromFile("arial.ttf");
+
+	bool window_is_clear = false;
+
+	vector<vec_n> handle_scale(vector<vec_n> list, vec_n origo, double scale = 1, double mid_x = 500, double mid_y = 500)
+	{
+		for (int i = 0; i < list.size(); i++)
+		{
+			list[i] -= origo;
+			list[i] *= scale;
+			list[i].y *= -1;
+
+			list[i] += vec_n(mid_x, mid_y);
+		}
+
+		return list;
+	}
+
+	void render_line(vector<vec_n> in, vec_n origo, double zoom)
+	{
+		sf::VertexArray lines(sf::LinesStrip, in.size());
+
+		in = handle_scale(in, origo, zoom);
+
+		for (int i = 0; i < in.size(); i++)
+		{
+			lines[i].position = in[i];
+			lines[i].color = Color::Cyan;
+		}
+
+		window2.draw(lines);
+	}
+	void render_lines(vector<vector<vec_n>> in, vec_n origo, double zoom)
+	{
+		for (int i = 0; i < in.size(); i++)
+		{
+			render_line(in[i], origo, zoom);
+		}
+	}
+
+	void render_text(std::string text, vec_n coords)
+	{
+		sf::Text FPS2;
+		FPS2.setFont(debug_font);
+		FPS2.setPosition(coords);
+		FPS2.setCharacterSize(25);
+		FPS2.setString(text);
+		window2.draw(FPS2);
+	}
+
+	void render_texts(std::vector<std::string> texts)
+	{
+		for (int i = 0; i < texts.size(); i++)
+			render_text(texts[i], vec_n(0, i * 25));
+	}
+
+	void render_all(shared::world_state in)
+	{
+		window2.clear();
+		window_is_clear = true;
+		render_lines(in.paths, in.bodies[in.focus], in.zoom);
+
+		std::vector<std::string> texts;
+		texts.push_back(std::to_string(phys::plr.thrust));
+		texts.push_back(std::to_string(phys::plr.fuel));
+		texts.push_back(std::to_string(phys::ang_wrap(phys::plr.rot, 2)  / phys::M_2PI * 4 ));
+		texts.push_back(std::to_string(phys::plr.spin / phys::M_2PI * 4));
+		texts.push_back(std::to_string(vmag((*phys::gen.bodies.back()).vel)));
+		texts.push_back(std::to_string( (*phys::gen.bodies.back()).ecc ));
+		texts.push_back(std::to_string(phys::emode));
+
+		render_texts(texts);
+
+		//window2.display();
+	}
+}
+#endif // RENDER_DEBUG_INSTALLED
