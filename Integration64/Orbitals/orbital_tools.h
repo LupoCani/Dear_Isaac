@@ -82,6 +82,12 @@ namespace phys					//Declare various classes and functions
 	struct vec_n;
 	struct vec_r;
 
+	const long double M_PI = acos(-1.0L);		//Equal to π
+	const long double M_2PI = 2L * M_PI;		//Equal to 2π
+	const long double M_PI2 = M_PI / 2L;		//Equal to π/2
+	const long double M_3PI2 = 3L * M_PI2;		//Equal to .75π
+	const long double M_E = exp(1.0);
+
 	double clamp(double in);
 	double sqr(double in);
 	double sqrt_a(double in);
@@ -93,7 +99,7 @@ namespace phys					//Declare various classes and functions
 	double vmag(double x, double y);
 	double vmag(vec_n in);
 	vec_n rot_vec(vec_n in, double rot);
-	double to_rad(double ang, double scale);
+	double to_rad(double ang, double scale, double sc_out = M_2PI);
 	using std::atan2;
 
 	struct vec_r
@@ -216,17 +222,13 @@ namespace render_debug			//To be removed once the neccesary render_tools functio
 
 	vector<vec_n> handle_scale(vector<vec_n> list, vec_n origo, double scale = 1, double mid_x = 500, double mid_y = 500)
 	{
-		origo.x *= scale;
-		origo.y *= scale;
-
 		for (int i = 0; i < list.size(); i++)
 		{
-			list[i].x *= scale;
-			list[i].y *= -scale;
+			list[i] -= origo;
+			list[i] *= scale;
+			list[i].y *= -1;
 
-			vec_n mid(mid_x, mid_y);
-
-			list[i] += mid - origo;
+			list[i] += vec_n(mid_x, mid_y);
 		}
 
 		return list;
@@ -269,13 +271,6 @@ namespace phys
 {
 	using std::vector;
 
-	const long double M_PI   = acos(-1.0L);		//Equal to π
-	const long double M_2PI  = 2L * M_PI;		//Equal to 2π
-	const long double M_PI2  = M_PI / 2L;		//Equal to π/2
-	const long double M_3PI2 = 3L * M_PI2;		//Equal to .75π
-
-	const long double M_E = exp(1.0);
-
 	struct body
 	{
 		double ax_a;	//The length of the semimajor axis
@@ -290,6 +285,7 @@ namespace phys
 		short shape;	//Shape of the orbit. 0 denotes elliptical orbits, 1 denotes hyperbolic orbits
 		bool inverse;	//Whether or not the orbit is counter-clockwise, with all the special cases that entails
 		double expiry;	//The last point in time where the current orbital parameters are guaranteed accurate
+		short expire;	//Whether or not there is a predicted expiry. 0 = no confirmed expiry, 1 = expiry by leaving SOI, 2 = expiry by entering SOI
 
 		vec_n vel;		//Velocity at t_l
 		vec_n pos;		//Position at t_l
@@ -401,9 +397,9 @@ namespace phys
 		return in;
 	}
 
-	double to_rad(double ang, double scale)
+	double to_rad(double ang, double scale, double sc_out)
 	{
-		return M_2PI * ang / scale;
+		return sc_out * ang / scale;
 	}
 
 	double switch_co(double in) //Changes cos x to sin x and vice versa. No guarantees as to the sign of the output.
@@ -537,20 +533,20 @@ namespace phys
 	double time_to_M(body sat, double w_time)
 	{
 		double d_time = w_time - sat.epoch;
-
 		double M = d_time * sat.Mn;
+
 		if (sat.shape == 0)
 			return ang_wrap(M);
 
 		return M;
 	}
 
-	double M_to_time(body sat, double M, double w_time_min = -1)
+	double M_to_time(body sat, double M, double w_time_min = NAN)
 	{
 		double d_time = M / sat.Mn;
 		double w_time = d_time + sat.epoch;
 
-		if (sat.shape == 0 && w_time_min >= 0)
+		if (sat.shape == 0 && !isnan(w_time_min))
 		{
 			double r_time = M_2PI / sat.Mn;
 			while (w_time < w_time_min)
@@ -592,6 +588,16 @@ namespace phys
 		return out;
 	}
 
+	vec_n get_pos_ang(double V, body sat)
+	{
+		vec_r point;
+		point.ang = -V;
+		point.mag = get_r(point.ang, sat);
+		point.ang += (sat).normal;
+
+		return point;
+	}
+
 	//End orbital equation functions
 
 	//Begin orbital algorithms
@@ -624,7 +630,7 @@ namespace phys
 
 		for (int i = 0; i < precision; i++)
 		{
-			if (get_M(mid, sat.ecc) > part)
+			if (get_M_E(mid, sat.ecc) > part)
 				ceil = mid;
 			else
 				floor = mid;
@@ -632,7 +638,7 @@ namespace phys
 			mid = (ceil + floor) / 2;
 		}
 
-		return mid;
+		return get_V(mid, sat.ecc);
 	}
 
 	void do_orbit_phys(body &sat, double w_time, vec_n force_add)
@@ -652,13 +658,13 @@ namespace phys
 		sat.pos += sat.vel * d_time;
 	}
 
-	void do_orbit(body &sat, double w_time, vec_n &pos_out, vec_n &vel_out)
+	void do_orbit(body &sat, double w_time, vec_n &pos_out, vec_n &vel_out = vec_n())
 	{
 		double d_time = w_time - sat.epoch;
 
 		body &parent = *sat.parent;
 
-		double part = d_time * sat.Mn;
+		double part = time_to_M(sat, w_time);
 		double V;
 		double radius;
 		if (sat.isSun)
@@ -667,13 +673,13 @@ namespace phys
 		if (sat.shape == 0)
 			part = ang_wrap(part);
 
-		V = do_orbit_precise(part, sat, log2(pow(10, 10)));
+		V = do_orbit_precise(part, sat, log2(pow(10, 20)));
 		if (sat.inverse)
 			V = M_2PI - V;
 
 		radius = get_r(V, sat);
 
-		pos_out = vec_to_pos(sat.normal - V, radius);
+		pos_out = get_pos_ang(V, sat);
 
 		double vel_mag = sqrt(2 * (sat.En + parent.u / radius));
 		double vel_ang = acos(sat.Ar / (radius * vel_mag));
@@ -689,87 +695,132 @@ namespace phys
 		vel_out.y = -vel_mag * sin(vel_ang);
 	}
 
-	void get_expiry(body sat_in, vector<body*> list_in, double w_time)
+	void get_expiry(body &sat, vector<body*> list, double w_time, vector<body*> &list_out, vector<vector<double>> &mins_out, bool &will_expire, int &new_parent, double &expire_time)
 	{
-		body &sat = *(sat_in.self);
-		vector<body*> list(0);
-		double detail = 1000;
+		vector<body*> list_in = list;
+		vector<double> starts;			//Current V-values for bodies
+		vector<double> ends;			//V-values for bodies at the end of the relevant time span
+		vector<int>	its;				//The iterators for the bodies
+		list = vector<body*>(0);
+		int precision = 1000;
+
+		vector<vector<double>> pairs_dist;
+		vector<vector<double>> pairs_time;
+
+		vector<double> min_dists;
+		vector<double> min_times;
 
 		for (int i = 0; i < list_in.size(); i++)
 		{
-			body sat_2 = (*(list_in[i]));
-			if (sat_2.parent == sat.parent && sat_2.self != sat.self)
-				list.push_back(sat.parent);
+			body &pln = *list_in[i];
+			if (pln.parent == sat.parent && pln.self != sat.self && !pln.isSun)
+			{
+				vec_n pln_pos = pln.pos - (*pln.parent).pos;
+				vec_n end_pos;
+				list.push_back(pln.self);
+				starts.push_back(pln.normal - atan2(pln_pos));		//Get the current true anomaly of the body. atan2(pos) = normal - V --> V = normal - atan2(pos)
+
+				do_orbit(pln, sat.expiry, end_pos);
+				ends.push_back(pln.normal - atan2(end_pos));
+				its.push_back(0);
+
+				pairs_dist.push_back(vector<double>());
+				pairs_time.push_back(vector<double>());
+				min_times.push_back(DBL_MAX);
+				min_dists.push_back(DBL_MAX);
+			}
+		}
+		double start = sat.normal - atan2(sat.pos - (*sat.parent).pos);
+		vec_n end_pos_plyr;
+		do_orbit(sat, sat.expiry, end_pos_plyr);
+		double end = sat.normal - atan2(end_pos_plyr);
+		
+		vec_n sat_pos_old;
+		double sat_tim_old;
+
+		for (int i2 = 0; i2 < precision; i2++)
+		{
+			int i_sat = 0;
+			int i_pln = 0;
+			double Vs = to_rad(i2, precision, end-start);
+
+			vec_n sat_pos = get_pos_ang(start + Vs, sat);
+			double sat_tim = M_to_time(sat, get_M(Vs, sat.ecc), sat.t_l);
+
+			vec_n sat_pos_diff = sat_pos - sat_pos_old;
+			double sat_tim_diff = sat_tim - sat_tim_old;
+
+			for (int i = 0; i < list.size(); i++)
+			{
+				body &pln = *list[i];
+				double Vp = starts[i] + to_rad(its[i], precision, ends[i] - starts[i]);
+				double pln_tim = M_to_time(pln, get_M(Vp, pln.ecc), pln.t_l);
+				vec_n pln_pos = get_pos_ang(Vp, pln);
+
+				while (pln_tim < sat_tim_old)
+				{
+					its[i]++;
+					Vp = starts[i] + to_rad(its[i], precision, ends[i] - starts[i]);
+					pln_tim = M_to_time(pln, get_M(Vp, pln.ecc), pln.t_l);
+				}
+				while (pln_tim < sat_tim)
+				{
+					double diff_part = (pln_tim - sat_tim_old) / sat_tim_diff;
+					vec_n sat_pos_est = sat_pos_old + sat_pos_diff * diff_part;
+
+					double dist_est = vmag(sat_pos_est - pln_pos);
+					pairs_dist[i].push_back(dist_est);
+					pairs_time[i].push_back(pln_tim);
+
+					its[i]++;
+					Vp = starts[i] + to_rad(its[i], precision, ends[i] - starts[i]);
+					pln_tim = M_to_time(pln, get_M(Vp, pln.ecc), pln.t_l);
+				}
+			}
+			sat_pos_old = sat_pos;
+			sat_tim_old = sat_tim;
 		}
 
-		double w_time_end = HUGE_VAL;
-		double vmag_end = HUGE_VAL;
-		bool expire_true = false;
+
+		body *parent_next_p = (*sat.parent).parent;
+		double end_time = sat.expiry;
+		double end_body = -1;
+		bool ending = false;
 
 		for (int i = 0; i < list.size(); i++)
 		{
-			body sat_2 = (*(list[i]));
-			double SOI = sat_2.SOI;
-			double vmag_min = HUGE_VAL;
-			double w_time_close;
-			bool expire = false;
-
-			for (int i2 = 0; i2 < detail; i2++)
+			for (int i2 = 0; i2 < pairs_time.size(); i2++)
 			{
-				double V = to_rad(i2, detail);
-				double r = get_r(V, sat);
-				vec_n pos = vec_to_pos(sat.normal - V, r);
-
-				double M = get_M(V, sat.ecc);
-				double w_time_pot = M_to_time(sat, M, w_time);
-				double M_2 = time_to_M(sat_2, w_time_pot);
-
-				double V_2 = do_orbit_precise(M_2, sat_2, log2(detail));
-				double r_2 = get_r(V_2, sat_2);
-				vec_n pos_2 = vec_to_pos(sat_2.normal - V_2, r_2);
-
-				double dist = vmag(pos - pos_2);
-
-				if (expire_true && w_time_pot > w_time_end)
-					break;
-
-				if (dist < vmag_min)
+				if (pairs_dist[i][i2] < min_dists[i])
 				{
-					vmag_min = dist;
-					w_time_close = w_time_pot;
+					min_dists[i] = pairs_dist[i][i2];
+					min_times[i] = pairs_time[i][i2];
 				}
-				if (dist < SOI)
-				{
-					expire = true;
-					break;
-				}
-			}
-
-			if (expire)
-			{
-				w_time_end = w_time_close;
-				vmag_end = vmag_min;
-				expire_true = true;
+				if (pairs_dist[i][i2] < (*list[i]).SOI)
+					if (pairs_time[i][i2] < end_time)
+					{
+						ending = true;
+						end_time = pairs_time[i][i2];
+						end_body = i;
+						break;
+					}
 			}
 		}
 
+		list_out = list;
+		will_expire = ending;
+		expire_time = end_time;
+		new_parent = end_body;
+
+		mins_out.push_back(min_dists);
+		mins_out.push_back(min_times);
 	}
 
 	body* get_parent(body &sat, vector<body*> list)
 	{
+		body *parent_presumed = list[0];
 		if (sat.isSun)
 			return sat.self;
-		body *parent_presumed = sat.parent;
-
-		for (int i = 0; i < list.size(); i++)
-		{
-			if (list[i] == sat.self || (*list[i]).u <= sat.u)
-				list.erase(list.begin()+i), i--;
-
-			if ((*list[i]).isSun)
-				parent_presumed = list[i];
-		}
-		
 
 		for (int i = 0; i < list.size(); i++)
 		{
@@ -778,12 +829,13 @@ namespace phys
 			
 			double r = vmag(sat.pos - parent_pot.pos);
 
+			if (list[i] == sat.self || (*list[i]).u <= sat.u)
+				continue;
+
 			if (r < parent_pot.SOI)
 				if (parent_pot.SOI < parent_cur.SOI)
 					parent_presumed = list[i];
-				
 		}
-
 		return parent_presumed;
 	}
 
@@ -834,7 +886,7 @@ namespace phys
 		sat.shape = sat.ecc > 1;
 		sat.SOI = sat.ax_a * pow(sat.u / u, 0.4);
 
-		double tV = get_V_r(pos_r.mag, sat);
+		double tV = get_V_r(pos_r.mag, sat);	//The current true anomaly. Sweeps counter-clockwise
 		if (rel_ang < 0)
 			tV = ang_wrap(-tV);
 
@@ -844,14 +896,16 @@ namespace phys
 			tV = ang_wrap(-tV);
 		sat.En = sqr(vel_r.mag) / 2 - u / pos_r.mag;			//Store orbital Energy, velocital energy plus gravitational energy
 		sat.Ar = vel_r.mag * pos_r.mag * cos(rel_ang);			//Store area swept per unit of time, altitude times velocity times cosine-of-the-angle
-		sat.Mn = Mn_from_r(sat.ax_a, u);					//Store mean angular motion of the body, as per yet another equation dug up from obscure wikipedia stubs
+		sat.Mn = Mn_from_r(sat.ax_a, u);						//Store mean angular motion of the body, as per yet another equation dug up from obscure wikipedia stubs
 		sat.epoch = w_time - get_M(tV, sat.ecc) / sat.Mn;
+		sat.t_p = M_2PI / sat.Mn;
+		sat.expiry = w_time + sat.t_p;
 
 		if (sat.shape || r_vec.two > parent.SOI)
 		{
 			double V_max = get_V_r(parent.SOI, sat);
 			double M_max = get_M(V_max, sat.ecc);
-			sat.expiry = M_max / sat.Mn + sat.epoch;
+			sat.expiry = M_to_time(sat, M_max, sat.epoch);
 		}
 	}
 
@@ -873,6 +927,8 @@ namespace phys
 			sat.pos = pos + (*sat.parent).pos;
 			sat.vel = vel + (*sat.parent).vel;
 			sat.t_l = w_time;
+			if (!sat.expire)
+				sat.expiry = sat.t_l + sat.t_p;
 
 			out.push_back(sat.pos);
 		}
@@ -888,6 +944,7 @@ namespace phys
 		zoom_mem *= pow(1.1, input::keyboard.scroll);
 
 		screen_state.zoom = zoom_mem;
+		screen_state.focus = 4;
 		screen_state.bodies = do_phys_tick(bodies, shared::r_time * 0.0001, 0);
 
 		vector<vector<vec_n>> tails_out;
@@ -899,11 +956,59 @@ namespace phys
 			tails_out.push_back(temp);
 			for (int i2 = 0; i2 < tails.size(); i2++)
 			{
-				tails_out[i].push_back(tails[i][i2] +  par_pos);
+				tails_out[i].push_back(tails[i][i2] + par_pos);
 			}
 		}
 
 		screen_state.paths = tails;
+	}
+
+	vector<body*> sort_bodies(vector<body*> unsorted)
+	{
+		vector<body*> sorted;
+		for (int i = 0; i < unsorted.size(); i++)
+			(*unsorted[i]).self = unsorted[i];
+
+		{
+			while (unsorted.size() > 0)
+			{
+				int   body_i = 0;
+				body *body_p = unsorted[body_i];
+
+				for (int i = 0; i < unsorted.size(); i++)
+					if ((*unsorted[i]).u >(*body_p).u)
+					{
+						body_p = unsorted[i];
+						body_i = i;
+					}
+				sorted.push_back(body_p);
+				unsorted.erase(unsorted.begin() + body_i);
+			}
+
+			//Name the largest body as 'sun';
+			(*sorted[0]).isSun = true;
+			(*sorted[0]).SOI = DBL_MAX;
+			//To begin with, assume all sorted orbit the sun.
+			for (int i = 0; i < sorted.size(); i++)
+				(*sorted[i]).parent = sorted[0];
+		}
+
+		return sorted;
+	}
+
+	vector<vector<vec_n>> get_tails_basic(vector<body*> list, int subdiv = 100)
+	{
+		vector<vector<vec_n>> paths;
+
+		for (int i = 0; i < list.size(); i++)
+		{
+			vector<vec_n> planet;
+			paths.push_back(planet);
+
+			for (int i2 = 0; i2 <= subdiv; i2++)
+				paths[i].push_back( get_pos_ang( to_rad(i2, subdiv), *list[i] ) );
+		}
+		return paths;
 	}
 
 	void phys_init()
@@ -967,73 +1072,16 @@ namespace phys
 		unsorted.push_back(&yavin);		//Magenta
 		unsorted.push_back(&plyr);		//Red
 
-		
-		for (int i = 0; i < unsorted.size(); i++)
-			(*unsorted[i]).self = unsorted[i];
-
-		{
-			bool first = true;
-
-			while (unsorted.size() > 0)
-			{
-				int  body_i = 0;
-				body &body_s = *unsorted[body_i];
-
-				for (int i = 0; i < unsorted.size(); i++)
-					if ((*unsorted[i]).u > body_s.u)
-					{
-						body_s = *unsorted[i];
-						body_i = i;
-					}
-
-				if (first)
-				{
-					first = false;
-					body_s.isSun = true;
-					body_s.SOI = DBL_MAX;
-					for (int i = 0; i < unsorted.size(); i++)
-						(*unsorted[i]).parent = body_s.self;
-				}
-				bodies.push_back(body_s.self);
-				unsorted.erase(unsorted.begin() + body_i);
-			}
-		}
-		
-		std::cout << bodies.size() << std::endl;
+		bodies = sort_bodies(unsorted);
 
 		for (int i2 = 0; i2 < 5; i2++)
 			for (int i = 0; i < bodies.size(); i++)
 			{
-				make_orbit(*bodies[i], 0);
-				(*bodies[i]).parent = get_parent(*bodies[i], bodies);
+				make_orbit(*bodies[i], 0);								//Get everything's orbit around the sun
+				(*bodies[i]).parent = get_parent(*bodies[i], bodies);	//Check if the newly-determined SOIs make them into moons
 			}
-		
-		/*
-		make_orbit(moon, 0);
-		make_orbit(planet, 0);
-		make_orbit(pluto, 0);
-		make_orbit(dune, 0);
-		make_orbit(yavin, 0);
-		make_orbit(plyr, 0);
-		//*/
 
-		int subdiv = 100;
-
-		for (int i = 0; i < bodies.size(); i++)
-		{
-			vector<vec_n> planet;
-			tails.push_back(planet);
-
-			for (int i2 = 0; i2 <= subdiv; i2++)
-			{
-				vec_r particle;
-				particle.ang = to_rad(i2, subdiv);
-				particle.mag = get_r(particle.ang, *bodies[i]);
-				particle.ang += (*bodies[i]).normal;
-
-				tails[i].push_back( vec_to_pos(particle)  );
-			}
-		}
+		tails = get_tails_basic(bodies);
 	}
 
 	void engine_init()

@@ -1,7 +1,7 @@
 ﻿  Source.cpp
-c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration64\orbitals\orbital_tools.h(118): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration64\orbitals\orbital_tools.h(670): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
-c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration64\orbitals\orbital_tools.h(727): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration64\orbitals\orbital_tools.h(124): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration64\orbitals\orbital_tools.h(676): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration64\orbitals\orbital_tools.h(733): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
 c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration64\orbitals\render_tools.h(98): warning C4244: '=': conversion from 'unsigned int' to 'float', possible loss of data
 c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration64\orbitals\render_tools.h(99): warning C4244: '=': conversion from 'unsigned int' to 'float', possible loss of data
 c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration64\orbitals\render_tools.h(118): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
@@ -55,9 +55,9 @@ c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration64\orbitals\rende
 c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration64\orbitals\render_tools.h(531): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
 c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration64\orbitals\render_tools.h(532): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
   Generating code
-  58 of 981 functions ( 5.9%) were compiled, the rest were copied from previous compilation.
-    0 functions were new in current compilation
-    10 functions had inline decision re-evaluated but remain unchanged
+  83 of 1006 functions ( 8.3%) were compiled, the rest were copied from previous compilation.
+    3 functions were new in current compilation
+    92 functions had inline decision re-evaluated but remain unchanged
   Finished generating code
   Orbitals.vcxproj -> C:\Users\Admin\Bibliotek\Programvara\C++\Dear_Isaac\Integration64\x64\Release\Orbitals.exe
   Orbitals.vcxproj -> C:\Users\Admin\Bibliotek\Programvara\C++\Dear_Isaac\Integration64\x64\Release\Orbitals.pdb (Full PDB)
