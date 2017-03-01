@@ -21,15 +21,14 @@ void main()
 	shared::s_time = clock();
 
 	long long i = 0;
-	int t_cap = 5;
+	long long t_cap = 5;
 
 	while (true)
 	{
-		i++;
 		using namespace shared;
 		r_time = clock() - shared::s_time;
 
-		if (l_time + cps * 0.01 < r_time || true)
+		if (l_time + cps * 0.00001 < r_time)
 		{
 			input::run_input();
 
@@ -41,6 +40,7 @@ void main()
 			graph::do_render();
 
 			l_time = r_time;
+			i++;
 		}
 
 		if ((r_time - s_time) / cps > t_cap)

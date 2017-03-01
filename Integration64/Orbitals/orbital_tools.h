@@ -602,12 +602,25 @@ namespace phys
 		return point;
 	}
 
+	double get_V_phys(body sat, vec_n pos = vec_n())		//Get the current true anomaly from the physical position
+	{
+		if (vmag(pos) > 0)
+			return sat.normal - atan2(pos);
+		else
+			return sat.normal - atan2(sat.pos - (*sat.parent).pos);
+	}
+
+	double V_bound_H(double ecc)
+	{
+		return acos(-1 / ecc);
+	}
+
 	//End orbital equation functions
 
 	//Begin orbital algorithms
 	double do_orbit_precise_H(double part, body sat, int precision)
 	{
-		double ceil = acos(-1 / sat.ecc);
+		double ceil = V_bound_H(sat.ecc);
 		double floor = -ceil;
 		double mid = 0;
 
@@ -653,7 +666,7 @@ namespace phys
 		vec_r vel_r = sat.vel - parent.vel;
 		vec_n force_vec;
 
-		double F = parent.u / sqr(pos_r.mag);
+		double F = -parent.u / sqr(pos_r.mag);
 
 		force_vec = vec_to_pos(pos_r.ang, F);
 
@@ -729,10 +742,10 @@ namespace phys
 
 				vec_n end_pos;
 				list.push_back(pln.self);
-				starts.push_back(pln.normal - atan2(pln_pos));		//Get the current true anomaly of the body. atan2(pos) = normal - V --> V = normal - atan2(pos)
+				starts.push_back(get_V_phys(pln, pln_pos));		//Get the current true anomaly of the body. 
 
 				do_orbit(pln, sat.expiry, end_pos);
-				ends.push_back(pln.normal - atan2(end_pos));
+				ends.push_back(get_V_phys(pln, end_pos));
 				its.push_back(0);
 
 				pairs_dist.push_back(vector<double>());
@@ -924,10 +937,36 @@ namespace phys
 
 	//End orbital algorithms
 
+	//Begin graph algorithms
+
+	vector<vec_n> make_tail(body sat, int subdiv)
+	{
+		vector<vec_n> out;
+
+		double V_start = ang_wrap(get_V_phys(sat), 2);
+		double V_end;
+
+		if (sat.shape)
+			V_end = ang_wrap(V_bound_H(sat.ecc), 2);
+		else
+			V_end = V_start + M_2PI;
+
+		V_end = nextafter(V_end, 0);
+
+		double V_span = V_end - V_start;
+
+		for (int i2 = 0; i2 <= subdiv; i2++)
+			out.push_back(get_pos_ang(V_start + to_rad(i2, subdiv, V_span), sat));
+
+		return out;
+	}
+
+	//End graph algorithms
+
 	vector<vec_n> do_phys_tick(vector<body*> bodies, double w_time, bool phys_mode, vec_n thrust = vec_n())
 	{
 		vector<vec_n> out;
-		bool emodelast = false;
+		bool expired = false;
 
 		vector<vec_n> pos_buffer;
 		vector<vec_n> vel_buffer;
@@ -949,6 +988,7 @@ namespace phys
 		for (int i = 0; i < bodies.size(); i++)
 		{
 			body &sat = *bodies[i];
+
 			sat.pos = pos_buffer[i] + (*sat.parent).pos;
 			sat.vel = vel_buffer[i] + (*sat.parent).vel;
 			sat.t_l = w_time;
@@ -957,24 +997,25 @@ namespace phys
 
 			if (!sat.expire)
 				sat.expiry = sat.t_l + sat.t_p;
-
-			body &new_parent = *get_parent(sat, bodies);
-			bool expired = false;
-			if (new_parent.self != (*sat.parent).self)
-				expired = true;
-			sat.parent = &new_parent;
-
-			if (phys_mode && sat.isPlayer || expired)
+			else
 			{
-				make_orbit(sat, w_time);
-				gen.tails.back().clear();
-				for (int i2 = 0; i2 <= 1000; i2++)
-					gen.tails.back().push_back(get_pos_ang(to_rad(i2, 1000), sat));
+				body &new_parent = *get_parent(sat, bodies);
+				if (new_parent.self != sat.parent)
+					expired = true;
+				sat.parent = &new_parent;
 			}
-
 			out.push_back(sat.pos);
 		}
 
+		body &plyr = *bodies.back();
+
+		if (phys_mode || expired || plyr.shape)
+		{
+			if (expired || phys_mode)
+				make_orbit(plyr, w_time);
+
+			gen.tails[gen.tails.size() - 1] = make_tail(plyr, 1000);
+		}
 
 
 		//get_expiry(*bodies[bodies.size() - 1], bodies, w_time);
@@ -985,7 +1026,7 @@ namespace phys
 	{
 		using namespace input;
 
-		if (!keyboard.isPressed(key_state::keys::Num0))
+		if (!keyboard.isPressed(key_state::keys::RShift))
 			gen.zoom_mem *= pow(1.1, keyboard.scroll);
 		else
 			gen.d_time_fact *= pow(1.1, keyboard.scroll);
@@ -995,11 +1036,30 @@ namespace phys
 
 		plr.rot += gen.w_time_diff * plr.spin;
 
+		plr.rot = ang_wrap(plr.rot, 2);
+
 		plr.thrust += keyboard.isPressed(key_state::keys::Up);
 		plr.thrust -= keyboard.isPressed(key_state::keys::Down);
 
+		if (keyboard.isPressed(key_state::keys::Numpad1))
+		{
+			plr.spin = 0;
+		}
+		if (keyboard.isPressed(key_state::keys::Numpad3))
+		{
+			gen.d_time_fact = 100;
+		}
+		if (keyboard.isPressed(key_state::keys::Numpad6))
+		{
+			gen.d_time_fact = 1;
+		}
+		if (keyboard.isPressed(key_state::keys::Numpad2))
+		{
+			plr.thrust = 0;
+		}
+
 		double thrust_actual = 0;
-		vec_r acceleration_actual_r;
+		vec_r accel;
 
 		if (plr.thrust < 0)
 			plr.thrust = 0;
@@ -1011,19 +1071,21 @@ namespace phys
 		if (plr.fuel < 0)
 			plr.fuel = 0;
 
-		acceleration_actual_r.mag = -thrust_actual / (plr.mass + plr.fuel);
-		acceleration_actual_r.ang = plr.rot;
+		accel.mag = thrust_actual / (plr.mass + plr.fuel);
+		accel.ang = plr.rot;
 
 		using shared::screen_state;
 		screen_state.focus = 6;
 		screen_state.zoom = gen.zoom_mem;
 		screen_state.player_rotation = plr.rot;
 
-		return acceleration_actual_r;
+		return vec_to_pos(plr.rot, thrust_actual / (plr.mass + plr.fuel) );
 	}
 
 #ifdef RENDER_DEBUG_INSTALLED
 	bool emode = 0;
+	vec_n thrust_debug;
+
 #endif
 
 	void run_engine()
@@ -1073,6 +1135,7 @@ namespace phys
 
 #ifdef RENDER_DEBUG_INSTALLED
 		emode = eng_mode;
+		thrust_debug = eng_thrust;
 #endif
 	}
 
@@ -1115,11 +1178,7 @@ namespace phys
 
 		for (int i = 0; i < list.size(); i++)
 		{
-			vector<vec_n> planet;
-			paths.push_back(planet);
-
-			for (int i2 = 0; i2 <= subdiv; i2++)
-				paths[i].push_back(get_pos_ang(to_rad(i2, subdiv), *list[i]));
+			paths.push_back(make_tail(*list[i], subdiv));
 		}
 		return paths;
 	}
@@ -1204,11 +1263,11 @@ namespace phys
 
 		gen.tails = get_tails_basic(gen.bodies);
 
-		plr.fuel = 10;
+		plr.fuel = 1000;
 		plr.mass = 1000000000;
-		plr.f_p_t = 0.0000000000001;
-		plr.gyro = 100000;
-		plr.eng_F = 0.0001;
+		plr.f_p_t = 0.0;
+		plr.gyro = 100000000;
+		plr.eng_F = 1000000000000;
 	}
 
 	void engine_init()
@@ -1295,7 +1354,7 @@ namespace render_debug			//To be removed once the neccesary render_tools functio
 		plyr.setOrigin(5, 5);
 		plyr.setPosition(pos);
 		plyr.setScale(vec_n(1, 2));
-		plyr.setRotation(rot / phys::M_2PI * 360);
+		plyr.setRotation(rot / phys::M_2PI * 360.0 + 90.0);
 
 		window2.draw(plyr);
 	}
@@ -1309,11 +1368,11 @@ namespace render_debug			//To be removed once the neccesary render_tools functio
 		std::vector<std::string> texts;
 		texts.push_back(std::to_string(phys::plr.thrust));
 		texts.push_back(std::to_string(phys::plr.fuel));
-		texts.push_back(std::to_string(phys::ang_wrap(phys::plr.rot, 2)  / phys::M_2PI * 4 ));
 		texts.push_back(std::to_string(phys::plr.spin / phys::M_2PI * 4));
+		texts.push_back(std::to_string(phys::to_rad(phys::plr.rot, phys::M_2PI, 4)));
 		texts.push_back(std::to_string(vmag((*phys::gen.bodies.back()).vel)));
 		texts.push_back(std::to_string( (*phys::gen.bodies.back()).ecc ));
-		texts.push_back(std::to_string(( *phys::gen.bodies.back()).expire ));
+		texts.push_back(std::to_string(phys::to_rad(phys::atan2(phys::thrust_debug), phys::M_2PI, 4)));
 
 		render_texts(texts);
 		render_player(in.player_rotation, in.bodies.back(), in.bodies[in.focus], in.zoom);
