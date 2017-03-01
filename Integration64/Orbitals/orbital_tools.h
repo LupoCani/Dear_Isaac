@@ -652,7 +652,7 @@ namespace phys
 		vec_r vel_r = sat.vel - parent.vel;
 		vec_n force_vec;
 
-		double F = -parent.u / sqr(pos_r.mag);
+		double F = parent.u / sqr(pos_r.mag);
 
 		force_vec = vec_to_pos(pos_r.ang, F);
 
@@ -871,7 +871,8 @@ namespace phys
 
 			if (abs(rel_ang) > M_PI2)
 			{
-				vel_r.ang += M_PI;
+				vel_r.mag *= -1;
+				vel_r.normalize();
 				sat.inverse = true;
 				repeat = true;
 			}
@@ -925,6 +926,8 @@ namespace phys
 		vector<vec_n> out;
 		bool emodelast = false;
 
+		vector<vec_n> pos_buffer;
+		vector<vec_n> vel_buffer;
 
 		for (int i = 0; i < bodies.size(); i++)
 		{
@@ -934,20 +937,30 @@ namespace phys
 			if (!phys_mode || !sat.isPlayer)
 				do_orbit(sat, w_time, pos, vel);
 			else
-			{
 				do_orbit_phys(sat, w_time, thrust, pos, vel);
+
+			pos_buffer.push_back(pos);
+			vel_buffer.push_back(vel);
+
+		}
+		for (int i = 0; i < bodies.size(); i++)
+		{
+			body &sat = *bodies[i];
+			sat.pos = pos_buffer[i] + (*sat.parent).pos;
+			sat.vel = vel_buffer[i] + (*sat.parent).vel;
+			sat.t_l = w_time;
+			sat.safe = w_time;
+			if (!sat.expire)
+				sat.expiry = sat.t_l + sat.t_p;
+
+			if (phys_mode && sat.isPlayer)
+			{
+				sat.parent = get_parent(sat, bodies);
 				make_orbit(sat, w_time);
 				gen.tails.back().clear();
 				for (int i2 = 0; i2 <= 100; i2++)
 					gen.tails.back().push_back(get_pos_ang(to_rad(i2, 100), *bodies.back()));
 			}
-
-			sat.pos = pos + (*sat.parent).pos;
-			sat.vel = vel + (*sat.parent).vel;
-			sat.t_l = w_time;
-			sat.safe = w_time;
-			if (!sat.expire)
-				sat.expiry = sat.t_l + sat.t_p;
 
 			out.push_back(sat.pos);
 		}
@@ -1179,7 +1192,7 @@ namespace phys
 		plr.fuel = 10;
 		plr.mass = 1000000;
 		plr.f_p_t = 0.0000000000001;
-		plr.gyro = 1000;
+		plr.gyro = 100000;
 		plr.eng_F = 0.0001;
 	}
 
@@ -1194,6 +1207,7 @@ namespace render_debug			//To be removed once the neccesary render_tools functio
 {
 	using sf::Vertex;
 	using sf::Color;
+	using sf::CircleShape;
 	using sf::Vector2f;
 	using std::vector;
 	using shared::vec_n;
@@ -1255,6 +1269,22 @@ namespace render_debug			//To be removed once the neccesary render_tools functio
 			render_text(texts[i], vec_n(0, i * 25));
 	}
 
+	void render_player(double rot, vec_n pos, vec_n origo, double zoom)
+	{
+		vector<vec_n> temp;
+		temp.push_back(pos);
+		pos = handle_scale(temp, origo, zoom)[0];
+
+		CircleShape plyr(10, 3);
+		plyr.setFillColor(sf::Color::Green);
+		plyr.setOrigin(5, 5);
+		plyr.setPosition(pos);
+		plyr.setScale(vec_n(1, 2));
+		plyr.setRotation(rot / phys::M_2PI * 360);
+
+		window2.draw(plyr);
+	}
+
 	void render_all(shared::world_state in)
 	{
 		window2.clear();
@@ -1271,6 +1301,7 @@ namespace render_debug			//To be removed once the neccesary render_tools functio
 		texts.push_back(std::to_string(phys::emode));
 
 		render_texts(texts);
+		render_player(in.player_rotation, in.bodies.back(), in.bodies[in.focus], in.zoom);
 
 		//window2.display();
 	}
