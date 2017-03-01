@@ -298,6 +298,7 @@ namespace phys
 		double w_time = 0;
 		double w_time_last = 0;
 		double w_time_diff = 0;
+		double d_time_fact = 1;
 	};
 
 	struct plyr_struct
@@ -697,7 +698,7 @@ namespace phys
 			vel.mag = -vel.mag;
 
 		vel.ang = -V -vel.ang + sat.normal + M_PI2;
-		vel.ang = ang_wrap(vel.ang);
+		vel.ang = ang_wrap(vel.ang + M_PI);
 
 		vel_out = vel;
 	}
@@ -903,6 +904,7 @@ namespace phys
 
 		if (sat.inverse)
 			tV = ang_wrap(-tV);
+
 		sat.En = sqr(vel_r.mag) / 2 - u / pos_r.mag;			//Store orbital Energy, velocital energy plus gravitational energy
 		sat.Ar = vel_r.mag * pos_r.mag * cos(rel_ang);			//Store area swept per unit of time, altitude times velocity times cosine-of-the-angle
 		sat.Mn = Mn_from_r(sat.ax_a, u);						//Store mean angular motion of the body, as per yet another equation dug up from obscure wikipedia stubs
@@ -916,6 +918,7 @@ namespace phys
 			double V_max = get_V_r(parent.SOI, sat);
 			double M_max = get_M(V_max, sat.ecc);
 			sat.expiry = M_to_time(sat, M_max, sat.epoch);
+			sat.expire = 1;
 		}
 	}
 
@@ -950,20 +953,29 @@ namespace phys
 			sat.vel = vel_buffer[i] + (*sat.parent).vel;
 			sat.t_l = w_time;
 			sat.safe = w_time;
+
+
 			if (!sat.expire)
 				sat.expiry = sat.t_l + sat.t_p;
 
-			if (phys_mode && sat.isPlayer)
+			body &new_parent = *get_parent(sat, bodies);
+			bool expired = false;
+			if (new_parent.self != (*sat.parent).self)
+				expired = true;
+			sat.parent = &new_parent;
+
+			if (phys_mode && sat.isPlayer || expired)
 			{
-				sat.parent = get_parent(sat, bodies);
 				make_orbit(sat, w_time);
 				gen.tails.back().clear();
-				for (int i2 = 0; i2 <= 100; i2++)
-					gen.tails.back().push_back(get_pos_ang(to_rad(i2, 100), *bodies.back()));
+				for (int i2 = 0; i2 <= 1000; i2++)
+					gen.tails.back().push_back(get_pos_ang(to_rad(i2, 1000), sat));
 			}
 
 			out.push_back(sat.pos);
 		}
+
+
 
 		//get_expiry(*bodies[bodies.size() - 1], bodies, w_time);
 		return out;
@@ -973,7 +985,10 @@ namespace phys
 	{
 		using namespace input;
 
-		gen.zoom_mem *= pow(1.1, keyboard.scroll);
+		if (!keyboard.isPressed(key_state::keys::Num0))
+			gen.zoom_mem *= pow(1.1, keyboard.scroll);
+		else
+			gen.d_time_fact *= pow(1.1, keyboard.scroll);
 
 		plr.spin -= plr.gyro * gen.w_time_diff * keyboard.isPressed(key_state::keys::Left);
 		plr.spin += plr.gyro * gen.w_time_diff * keyboard.isPressed(key_state::keys::Right);
@@ -1016,7 +1031,7 @@ namespace phys
 		using shared::screen_state;
 
 		gen.w_time_last = gen.w_time;
-		gen.w_time += (shared::r_time - shared::l_time) / 100.0 / shared::cps / gen.zoom_mem;
+		gen.w_time += (shared::r_time - shared::l_time) / 100.0 / shared::cps / gen.d_time_fact;
 		gen.w_time_diff = gen.w_time - gen.w_time_last;
 
 		vec_n eng_thrust = do_game_tick();
@@ -1024,7 +1039,7 @@ namespace phys
 
 		screen_state.bodies = do_phys_tick(gen.bodies, gen.w_time, eng_mode, eng_thrust);
 
-		if (gen.last_predict + 0.1 / shared::cps < shared::r_time)
+		if (gen.last_predict + 0.1 / shared::cps < shared::r_time && 0)
 		{
 			vector<vector<double>> pairs;
 			body &plyr = *gen.bodies.back();
@@ -1190,7 +1205,7 @@ namespace phys
 		gen.tails = get_tails_basic(gen.bodies);
 
 		plr.fuel = 10;
-		plr.mass = 1000000;
+		plr.mass = 1000000000;
 		plr.f_p_t = 0.0000000000001;
 		plr.gyro = 100000;
 		plr.eng_F = 0.0001;
@@ -1298,7 +1313,7 @@ namespace render_debug			//To be removed once the neccesary render_tools functio
 		texts.push_back(std::to_string(phys::plr.spin / phys::M_2PI * 4));
 		texts.push_back(std::to_string(vmag((*phys::gen.bodies.back()).vel)));
 		texts.push_back(std::to_string( (*phys::gen.bodies.back()).ecc ));
-		texts.push_back(std::to_string(phys::emode));
+		texts.push_back(std::to_string(( *phys::gen.bodies.back()).expire ));
 
 		render_texts(texts);
 		render_player(in.player_rotation, in.bodies.back(), in.bodies[in.focus], in.zoom);
