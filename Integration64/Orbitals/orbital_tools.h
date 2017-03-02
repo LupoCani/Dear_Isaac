@@ -556,12 +556,12 @@ namespace phys
 		return M;
 	}
 
-	double M_to_time(body sat, double M, double w_time_min = NAN)
+	double M_to_time(body sat, double M, double w_time_min = -1)
 	{
 		double d_time = M / sat.Mn;
 		double w_time = d_time + sat.epoch;
 
-		if (!(sat.shape || isnan(w_time_min)))
+		if (!(sat.shape || w_time_min < 0))
 		{
 			while (w_time < w_time_min)
 				w_time += sat.t_p;
@@ -777,29 +777,16 @@ namespace phys
 
 		double start, end;
 		if (list.size()) {
-			vec_n sat_pos = sat.pos - (*sat.parent).pos;
-			vec_n sat_pos_old = sat_pos;
+			vec_n sat_pos;
 			do_orbit(sat, sat.t_l, sat_pos);
-
-			if (sat.safe - sat.t_l > 0)
-				//do_orbit(sat, sat.t_l, sat_pos);
-				start = get_V_phys(sat, sat_pos_old);
-			else
-				start = get_V_phys(sat, sat_pos);
-
-			std::cout << (sat_pos - sat_pos_old).x << std::endl;
-			std::cout << (sat_pos - sat_pos_old).y << std::endl;
+			start = get_V_phys(sat, sat_pos);
 
 			do_orbit(sat, sat.expiry, sat_pos);
 			end = get_V_phys(sat, sat_pos);
-
-			do_orbit(*list[0], sat.expiry, sat_pos);
-			ends[0] = get_V_phys(sat, sat_pos);
 		}
 		//double end = sat.V_exp;
-
 		if (list.size())
-			std::cout << M_to_time(sat, get_M(start, sat.ecc), sat.t_l) -M_to_time(*list[0], get_M(starts[0], (*list[0]).ecc), (*list[0]).t_l) << std::endl, system("pause");
+			std::cout << M_to_time(sat, get_M(end, sat.ecc), sat.t_l-0.01) -M_to_time(*list[0], get_M(ends[0], (*list[0]).ecc), 0 ) << std::endl, system("pause");
 
 
 		vec_n sat_pos_old;
