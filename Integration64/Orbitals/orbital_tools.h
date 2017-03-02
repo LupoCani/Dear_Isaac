@@ -238,6 +238,10 @@ namespace shared
 
 		double zoom = 1;
 		int focus = 0;
+		int target = -1;
+		double target_time;
+		vec_n target_close;
+		vec_n player_close;
 
 		double player_rotation; //Angle in radians, sweeping counter-clockwise.
 	};
@@ -265,8 +269,9 @@ namespace phys
 		bool inverse;	//Whether or not the orbit is counter-clockwise, with all the special cases that entails
 
 		short expire;	//Whether or not there is a predicted expiry. 0 = no confirmed expiry, 1 = expiry by leaving SOI, 2 = expiry by entering SOI
-		double expiry;	//The upper bound on the time of expiry. For expire = 0, use t_l + t_p
-		double safe;	//The lower bound on the time of expiry.
+		double expiry;	//Before this time, it is guaranteed no type-one expiry will occur. The time of expiry if expire > 0;
+		double safe;	//Before this time, it is guaranteed no expiry will occur.
+		double V_exp;	//The true anomaly at the predicted point of expiry.
 
 		vec_n vel;		//Velocity at t_l
 		vec_n pos;		//Position at t_l
@@ -299,6 +304,12 @@ namespace phys
 		double w_time_last = 0;
 		double w_time_diff = 0;
 		double d_time_fact = 1;
+
+		int target = 0;
+		bool isTarget = false;
+		double min_dist;
+		vec_n target_pos;
+		vec_n player_pos;
 	};
 
 	struct plyr_struct
@@ -550,11 +561,10 @@ namespace phys
 		double d_time = M / sat.Mn;
 		double w_time = d_time + sat.epoch;
 
-		if (sat.shape == 0 && !isnan(w_time_min))
+		if (!(sat.shape || isnan(w_time_min)))
 		{
-			double r_time = M_2PI / sat.Mn;
 			while (w_time < w_time_min)
-				w_time += r_time;
+				w_time += sat.t_p;
 		}
 
 		return w_time;
@@ -694,7 +704,7 @@ namespace phys
 
 		V = do_orbit_precise(part, sat, log2(pow(10, 20)));
 		if (sat.inverse)
-			V = M_2PI - V;
+			V = ang_wrap(V);
 
 		radius = get_r(V, sat);
 
@@ -717,13 +727,15 @@ namespace phys
 	}
 
 	void get_expiry(body &sat, vector<body*> list, vector<body*> &list_out, vector<vector<double>> &mins_out, bool &will_expire, int &new_parent)
+		//This one's gonna be tough.
 	{
 		vector<body*> list_in = list;
 		vector<double> starts;			//Current V-values for bodies
 		vector<double> ends;			//V-values for bodies at the end of the relevant time span
 		vector<int>	its;				//The iterators for the bodies
-		list = vector<body*>(0);
-		int precision = 1000;
+		list.clear();
+		int precision;
+		int precision_base = 1000;
 
 		vector<vector<double>> pairs_dist;
 		vector<vector<double>> pairs_time;
@@ -731,20 +743,28 @@ namespace phys
 		vector<double> min_dists;
 		vector<double> min_times;
 
+		/*
+		We'll try to find if there's any body, orbiting the same parent as the player, into whose SOI the player will enter, and when.
+		We could just check a lot of moments in time with do_orbit(), but that function is expensive as hell.
+
+		Thus, we increment 
+		*/
+
+
 		for (int i = 0; i < list_in.size(); i++)
 		{
 			body &pln = *list_in[i];
-			if (pln.parent == sat.parent && pln.self != sat.self && !pln.isSun)
+			if (pln.parent == sat.parent && !(pln.isPlayer || pln.isSun))
 			{
-				vec_n pln_pos = pln.pos - (*pln.parent).pos;;
-				if (sat.safe - sat.t_l > 0.00001)
-					do_orbit(pln, sat.safe, pln_pos);
+				vec_n cur_pos = pln.pos - (*pln.parent).pos;;
+				if (sat.safe - sat.t_l > 0)
+					do_orbit(pln, sat.t_l, cur_pos), std::cout << "hi!\n";
 
 				vec_n end_pos;
-				list.push_back(pln.self);
-				starts.push_back(get_V_phys(pln, pln_pos));		//Get the current true anomaly of the body. 
-
 				do_orbit(pln, sat.expiry, end_pos);
+
+				list.push_back(pln.self);
+				starts.push_back(get_V_phys(pln, cur_pos));		//Get the current true anomaly of the body. 
 				ends.push_back(get_V_phys(pln, end_pos));
 				its.push_back(0);
 
@@ -754,67 +774,115 @@ namespace phys
 				min_dists.push_back(DBL_MAX);
 			}
 		}
-		double start = sat.normal - atan2(sat.pos - (*sat.parent).pos);
-		vec_n end_pos_plyr;
-		do_orbit(sat, sat.expiry, end_pos_plyr);
-		double end = sat.normal - atan2(end_pos_plyr);
+
+		double start, end;
+		if (list.size()) {
+			vec_n sat_pos = sat.pos - (*sat.parent).pos;
+			vec_n sat_pos_old = sat_pos;
+			do_orbit(sat, sat.t_l, sat_pos);
+
+			if (sat.safe - sat.t_l > 0)
+				//do_orbit(sat, sat.t_l, sat_pos);
+				start = get_V_phys(sat, sat_pos_old);
+			else
+				start = get_V_phys(sat, sat_pos);
+
+			std::cout << (sat_pos - sat_pos_old).x << std::endl;
+			std::cout << (sat_pos - sat_pos_old).y << std::endl;
+
+			do_orbit(sat, sat.expiry, sat_pos);
+			end = get_V_phys(sat, sat_pos);
+
+			do_orbit(*list[0], sat.expiry, sat_pos);
+			ends[0] = get_V_phys(sat, sat_pos);
+		}
+		//double end = sat.V_exp;
+
+		if (list.size())
+			std::cout << M_to_time(sat, get_M(start, sat.ecc), sat.t_l) -M_to_time(*list[0], get_M(starts[0], (*list[0]).ecc), (*list[0]).t_l) << std::endl, system("pause");
+
 
 		vec_n sat_pos_old;
 		double sat_tim_old = 0;
 
-		for (int i2 = 0; i2 < precision; i2++)
+		precision = precision_base * ang_wrap(end - start) / M_2PI;
+		if (precision < precision_base / 20)
+			precision = precision_base / 20;
+
+		if (list.size())
 		{
-			int i_sat = 0;
-			int i_pln = 0;
-			double Vs = to_rad(i2, precision, end - start);
+			std::cout << list.size() << ": \n";
 
-			vec_n sat_pos = get_pos_ang(start + Vs, sat);
-			double sat_tim = M_to_time(sat, get_M(Vs, sat.ecc), sat.t_l);
-
-			vec_n sat_pos_diff = sat_pos - sat_pos_old;
-			double sat_tim_diff = sat_tim - sat_tim_old;
-
-			for (int i = 0; i < list.size(); i++)
+			for (int i2 = 0; i2 < precision; i2++)
 			{
-				body &pln = *list[i];
-				double Vp = starts[i] + to_rad(its[i], precision, ends[i] - starts[i]);
-				double pln_tim = M_to_time(pln, get_M(Vp, pln.ecc), pln.t_l);
-				vec_n pln_pos = get_pos_ang(Vp, pln);
+				int i_sat = 0;
+				int i_pln = 0;
+				double Vs = to_rad(i2, precision, end - start);
 
-				while (pln_tim < sat_tim_old)
+				vec_n sat_pos = get_pos_ang(start + Vs, sat);
+				double sat_tim = M_to_time(sat, get_M(Vs, sat.ecc), sat.t_l);
+
+				vec_n sat_pos_diff = sat_pos - sat_pos_old;
+				double sat_tim_diff = sat_tim - sat_tim_old;
+
+				std::cout << i2 << ": " << std::endl;
+
+				for (int i = 0; i < list.size(); i++)
 				{
-					its[i]++;
-					Vp = starts[i] + to_rad(its[i], precision, ends[i] - starts[i]);
-					pln_tim = M_to_time(pln, get_M(Vp, pln.ecc), pln.t_l);
-				}
-				while (pln_tim < sat_tim)
-				{
-					double diff_part = (pln_tim - sat_tim_old) / sat_tim_diff;
-					vec_n sat_pos_est = sat_pos_old + sat_pos_diff * diff_part;
+					body &pln = *list[i];
+					double Vp = starts[i] + to_rad(its[i], precision, ends[i] - starts[i]);
+					double pln_tim = M_to_time(pln, get_M(Vp, pln.ecc), pln.t_l);
+					vec_n pln_pos = get_pos_ang(Vp, pln);
 
-					double dist_est = vmag(sat_pos_est - pln_pos);
-					pairs_dist[i].push_back(dist_est);
-					pairs_time[i].push_back(pln_tim);
+					std::cout << "    " << i << std::endl;
 
-					its[i]++;
-					Vp = starts[i] + to_rad(its[i], precision, ends[i] - starts[i]);
-					pln_tim = M_to_time(pln, get_M(Vp, pln.ecc), pln.t_l);
+					while (pln_tim < sat_tim_old)
+					{
+						its[i]++;
+						Vp = starts[i] + to_rad(its[i], precision, ends[i] - starts[i]);
+						pln_tim = M_to_time(pln, get_M(Vp, pln.ecc), pln.t_l);
+					}
+					std::cout << "    " << "Midway!" << std::endl;
+					while (pln_tim < sat_tim)
+					{
+						double diff_part = (pln_tim - sat_tim_old) / sat_tim_diff;	//What percentage of the current time interval has passed in the moment we're observing.
+						vec_n sat_pos_est = sat_pos_old + sat_pos_diff * diff_part;
+
+						double dist_est = vmag(sat_pos_est - pln_pos);
+						pairs_dist[i].push_back(dist_est);
+						pairs_time[i].push_back(pln_tim);
+
+						its[i]++;
+						Vp = starts[i] + to_rad(its[i], precision, ends[i] - starts[i]);
+						pln_tim = M_to_time(pln, get_M(Vp, pln.ecc), pln.t_l);
+
+						std::cout << "    " << Vp << std::endl;
+						std::cout << "    " << get_M(Vp, pln.ecc) << std::endl;
+						std::cout << "    " << pln_tim << " - " << sat_tim << std::endl;
+						std::cout << "    " << " ----- " << std::endl;
+						Sleep(20);
+
+					}
 				}
+				sat_pos_old = sat_pos;
+				sat_tim_old = sat_tim;
 			}
-			sat_pos_old = sat_pos;
-			sat_tim_old = sat_tim;
 		}
+			
 
 		body *parent_next_p = (*sat.parent).parent;
 		double end_body = -1;
 		double end_time = sat.expiry;
 		bool ending = false;
 
+
 		for (int i = 0; i < list.size(); i++)
 		{
 			for (int i2 = 0; i2 < pairs_time.size(); i2++)
 			{
-				if (pairs_dist[i][i2] < min_dists[i])
+				std::cout << i << " " << i2 << std::endl;
+				if (pairs_dist[i][i2] 
+					< min_dists[i])
 				{
 					min_dists[i] = pairs_dist[i][i2];
 					min_times[i] = pairs_time[i][i2];
@@ -925,6 +993,7 @@ namespace phys
 		sat.t_p = M_2PI / sat.Mn;
 		sat.expiry = w_time + sat.t_p;
 		sat.safe = w_time;
+		sat.expire = 0;
 
 		if (sat.shape || r_vec.two > parent.SOI)
 		{
@@ -932,6 +1001,7 @@ namespace phys
 			double M_max = get_M(V_max, sat.ecc);
 			sat.expiry = M_to_time(sat, M_max, sat.epoch);
 			sat.expire = 1;
+			sat.V_exp = V_max;
 		}
 	}
 
@@ -946,8 +1016,8 @@ namespace phys
 		double V_start = ang_wrap(get_V_phys(sat), 2);
 		double V_end;
 
-		if (sat.shape)
-			V_end = ang_wrap(V_bound_H(sat.ecc), 2);
+		if (sat.expire)
+			V_end = sat.V_exp;
 		else
 			V_end = V_start + M_2PI;
 
@@ -992,7 +1062,6 @@ namespace phys
 			sat.pos = pos_buffer[i] + (*sat.parent).pos;
 			sat.vel = vel_buffer[i] + (*sat.parent).vel;
 			sat.t_l = w_time;
-			sat.safe = w_time;
 
 
 			if (!sat.expire)
@@ -1009,10 +1078,13 @@ namespace phys
 
 		body &plyr = *bodies.back();
 
-		if (phys_mode || expired || plyr.shape)
+		if (phys_mode || expired || plyr.expire)
 		{
 			if (expired || phys_mode)
 				make_orbit(plyr, w_time);
+
+			if (expired || phys_mode || plyr.safe < plyr.t_l)
+				plyr.safe = plyr.t_l;
 
 			gen.tails[gen.tails.size() - 1] = make_tail(plyr, 1000);
 		}
@@ -1057,6 +1129,14 @@ namespace phys
 		{
 			plr.thrust = 0;
 		}
+		if (keyboard.isPressed(key_state::keys::Numpad0))
+		{
+			std::cin >> gen.target;
+		}
+		if (keyboard.isPressed(key_state::keys::Numpad4))
+		{
+			std::cin >> shared::screen_state.focus;
+		}
 
 		double thrust_actual = 0;
 		vec_r accel;
@@ -1079,7 +1159,7 @@ namespace phys
 		screen_state.zoom = gen.zoom_mem;
 		screen_state.player_rotation = plr.rot;
 
-		return vec_to_pos(plr.rot, thrust_actual / (plr.mass + plr.fuel) );
+		return vec_to_pos(plr.rot, -thrust_actual / (plr.mass + plr.fuel) );
 	}
 
 #ifdef RENDER_DEBUG_INSTALLED
@@ -1093,7 +1173,11 @@ namespace phys
 		using shared::screen_state;
 
 		gen.w_time_last = gen.w_time;
-		gen.w_time += (shared::r_time - shared::l_time) / 100.0 / shared::cps / gen.d_time_fact;
+		double diff_time = (shared::r_time - shared::l_time) / 100.0 / shared::cps / gen.d_time_fact;
+		if (diff_time < 0.01)
+			gen.w_time += diff_time;
+		else
+			gen.w_time += 0.01;
 		gen.w_time_diff = gen.w_time - gen.w_time_last;
 
 		vec_n eng_thrust = do_game_tick();
@@ -1101,7 +1185,7 @@ namespace phys
 
 		screen_state.bodies = do_phys_tick(gen.bodies, gen.w_time, eng_mode, eng_thrust);
 
-		if (gen.last_predict + 0.1 / shared::cps < shared::r_time && 0)
+		if (gen.last_predict + 0.1 / shared::cps < shared::r_time)
 		{
 			vector<vector<double>> pairs;
 			body &plyr = *gen.bodies.back();
@@ -1115,8 +1199,24 @@ namespace phys
 			if (expiring)
 			{
 				plyr.expire = 2;
-				plyr.expiry = pairs[1][new_parent];
+				plyr.expiry = pairs[0][new_parent];
 			}
+			else
+			{
+				plyr.safe = plyr.expiry;
+			}
+
+			//std::cout << co_sats.size() << "found one!\n";
+
+			for (int i = 0; i < co_sats.size(); i++)
+			{
+				if (co_sats[i] == gen.bodies[gen.target])
+				{
+					gen.min_dist = pairs[0][i];
+				}
+			}
+
+
 			gen.last_predict = shared::r_time;
 		}
 
@@ -1197,7 +1297,7 @@ namespace phys
 		moon.pos.x = -25300;
 		moon.pos.y = 0;
 		moon.vel.x = 0;
-		moon.vel.y = 40000;
+		moon.vel.y = 46000;
 		moon.u = pow(10, 8);
 		moon.name = "moon";
 
@@ -1205,7 +1305,7 @@ namespace phys
 		planet.pos.x = -25000;
 		planet.pos.y = 0;
 		planet.vel.x = 0;
-		planet.vel.y = 39900;
+		planet.vel.y = 40000;
 		planet.u = pow(10, 10);
 		planet.name = "planet";
 
@@ -1237,7 +1337,7 @@ namespace phys
 		plyr.pos.x = -40200;
 		plyr.pos.y = 0;
 		plyr.vel.x = 0;
-		plyr.vel.y = 45000;
+		plyr.vel.y = 50000;
 		plyr.u = 1;
 		plyr.isPlayer = true;
 		plyr.name = "plyr";
@@ -1367,12 +1467,12 @@ namespace render_debug			//To be removed once the neccesary render_tools functio
 
 		std::vector<std::string> texts;
 		texts.push_back(std::to_string(phys::plr.thrust));
-		texts.push_back(std::to_string(phys::plr.fuel));
-		texts.push_back(std::to_string(phys::plr.spin / phys::M_2PI * 4));
 		texts.push_back(std::to_string(phys::to_rad(phys::plr.rot, phys::M_2PI, 4)));
-		texts.push_back(std::to_string(vmag((*phys::gen.bodies.back()).vel)));
-		texts.push_back(std::to_string( (*phys::gen.bodies.back()).ecc ));
 		texts.push_back(std::to_string(phys::to_rad(phys::atan2(phys::thrust_debug), phys::M_2PI, 4)));
+
+		texts.push_back(std::to_string((*phys::gen.bodies.back()).ecc));
+
+		texts.push_back(std::to_string(phys::gen.min_dist));
 
 		render_texts(texts);
 		render_player(in.player_rotation, in.bodies.back(), in.bodies[in.focus], in.zoom);
