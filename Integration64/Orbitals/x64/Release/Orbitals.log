@@ -1,11 +1,11 @@
 ﻿  Source.cpp
 c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration64\orbitals\orbital_tools.h(156): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration64\orbitals\orbital_tools.h(707): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
-c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration64\orbitals\orbital_tools.h(800): warning C4244: '=': conversion from 'long double' to 'int', possible loss of data
-c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration64\orbitals\orbital_tools.h(879): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
-c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration64\orbitals\orbital_tools.h(1161): warning C4800: 'double': forcing value to bool 'true' or 'false' (performance warning)
-c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration64\orbitals\orbital_tools.h(1172): warning C4101: 'expire_time': unreferenced local variable
-c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration64\orbitals\orbital_tools.h(1434): warning C4244: 'argument': conversion from 'long double' to 'float', possible loss of data
+c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration64\orbitals\orbital_tools.h(710): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration64\orbitals\orbital_tools.h(804): warning C4244: '=': conversion from 'long double' to 'int', possible loss of data
+c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration64\orbitals\orbital_tools.h(884): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration64\orbitals\orbital_tools.h(1164): warning C4800: 'double': forcing value to bool 'true' or 'false' (performance warning)
+c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration64\orbitals\orbital_tools.h(1175): warning C4101: 'expire_time': unreferenced local variable
+c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration64\orbitals\orbital_tools.h(1436): warning C4244: 'argument': conversion from 'long double' to 'float', possible loss of data
 c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration64\orbitals\render_tools.h(98): warning C4244: '=': conversion from 'unsigned int' to 'float', possible loss of data
 c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration64\orbitals\render_tools.h(99): warning C4244: '=': conversion from 'unsigned int' to 'float', possible loss of data
 c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration64\orbitals\render_tools.h(118): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
@@ -59,9 +59,9 @@ c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration64\orbitals\rende
 c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration64\orbitals\render_tools.h(531): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
 c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration64\orbitals\render_tools.h(532): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
   Generating code
-  43 of 1369 functions ( 3.1%) were compiled, the rest were copied from previous compilation.
-    0 functions were new in current compilation
-    17 functions had inline decision re-evaluated but remain unchanged
+  54 of 1369 functions ( 3.9%) were compiled, the rest were copied from previous compilation.
+    6 functions were new in current compilation
+    6 functions had inline decision re-evaluated but remain unchanged
   Finished generating code
   Orbitals.vcxproj -> C:\Users\Admin\Bibliotek\Programvara\C++\Dear_Isaac\Integration64\x64\Release\Orbitals.exe
   Orbitals.vcxproj -> C:\Users\Admin\Bibliotek\Programvara\C++\Dear_Isaac\Integration64\x64\Release\Orbitals.pdb (Full PDB)

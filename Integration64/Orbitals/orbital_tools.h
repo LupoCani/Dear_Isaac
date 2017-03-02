@@ -294,25 +294,31 @@ namespace phys
 		long double two = 0;
 	};
 
-	struct vars_struct
+	namespace gen
 	{
-		vector<body*> bodies;
-		vector<vector<vec_n>> tails;
-		double zoom_mem = 2;
-		double last_predict = 0;
 		double w_time = 0;
 		double w_time_last = 0;
 		double w_time_diff = 0;
 		double d_time_fact = 1;
 
+		double last_predict = 0;
+
+		vector<body*> bodies;
+		vector<vector<vec_n>> tails;
+	}
+
+	namespace game
+	{
 		int target = 0;
 		bool isTarget = false;
 		double min_dist;
 		vec_n target_pos;
 		vec_n player_pos;
-	};
 
-	struct plyr_struct
+		double zoom_mem = 2;
+	}
+
+	namespace rock
 	{
 		double spin = 0;
 		double gyro = 0;
@@ -324,10 +330,7 @@ namespace phys
 		double mass = 0;
 		double f_p_t = 1;
 		double eng_F = 1;
-	};
-
-	plyr_struct plr;
-	vars_struct gen;
+	}
 
 	//Begin generic vector math functions
 	double clamp(double in)
@@ -744,6 +747,7 @@ namespace phys
 
 		vector<double> min_dists;
 		vector<double> min_times;
+		vector<double> last_times;
 
 		/*
 		We'll try to find if there's any body, orbiting the same parent as the player, into whose SOI the player will enter, and when.
@@ -752,10 +756,11 @@ namespace phys
 		Thus, we increment 
 		*/
 
-		double start, end;
+		double start, end, start_t;
+		start_t = sat.safe;
 		{
 			vec_n sat_pos;
-			do_orbit(sat, sat.safe, sat_pos);
+			do_orbit(sat, start_t, sat_pos);
 			start = get_V_phys(sat, sat_pos);
 
 			do_orbit(sat, sat.expiry, sat_pos);
@@ -771,7 +776,7 @@ namespace phys
 			if (pln.parent == sat.parent && !(pln.isPlayer || pln.isSun))
 			{
 				vec_n cur_pos;
-				do_orbit(pln, sat.t_l, cur_pos);
+				do_orbit(pln, start_t, cur_pos);
 
 				vec_n end_pos;
 				do_orbit(pln, sat.expiry, end_pos);
@@ -781,36 +786,34 @@ namespace phys
 				ends.push_back(get_V_phys(pln, end_pos));
 				its.push_back(0);
 
-				double laps = floor( (sat.expiry - sat.safe) / pln.t_p);
+				double laps = floor((sat.expiry - start_t) / pln.t_p);
 
-				while (ends[0] < starts[0] + laps * M_2PI)
-					ends[0] += M_2PI;
+				while (ends[ends.size() - 1] < starts[starts.size() - 1] + laps * M_2PI)
+					ends[ends.size() - 1] += M_2PI;
 
 				pairs_dist.push_back(vector<double>());
 				pairs_time.push_back(vector<double>());
 				min_times.push_back(DBL_MAX);
 				min_dists.push_back(DBL_MAX);
+				last_times.push_back(start_t - pow(10, -10));
 			}
 		}
-		
-
-		vec_n sat_pos_old;
-		double sat_tim_old = 0;
-
-		precision = precision_base * ang_wrap(end - start) / M_2PI;
-		if (precision < precision_base / 20)
-			precision = precision_base / 20;
 
 		if (list.size())
 		{
+			precision = precision_base * ang_wrap(end - start) / M_2PI;
+			if (precision < precision_base / 20)
+				precision = precision_base / 20;
+
+			vec_n sat_pos_old;
+			double sat_tim_old = 0;
+
 			for (int i2 = 0; i2 < precision; i2++)
 			{
-				int i_sat = 0;
-				int i_pln = 0;
 				double Vs = to_rad(i2, precision, end - start);
 
 				vec_n sat_pos = get_pos_ang(start + Vs, sat);
-				double sat_tim = M_to_time(sat, get_M(Vs, sat.ecc), sat.t_l);
+				double sat_tim = M_to_time(sat, get_M(Vs, sat.ecc), start_t);
 
 				vec_n sat_pos_diff = sat_pos - sat_pos_old;
 				double sat_tim_diff = sat_tim - sat_tim_old;
@@ -819,14 +822,15 @@ namespace phys
 				{
 					body &pln = *list[i];
 					double Vp = starts[i] + to_rad(its[i], precision, ends[i] - starts[i]);
-					double pln_tim = M_to_time(pln, get_M(Vp, pln.ecc), pln.t_l);
+					double pln_tim = M_to_time(pln, get_M(Vp, pln.ecc), start_t);
 					vec_n pln_pos = get_pos_ang(Vp, pln);
 
 					while (pln_tim < sat_tim_old)
 					{
 						its[i]++;
 						Vp = starts[i] + to_rad(its[i], precision, ends[i] - starts[i]);
-						pln_tim = M_to_time(pln, get_M(Vp, pln.ecc), pln.t_l);
+						pln_tim = M_to_time(pln, get_M(Vp, pln.ecc), last_times[i]);
+						last_times[i] = pln_tim;
 					}
 
 					while (pln_tim < sat_tim)
@@ -840,20 +844,21 @@ namespace phys
 
 						its[i]++;
 						Vp = starts[i] + to_rad(its[i], precision, ends[i] - starts[i]);
-						pln_tim = M_to_time(pln, get_M(Vp, pln.ecc), pln.t_l);
+						pln_tim = M_to_time(pln, get_M(Vp, pln.ecc), last_times[i]);
+						last_times[i] = pln_tim;
 					}
 				}
 				sat_pos_old = sat_pos;
 				sat_tim_old = sat_tim;
 			}
 		}
-			
+
 
 		body *parent_next_p = (*sat.parent).parent;
 		double end_body = -1;
 		double end_time = sat.expiry;
 		bool ending = false;
-			
+
 
 		for (int i = 0; i < list.size(); i++)
 		{
@@ -1063,11 +1068,9 @@ namespace phys
 			if (expired || phys_mode || plyr.safe < plyr.t_l)
 				plyr.safe = plyr.t_l;
 
-			gen.tails[gen.tails.size() - 1] = make_tail(plyr, 1000);
+			gen::tails[gen::tails.size() - 1] = make_tail(plyr, 1000);
 		}
 
-
-		//get_expiry(*bodies[bodies.size() - 1], bodies, w_time);
 		return out;
 	}
 
@@ -1076,39 +1079,39 @@ namespace phys
 		using namespace input;
 
 		if (!keyboard.isPressed(key_state::keys::RShift))
-			gen.zoom_mem *= pow(1.1, keyboard.scroll);
+			game::zoom_mem *= pow(1.1, keyboard.scroll);
 		else
-			gen.d_time_fact *= pow(1.1, keyboard.scroll);
+			gen::d_time_fact *= pow(1.1, keyboard.scroll);
 
-		plr.spin -= plr.gyro * gen.w_time_diff * keyboard.isPressed(key_state::keys::Left);
-		plr.spin += plr.gyro * gen.w_time_diff * keyboard.isPressed(key_state::keys::Right);
+		rock::spin -= rock::gyro * gen::w_time_diff * keyboard.isPressed(key_state::keys::Left);
+		rock::spin += rock::gyro * gen::w_time_diff * keyboard.isPressed(key_state::keys::Right);
 
-		plr.rot += gen.w_time_diff * plr.spin;
+		rock::rot += gen::w_time_diff * rock::spin;
 
-		plr.rot = ang_wrap(plr.rot, 2);
+		rock::rot = ang_wrap(rock::rot, 2);
 
-		plr.thrust += keyboard.isPressed(key_state::keys::Up);
-		plr.thrust -= keyboard.isPressed(key_state::keys::Down);
+		rock::thrust += keyboard.isPressed(key_state::keys::Up);
+		rock::thrust -= keyboard.isPressed(key_state::keys::Down);
 
 		if (keyboard.isPressed(key_state::keys::Numpad1))
 		{
-			plr.spin = 0;
+			rock::spin = 0;
 		}
 		if (keyboard.isPressed(key_state::keys::Numpad3))
 		{
-			gen.d_time_fact = 100;
+			gen::d_time_fact = 100;
 		}
 		if (keyboard.isPressed(key_state::keys::Numpad6))
 		{
-			gen.d_time_fact = 1;
+			gen::d_time_fact = 1;
 		}
 		if (keyboard.isPressed(key_state::keys::Numpad2))
 		{
-			plr.thrust = 0;
+			rock::thrust = 0;
 		}
 		if (keyboard.isPressed(key_state::keys::Numpad0))
 		{
-			std::cin >> gen.target;
+			std::cin >> game::target;
 		}
 		if (keyboard.isPressed(key_state::keys::Numpad4))
 		{
@@ -1118,25 +1121,25 @@ namespace phys
 		double thrust_actual = 0;
 		vec_r accel;
 
-		if (plr.thrust < 0)
-			plr.thrust = 0;
+		if (rock::thrust < 0)
+			rock::thrust = 0;
 
-		if (plr.fuel > 0)
-			thrust_actual = plr.thrust * plr.eng_F;
+		if (rock::fuel > 0)
+			thrust_actual = rock::thrust * rock::eng_F;
 
-		plr.fuel -= thrust_actual * plr.f_p_t;
-		if (plr.fuel < 0)
-			plr.fuel = 0;
+		rock::fuel -= thrust_actual * rock::f_p_t;
+		if (rock::fuel < 0)
+			rock::fuel = 0;
 
-		accel.mag = thrust_actual / (plr.mass + plr.fuel);
-		accel.ang = plr.rot;
+		accel.mag = thrust_actual / (rock::mass + rock::fuel);
+		accel.ang = rock::rot;
 
 		using shared::screen_state;
 		screen_state.focus = 6;
-		screen_state.zoom = gen.zoom_mem;
-		screen_state.player_rotation = plr.rot;
+		screen_state.zoom = game::zoom_mem;
+		screen_state.player_rotation = rock::rot;
 
-		return vec_to_pos(plr.rot, -thrust_actual / (plr.mass + plr.fuel) );
+		return vec_to_pos(rock::rot, -thrust_actual / (rock::mass + rock::fuel) );
 	}
 
 #ifdef RENDER_DEBUG_INSTALLED
@@ -1149,29 +1152,29 @@ namespace phys
 	{
 		using shared::screen_state;
 
-		gen.w_time_last = gen.w_time;
-		double diff_time = (shared::r_time - shared::l_time) / 100.0 / shared::cps / gen.d_time_fact;
+		gen::w_time_last = gen::w_time;
+		double diff_time = (shared::r_time - shared::l_time) / 100.0 / shared::cps / gen::d_time_fact;
 		if (diff_time < 0.01)
-			gen.w_time += diff_time;
+			gen::w_time += diff_time;
 		else
-			gen.w_time += 0.01;
-		gen.w_time_diff = gen.w_time - gen.w_time_last;
+			gen::w_time += 0.01;
+		gen::w_time_diff = gen::w_time - gen::w_time_last;
 
 		vec_n eng_thrust = do_game_tick();
 		bool eng_mode = vmag(eng_thrust);
 
-		screen_state.bodies = do_phys_tick(gen.bodies, gen.w_time, eng_mode, eng_thrust);
+		screen_state.bodies = do_phys_tick(gen::bodies, gen::w_time, eng_mode, eng_thrust);
 
-		if (gen.last_predict + 0.1 / shared::cps < shared::r_time)
+		if (gen::last_predict + 0.1 / shared::cps < shared::r_time)
 		{
 			vector<vector<double>> pairs;
-			body &plyr = *gen.bodies.back();
+			body &plyr = *gen::bodies.back();
 			vector<body*> co_sats;
 			bool expiring;
 			int new_parent;
 			double expire_time;
 
-			get_expiry(plyr, gen.bodies, co_sats, pairs, expiring, new_parent);
+			get_expiry(plyr, gen::bodies, co_sats, pairs, expiring, new_parent);
 
 			if (expiring)
 			{
@@ -1181,27 +1184,26 @@ namespace phys
 			else
 			{
 				plyr.safe = plyr.expiry;
+				plyr.expiry = plyr.t_l += plyr.t_p;
 			}
-
-			//std::cout << co_sats.size() << "found one!\n";
 
 			for (int i = 0; i < co_sats.size(); i++)
 			{
-				if (co_sats[i] == gen.bodies[gen.target])
+				if (co_sats[i] == gen::bodies[game::target])
 				{
-					gen.min_dist = pairs[0][i];
+					game::min_dist = pairs[0][i];
 				}
 			}
 
 
-			gen.last_predict = shared::r_time;
+			gen::last_predict = shared::r_time;
 		}
 
-		vector<vector<vec_n>> tails_out = gen.tails;
+		vector<vector<vec_n>> tails_out = gen::tails;
 
 		for (int i = 0; i < tails_out.size(); i++)
 		{
-			vec_n par_pos = (*(*gen.bodies[i]).parent).pos;
+			vec_n par_pos = (*(*gen::bodies[i]).parent).pos;
 			for (int i2 = 0; i2 < tails_out[i].size(); i2++)
 			{
 				tails_out[i][i2] += par_pos;
@@ -1329,22 +1331,22 @@ namespace phys
 		unsorted.push_back(&yavin);		//Magenta
 		unsorted.push_back(&plyr);		//Red
 
-		gen.bodies = sort_bodies(unsorted);
+		gen::bodies = sort_bodies(unsorted);
 
 		for (int i2 = 0; i2 < 5; i2++)
-			for (int i = 0; i < gen.bodies.size(); i++)
+			for (int i = 0; i < gen::bodies.size(); i++)
 			{
-				make_orbit(*gen.bodies[i], 0);								//Get everything's orbit around the sun
-				(*gen.bodies[i]).parent = get_parent(*gen.bodies[i], gen.bodies);	//Check if the newly-determined SOIs make them into moons
+				make_orbit(*gen::bodies[i], 0);								//Get everything's orbit around the sun
+				(*gen::bodies[i]).parent = get_parent(*gen::bodies[i], gen::bodies);	//Check if the newly-determined SOIs make them into moons
 			}
 
-		gen.tails = get_tails_basic(gen.bodies);
+		gen::tails = get_tails_basic(gen::bodies, 1000);
 
-		plr.fuel = 1000;
-		plr.mass = 1000000000;
-		plr.f_p_t = 0.0;
-		plr.gyro = 100000000;
-		plr.eng_F = 1000000000000;
+		rock::fuel = 1000;
+		rock::mass = 1000000000;
+		rock::f_p_t = 0.0;
+		rock::gyro = 100000000;
+		rock::eng_F = 1000000000000;
 	}
 
 	void engine_init()
@@ -1443,13 +1445,13 @@ namespace render_debug			//To be removed once the neccesary render_tools functio
 		render_lines(in.paths, in.bodies[in.focus], in.zoom);
 
 		std::vector<std::string> texts;
-		texts.push_back(std::to_string(phys::plr.thrust));
-		texts.push_back(std::to_string(phys::to_rad(phys::plr.rot, phys::M_2PI, 4)));
+		texts.push_back(std::to_string(phys::rock::thrust));
+		texts.push_back(std::to_string(phys::to_rad(phys::rock::rot, phys::M_2PI, 4)));
 		texts.push_back(std::to_string(phys::to_rad(phys::atan2(phys::thrust_debug), phys::M_2PI, 4)));
 
-		texts.push_back(std::to_string((*phys::gen.bodies.back()).ecc));
+		texts.push_back(std::to_string((*phys::gen::bodies.back()).ecc));
 
-		texts.push_back(std::to_string(phys::gen.min_dist));
+		texts.push_back(std::to_string(phys::game::min_dist));
 
 		render_texts(texts);
 		render_player(in.player_rotation, in.bodies.back(), in.bodies[in.focus], in.zoom);
