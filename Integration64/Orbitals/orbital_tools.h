@@ -485,10 +485,12 @@ namespace phys
 		double cosE = get_cosE(tV, ecc);
 		double sinE = switch_co(cosE);
 
+		double overshoot = floor(tV / M_2PI) * M_2PI;
+
 		if (tV < M_PI)
-			return acos(cosE) - ecc * sinE;
+			return overshoot + acos(cosE) - ecc * sinE;
 		else
-			return M_2PI - acos(cosE) - ecc * -sinE;
+			return overshoot +  M_2PI - acos(cosE) - ecc * -sinE;
 	}
 
 	double get_M_E(double E, double ecc)
@@ -556,12 +558,12 @@ namespace phys
 		return M;
 	}
 
-	double M_to_time(body sat, double M, double w_time_min = -1)
+	double M_to_time(body sat, double M, double w_time_min = -100)
 	{
 		double d_time = M / sat.Mn;
 		double w_time = d_time + sat.epoch;
 
-		if (!(sat.shape || w_time_min < 0))
+		if (!(sat.shape || w_time_min < -99))
 		{
 			while (w_time < w_time_min)
 				w_time += sat.t_p;
@@ -750,15 +752,26 @@ namespace phys
 		Thus, we increment 
 		*/
 
+		double start, end;
+		{
+			vec_n sat_pos;
+			do_orbit(sat, sat.safe, sat_pos);
+			start = get_V_phys(sat, sat_pos);
+
+			do_orbit(sat, sat.expiry, sat_pos);
+			end = get_V_phys(sat, sat_pos);
+
+			while (end <= start)
+				end += M_2PI;
+		}
 
 		for (int i = 0; i < list_in.size(); i++)
 		{
 			body &pln = *list_in[i];
 			if (pln.parent == sat.parent && !(pln.isPlayer || pln.isSun))
 			{
-				vec_n cur_pos = pln.pos - (*pln.parent).pos;;
-				if (sat.safe - sat.t_l > 0)
-					do_orbit(pln, sat.t_l, cur_pos), std::cout << "hi!\n";
+				vec_n cur_pos;
+				do_orbit(pln, sat.t_l, cur_pos);
 
 				vec_n end_pos;
 				do_orbit(pln, sat.expiry, end_pos);
@@ -768,26 +781,18 @@ namespace phys
 				ends.push_back(get_V_phys(pln, end_pos));
 				its.push_back(0);
 
+				double laps = floor( (sat.expiry - sat.safe) / pln.t_p);
+
+				while (ends[0] < starts[0] + laps * M_2PI)
+					ends[0] += M_2PI;
+
 				pairs_dist.push_back(vector<double>());
 				pairs_time.push_back(vector<double>());
 				min_times.push_back(DBL_MAX);
 				min_dists.push_back(DBL_MAX);
 			}
 		}
-
-		double start, end;
-		if (list.size()) {
-			vec_n sat_pos;
-			do_orbit(sat, sat.t_l, sat_pos);
-			start = get_V_phys(sat, sat_pos);
-
-			do_orbit(sat, sat.expiry, sat_pos);
-			end = get_V_phys(sat, sat_pos);
-		}
-		//double end = sat.V_exp;
-		if (list.size())
-			std::cout << M_to_time(sat, get_M(end, sat.ecc), sat.t_l-0.01) -M_to_time(*list[0], get_M(ends[0], (*list[0]).ecc), 0 ) << std::endl, system("pause");
-
+		
 
 		vec_n sat_pos_old;
 		double sat_tim_old = 0;
@@ -798,8 +803,6 @@ namespace phys
 
 		if (list.size())
 		{
-			std::cout << list.size() << ": \n";
-
 			for (int i2 = 0; i2 < precision; i2++)
 			{
 				int i_sat = 0;
@@ -812,8 +815,6 @@ namespace phys
 				vec_n sat_pos_diff = sat_pos - sat_pos_old;
 				double sat_tim_diff = sat_tim - sat_tim_old;
 
-				std::cout << i2 << ": " << std::endl;
-
 				for (int i = 0; i < list.size(); i++)
 				{
 					body &pln = *list[i];
@@ -821,15 +822,13 @@ namespace phys
 					double pln_tim = M_to_time(pln, get_M(Vp, pln.ecc), pln.t_l);
 					vec_n pln_pos = get_pos_ang(Vp, pln);
 
-					std::cout << "    " << i << std::endl;
-
 					while (pln_tim < sat_tim_old)
 					{
 						its[i]++;
 						Vp = starts[i] + to_rad(its[i], precision, ends[i] - starts[i]);
 						pln_tim = M_to_time(pln, get_M(Vp, pln.ecc), pln.t_l);
 					}
-					std::cout << "    " << "Midway!" << std::endl;
+
 					while (pln_tim < sat_tim)
 					{
 						double diff_part = (pln_tim - sat_tim_old) / sat_tim_diff;	//What percentage of the current time interval has passed in the moment we're observing.
@@ -842,13 +841,6 @@ namespace phys
 						its[i]++;
 						Vp = starts[i] + to_rad(its[i], precision, ends[i] - starts[i]);
 						pln_tim = M_to_time(pln, get_M(Vp, pln.ecc), pln.t_l);
-
-						std::cout << "    " << Vp << std::endl;
-						std::cout << "    " << get_M(Vp, pln.ecc) << std::endl;
-						std::cout << "    " << pln_tim << " - " << sat_tim << std::endl;
-						std::cout << "    " << " ----- " << std::endl;
-						Sleep(20);
-
 					}
 				}
 				sat_pos_old = sat_pos;
@@ -861,15 +853,13 @@ namespace phys
 		double end_body = -1;
 		double end_time = sat.expiry;
 		bool ending = false;
-
+			
 
 		for (int i = 0; i < list.size(); i++)
 		{
-			for (int i2 = 0; i2 < pairs_time.size(); i2++)
+			for (int i2 = 0; i2 < pairs_time[i].size(); i2++)
 			{
-				std::cout << i << " " << i2 << std::endl;
-				if (pairs_dist[i][i2] 
-					< min_dists[i])
+				if (pairs_dist[i][i2] < min_dists[i])
 				{
 					min_dists[i] = pairs_dist[i][i2];
 					min_times[i] = pairs_time[i][i2];
