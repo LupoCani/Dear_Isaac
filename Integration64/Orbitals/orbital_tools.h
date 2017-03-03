@@ -754,6 +754,8 @@ namespace phys
 		Instead, we use the inverse process. We
 		*/
 
+		std::cout << "Begin.\n";
+
 		double start, end, start_t;
 		start_t = sat.safe;
 		{
@@ -830,7 +832,7 @@ namespace phys
 						Vp = starts[i] + to_rad(its[i], precision, ends[i] - starts[i]);
 						pln_tim = M_to_time(pln, get_M(Vp, pln.ecc), last_times[i]);
 						last_times[i] = pln_tim;
-						//i_total++;
+						i_total++;
 					}
 
 					while (pln_tim < sat_tim)
@@ -862,7 +864,6 @@ namespace phys
 						Vp = starts[i] + to_rad(its[i], precision, ends[i] - starts[i]);
 						pln_tim = M_to_time(pln, get_M(Vp, pln.ecc), last_times[i]);
 						last_times[i] = pln_tim;
-						//system("pause");
 					}
 					sat_pos_old = sat_pos;
 					sat_tim_old = sat_tim;
@@ -875,6 +876,7 @@ namespace phys
 
 		mins_out.push_back(min_dists);
 		mins_out.push_back(min_times);
+		std::cout << "PL I: " << i_total << std::endl;
 	}
 
 	void get_expiry_phys(body &sat, vector<body*> list, vector<body*> &list_out, vector<vector<double>> &mins_out, bool &will_expire, int &new_parent)
@@ -1128,15 +1130,12 @@ namespace phys
 		{
 			body &sat = *bodies[i];
 			vec_n pos;
-
 			vec_n vel;
 
 			if (!phys_mode || !sat.isPlayer)
 				do_orbit(sat, w_time, 20, pos, vel);
 			else
-				do_orbit_phys(sat, w_time, thrust, pos, vel);
-
-			if (sat.isPlayer && phys_mode)
+				do_orbit_phys(sat, w_time, thrust, pos, vel);
 			pos_buffer.push_back(pos);
 			vel_buffer.push_back(vel);
 
@@ -1268,7 +1267,7 @@ namespace phys
 
 		screen_state.bodies = do_phys_tick(gen::bodies, gen::w_time, eng_mode, eng_thrust);
 
-		if (gen::last_predict + 0.1 * shared::cps < shared::r_time && 1)
+		if (gen::last_predict + 0.0001 * shared::cps < shared::r_time && 1)
 		{
 			vector<vector<double>> pairs;
 			body &plyr = *gen::bodies.back();
