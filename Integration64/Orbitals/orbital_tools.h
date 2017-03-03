@@ -731,7 +731,7 @@ namespace phys
 		vel_out = vel;
 	}
 
-	void get_expiry(body &sat, vector<body*> list, vector<body*> &list_out, vector<vector<double>> &mins_out, bool &will_expire, int &new_parent)
+	void get_expiry_old(body &sat, vector<body*> list, vector<body*> &list_out, vector<vector<double>> &mins_out, bool &will_expire, int &new_parent)
 		//This one's gonna be tough.
 	{
 		vector<body*> list_in = list;
@@ -742,18 +742,20 @@ namespace phys
 		int precision;
 		int precision_base = 1000;
 
-		vector<vector<double>> pairs_dist;
-		vector<vector<double>> pairs_time;
+		//vector<vector<double>> pairs_dist;
+		//vector<vector<double>> pairs_time;
 
 		vector<double> min_dists;
 		vector<double> min_times;
 		vector<double> last_times;
 
+		long i_total = 0;
+
 		/*
 		We'll try to find if there's any body, orbiting the same parent as the player, into whose SOI the player will enter, and when.
 		We could just check a lot of moments in time with do_orbit(), but that function is expensive as hell.
 
-		Thus, we increment 
+		Instead, we use the inverse process. We 
 		*/
 
 		double start, end, start_t;
@@ -791,13 +793,17 @@ namespace phys
 				while (ends[ends.size() - 1] < starts[starts.size() - 1] + laps * M_2PI)
 					ends[ends.size() - 1] += M_2PI;
 
-				pairs_dist.push_back(vector<double>());
-				pairs_time.push_back(vector<double>());
+				//pairs_dist.push_back(vector<double>());
+				//pairs_time.push_back(vector<double>());
 				min_times.push_back(DBL_MAX);
 				min_dists.push_back(DBL_MAX);
 				last_times.push_back(start_t - pow(10, -10));
 			}
 		}
+
+		int end_body = -1;
+		double end_time = DBL_MAX;
+		bool ending = false;
 
 		if (list.size())
 		{
@@ -820,6 +826,7 @@ namespace phys
 
 				for (int i = 0; i < list.size(); i++)
 				{
+					i_total++;
 					body &pln = *list[i];
 					double Vp = starts[i] + to_rad(its[i], precision, ends[i] - starts[i]);
 					double pln_tim = M_to_time(pln, get_M(Vp, pln.ecc), start_t);
@@ -831,55 +838,186 @@ namespace phys
 						Vp = starts[i] + to_rad(its[i], precision, ends[i] - starts[i]);
 						pln_tim = M_to_time(pln, get_M(Vp, pln.ecc), last_times[i]);
 						last_times[i] = pln_tim;
+						//i_total++;
 					}
 
 					while (pln_tim < sat_tim)
 					{
+						std::cout << sat_tim_old << " - " << pln_tim << " - " << sat_tim << std::endl;
 						double diff_part = (pln_tim - sat_tim_old) / sat_tim_diff;	//What percentage of the current time interval has passed in the moment we're observing.
 						vec_n sat_pos_est = sat_pos_old + sat_pos_diff * diff_part;
-
+						vec_n pln_pos = get_pos_ang(Vp, pln);
+						i_total++;
 						double dist_est = vmag(sat_pos_est - pln_pos);
-						pairs_dist[i].push_back(dist_est);
-						pairs_time[i].push_back(pln_tim);
+
+						if (dist_est < min_dists[i])
+						{
+							min_dists[i] = dist_est;
+							min_times[i] = pln_tim;
+
+							if (dist_est < pln.SOI && (pln_tim < end_time || !ending))
+							{
+								ending = true;
+								end_body = i;
+								end_time = pln_tim;
+							}
+						}
+						else if (dist_est < pln.SOI)
+						{
+							if (end_body == i)
+								break;
+						}
+
 
 						its[i]++;
 						Vp = starts[i] + to_rad(its[i], precision, ends[i] - starts[i]);
 						pln_tim = M_to_time(pln, get_M(Vp, pln.ecc), last_times[i]);
 						last_times[i] = pln_tim;
+						
 					}
+					std::cout << sat_tim_old << " - " << pln_tim << " - " << sat_tim << std::endl;
+					std::cout << (*list[i]).name << std::endl;
+					system("pause");
 				}
 				sat_pos_old = sat_pos;
 				sat_tim_old = sat_tim;
 			}
 		}
 
+		std::cout << i_total << std::endl;
 
-		body *parent_next_p = (*sat.parent).parent;
-		double end_body = -1;
-		double end_time = sat.expiry;
-		bool ending = false;
+		list_out = list;
+		will_expire = ending;
+		new_parent = end_body;
 
+		mins_out.push_back(min_dists);
+		mins_out.push_back(min_times);
+	}
 
-		for (int i = 0; i < list.size(); i++)
+	void get_expiry_phys(body &sat, vector<body*> list, vector<body*> &list_out, vector<vector<double>> &mins_out, bool &will_expire, int &new_parent)
+	{
+		vector<body*> list_in = list;
+		list.clear();
+		int precision;
+		int precision_base = 1000;
+
+		//vector<vector<double>> pairs_dist;
+		//vector<vector<double>> pairs_time;
+
+		vector<double> min_dists;
+		vector<double> min_times;
+
+		double start, end;
 		{
-			for (int i2 = 0; i2 < pairs_time[i].size(); i2++)
+			vec_n sat_pos;
+			do_orbit(sat, sat.safe, sat_pos);
+			start = get_V_phys(sat, sat_pos);
+
+			do_orbit(sat, sat.expiry, sat_pos);
+			end = get_V_phys(sat, sat_pos);
+
+			while (end <= start)
+				end += M_2PI;
+		}
+
+		for (int i = 0; i < list_in.size(); i++)
+		{
+			body &pln = *list_in[i];
+			if (pln.parent == sat.parent && !(pln.isPlayer || pln.isSun))
 			{
-				if (pairs_dist[i][i2] < min_dists[i])
-				{
-					min_dists[i] = pairs_dist[i][i2];
-					min_times[i] = pairs_time[i][i2];
-				}
-				if (pairs_dist[i][i2] < (*list[i]).SOI)
-					if (pairs_time[i][i2] < end_time)
-					{
-						ending = true;
-						end_body = i;
-						break;
-					}
+				vec_n cur_pos;
+				do_orbit(pln, sat.safe, cur_pos);
+
+				vec_n end_pos;
+				do_orbit(pln, sat.expiry, end_pos);
+
+				list.push_back(pln.self);
+
+				min_times.push_back(DBL_MAX);
+				min_dists.push_back(DBL_MAX);
 			}
 		}
 
-		list_out = list;
+		vector<body*> list_original = list;
+		body parent = *(*list[0]).parent;
+		body sat_cp = sat;
+
+
+		int end_body = -1;
+		double end_time = DBL_MAX;
+		bool ending = false;
+
+		if (list.size())
+		{
+			precision = precision_base * ang_wrap(end - start) / M_2PI;
+			if (precision < precision_base / 20)
+				precision = precision_base / 20;
+
+			list.push_back(&sat_cp);
+
+			for (int i = 0; i < list.size(); i++)
+			{
+				body new_bod = *list[i];
+				list[i] = &new_bod;
+				new_bod.parent = &parent;
+
+				new_bod.vel -= parent.vel;
+				new_bod.pos -= parent.pos;
+				new_bod.t_l = 0;
+			}
+			parent.pos = 0;
+			parent.vel = 0;
+
+			vec_n sat_pos_old;
+			double sat_tim_old = 0;
+			double span = sat.expiry - sat.safe;
+
+			for (int i2 = 0; i2 < precision; i2++)
+			{
+				double s_time = span * ((i2 + 1) / precision);
+
+				for (int i = 0; i < list.size(); i++)
+				{
+					body &pln = *list[i];
+
+					vec_n new_pos, new_vel;
+					do_orbit_phys(pln, sat.safe, vec_n(), new_pos, new_vel);
+
+					pln.pos = new_pos;
+					pln.vel = new_vel;
+
+				}
+
+				for (int i = 0; i < list.size()-1; i++)
+				{
+					body &pln = *list[i];
+					double dist = vmag(sat_cp.pos - pln.pos);
+
+					if (dist < min_dists[i])
+					{
+						min_dists[i] = dist;
+						min_times[i] = s_time;
+
+						if (dist < pln.SOI && (s_time < end_time || !ending))
+						{
+							ending = true;
+							end_body = i;
+							end_time = s_time;
+						}
+					}
+					else if (dist < pln.SOI)
+					{
+						if (end_body == i)
+							break;
+					}
+				}
+			}
+		}
+
+
+		list.pop_back();
+
+		list_out = list_original;
 		will_expire = ending;
 		new_parent = end_body;
 
@@ -1174,7 +1312,7 @@ namespace phys
 			int new_parent;
 			double expire_time;
 
-			get_expiry(plyr, gen::bodies, co_sats, pairs, expiring, new_parent);
+			get_expiry_phys(plyr, gen::bodies, co_sats, pairs, expiring, new_parent);
 
 			if (expiring)
 			{
