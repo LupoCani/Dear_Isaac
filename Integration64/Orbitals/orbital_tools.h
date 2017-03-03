@@ -907,19 +907,6 @@ namespace phys
 		vector<double> min_dists;
 		vector<double> min_times;
 
-		double start, end;
-		{
-			vec_n sat_pos;
-			do_orbit(sat, sat.safe, sat_pos);
-			start = get_V_phys(sat, sat_pos);
-
-			do_orbit(sat, sat.expiry, sat_pos);
-			end = get_V_phys(sat, sat_pos);
-
-			while (end <= start)
-				end += M_2PI;
-		}
-
 		for (int i = 0; i < list_in.size(); i++)
 		{
 			body &pln = *list_in[i];
@@ -949,7 +936,8 @@ namespace phys
 
 		if (list.size())
 		{
-			precision = precision_base * ang_wrap(end - start) / M_2PI;
+			//precision = precision_base * ang_wrap(end - start) / M_2PI;
+			precision = precision_base;
 			if (precision < precision_base / 20)
 				precision = precision_base / 20;
 
