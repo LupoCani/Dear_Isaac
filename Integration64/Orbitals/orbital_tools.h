@@ -681,8 +681,7 @@ namespace phys
 		vec_r vel_r = sat.vel - parent.vel;
 		vec_n force_vec;
 
-		double F = -parent.u / sqr(pos_r.mag);
-
+		double F = -parent.u / sqr(pos_r.mag);
 		force_vec = vec_to_pos(pos_r.ang, F);
 
 		vel_out = vel_r + force_vec * d_time;
@@ -690,9 +689,9 @@ namespace phys
 		vel_out += force_add * d_time;
 
 		pos_out = pos_r + vel_out * d_time;
-	}
+	}
 
-	void do_orbit(body &sat, double w_time, vec_n &pos_out, vec_n &vel_out = vec_n())
+	void do_orbit(body &sat, double w_time, int digits, vec_n &pos_out, vec_n &vel_out = vec_n())
 	{
 		double d_time = w_time - sat.epoch;
 
@@ -707,9 +706,9 @@ namespace phys
 		if (sat.shape == 0)
 			part = ang_wrap(part);
 
-		V = do_orbit_precise(part, sat, log2(pow(10, 20)));
+		V = do_orbit_precise(part, sat, log2(pow(10, digits)));
 		if (sat.inverse)
-			V = ang_wrap(V);
+			V = ang_wrap(-V);
 
 		radius = get_r(V, sat);
 
@@ -742,9 +741,6 @@ namespace phys
 		int precision;
 		int precision_base = 1000;
 
-		//vector<vector<double>> pairs_dist;
-		//vector<vector<double>> pairs_time;
-
 		vector<double> min_dists;
 		vector<double> min_times;
 		vector<double> last_times;
@@ -755,19 +751,17 @@ namespace phys
 		We'll try to find if there's any body, orbiting the same parent as the player, into whose SOI the player will enter, and when.
 		We could just check a lot of moments in time with do_orbit(), but that function is expensive as hell.
 
-		Instead, we use the inverse process. We 
+		Instead, we use the inverse process. We
 		*/
 
 		double start, end, start_t;
 		start_t = sat.safe;
 		{
 			vec_n sat_pos;
-			do_orbit(sat, start_t, sat_pos);
+			do_orbit(sat, start_t, 5, sat_pos);
 			start = get_V_phys(sat, sat_pos);
-
-			do_orbit(sat, sat.expiry, sat_pos);
+			do_orbit(sat, sat.expiry, 5, sat_pos);
 			end = get_V_phys(sat, sat_pos);
-
 			while (end <= start)
 				end += M_2PI;
 		}
@@ -778,10 +772,10 @@ namespace phys
 			if (pln.parent == sat.parent && !(pln.isPlayer || pln.isSun))
 			{
 				vec_n cur_pos;
-				do_orbit(pln, start_t, cur_pos);
+				do_orbit(pln, start_t, 5, cur_pos);
 
 				vec_n end_pos;
-				do_orbit(pln, sat.expiry, end_pos);
+				do_orbit(pln, sat.expiry, 5, end_pos);
 
 				list.push_back(pln.self);
 				starts.push_back(get_V_phys(pln, cur_pos));		//Get the current true anomaly of the body. 
@@ -793,8 +787,6 @@ namespace phys
 				while (ends[ends.size() - 1] < starts[starts.size() - 1] + laps * M_2PI)
 					ends[ends.size() - 1] += M_2PI;
 
-				//pairs_dist.push_back(vector<double>());
-				//pairs_time.push_back(vector<double>());
 				min_times.push_back(DBL_MAX);
 				min_dists.push_back(DBL_MAX);
 				last_times.push_back(start_t - pow(10, -10));
@@ -842,9 +834,7 @@ namespace phys
 					}
 
 					while (pln_tim < sat_tim)
-					{
-						std::cout << sat_tim_old << " - " << pln_tim << " - " << sat_tim << std::endl;
-						double diff_part = (pln_tim - sat_tim_old) / sat_tim_diff;	//What percentage of the current time interval has passed in the moment we're observing.
+					{						double diff_part = (pln_tim - sat_tim_old) / sat_tim_diff;	//What percentage of the current time interval has passed in the moment we're observing.
 						vec_n sat_pos_est = sat_pos_old + sat_pos_diff * diff_part;
 						vec_n pln_pos = get_pos_ang(Vp, pln);
 						i_total++;
@@ -868,24 +858,17 @@ namespace phys
 								break;
 						}
 
-
 						its[i]++;
 						Vp = starts[i] + to_rad(its[i], precision, ends[i] - starts[i]);
 						pln_tim = M_to_time(pln, get_M(Vp, pln.ecc), last_times[i]);
 						last_times[i] = pln_tim;
-						
+						//system("pause");
 					}
-					std::cout << sat_tim_old << " - " << pln_tim << " - " << sat_tim << std::endl;
-					std::cout << (*list[i]).name << std::endl;
-					system("pause");
+					sat_pos_old = sat_pos;
+					sat_tim_old = sat_tim;
 				}
-				sat_pos_old = sat_pos;
-				sat_tim_old = sat_tim;
 			}
 		}
-
-		std::cout << i_total << std::endl;
-
 		list_out = list;
 		will_expire = ending;
 		new_parent = end_body;
@@ -901,39 +884,33 @@ namespace phys
 		int precision;
 		int precision_base = 1000;
 
-		//vector<vector<double>> pairs_dist;
-		//vector<vector<double>> pairs_time;
-
 		vector<double> min_dists;
 		vector<double> min_times;
-
+
 		for (int i = 0; i < list_in.size(); i++)
 		{
 			body &pln = *list_in[i];
 			if (pln.parent == sat.parent && !(pln.isPlayer || pln.isSun))
-			{
-				vec_n cur_pos;
-				do_orbit(pln, sat.safe, cur_pos);
-
-				vec_n end_pos;
-				do_orbit(pln, sat.expiry, end_pos);
-
-				list.push_back(pln.self);
+			{				vec_n cur_pos;
+				do_orbit(pln, sat.safe, 5, cur_pos);				vec_n end_pos;
+				do_orbit(pln, sat.expiry, 5, end_pos);
+				list.push_back(pln.self);
 
 				min_times.push_back(DBL_MAX);
 				min_dists.push_back(DBL_MAX);
 			}
 		}
-
+
 		vector<body*> list_original = list;
 		body parent = *(*list[0]).parent;
+		parent.self = &parent;
 		body sat_cp = sat;
 
 
 		int end_body = -1;
 		double end_time = DBL_MAX;
 		bool ending = false;
-
+
 		if (list.size())
 		{
 			//precision = precision_base * ang_wrap(end - start) / M_2PI;
@@ -948,6 +925,7 @@ namespace phys
 				body new_bod = *list[i];
 				list[i] = &new_bod;
 				new_bod.parent = &parent;
+				new_bod.self = list[i];
 
 				new_bod.vel -= parent.vel;
 				new_bod.pos -= parent.pos;
@@ -959,9 +937,9 @@ namespace phys
 			vec_n sat_pos_old;
 			double sat_tim_old = 0;
 			double span = sat.expiry - sat.safe;
-
+
 			for (int i2 = 0; i2 < precision; i2++)
-			{
+			{
 				double s_time = span * ((i2 + 1) / precision);
 
 				for (int i = 0; i < list.size(); i++)
@@ -974,9 +952,7 @@ namespace phys
 					pln.pos = new_pos;
 					pln.vel = new_vel;
 
-				}
-
-				for (int i = 0; i < list.size()-1; i++)
+				}				for (int i = 0; i < list.size()-1; i++)
 				{
 					body &pln = *list[i];
 					double dist = vmag(sat_cp.pos - pln.pos);
@@ -1001,8 +977,7 @@ namespace phys
 				}
 			}
 		}
-
-
+
 		list.pop_back();
 
 		list_out = list_original;
@@ -1078,7 +1053,7 @@ namespace phys
 
 		dual_val r_vec = r_vec_vector[0];
 		dual_val r_vec_vel = r_vec_vector[1];
-
+
 		sat.ax_a = (r_vec.two + r_vec.one) / 2;
 		sat.ecc = (r_vec.two - r_vec.one) / (r_vec.two + r_vec.one);
 		sat.ax_b = sqrt_a(1 - sqr(sat.ecc)) * sat.ax_a;
@@ -1153,12 +1128,15 @@ namespace phys
 		{
 			body &sat = *bodies[i];
 			vec_n pos;
+
 			vec_n vel;
+
 			if (!phys_mode || !sat.isPlayer)
-				do_orbit(sat, w_time, pos, vel);
+				do_orbit(sat, w_time, 20, pos, vel);
 			else
 				do_orbit_phys(sat, w_time, thrust, pos, vel);
 
+			if (sat.isPlayer && phys_mode)
 			pos_buffer.push_back(pos);
 			vel_buffer.push_back(vel);
 
@@ -1170,7 +1148,6 @@ namespace phys
 			sat.pos = pos_buffer[i] + (*sat.parent).pos;
 			sat.vel = vel_buffer[i] + (*sat.parent).vel;
 			sat.t_l = w_time;
-
 
 			if (!sat.expire)
 				sat.expiry = sat.t_l + sat.t_p;
@@ -1281,17 +1258,17 @@ namespace phys
 		gen::w_time_last = gen::w_time;
 		double diff_time = (shared::r_time - shared::l_time) / 100.0 / shared::cps / gen::d_time_fact;
 		if (diff_time < 0.01)
-			gen::w_time += diff_time;
+			gen::w_time_diff = diff_time;
 		else
-			gen::w_time += 0.01;
-		gen::w_time_diff = gen::w_time - gen::w_time_last;
-
+			gen::w_time_diff = 0.01;
+		gen::w_time += gen::w_time_diff;
+
 		vec_n eng_thrust = do_game_tick();
 		bool eng_mode = vmag(eng_thrust);
 
 		screen_state.bodies = do_phys_tick(gen::bodies, gen::w_time, eng_mode, eng_thrust);
 
-		if (gen::last_predict + 0.1 / shared::cps < shared::r_time)
+		if (gen::last_predict + 0.1 * shared::cps < shared::r_time && 1)
 		{
 			vector<vector<double>> pairs;
 			body &plyr = *gen::bodies.back();
@@ -1300,7 +1277,7 @@ namespace phys
 			int new_parent;
 			double expire_time;
 
-			get_expiry_phys(plyr, gen::bodies, co_sats, pairs, expiring, new_parent);
+			get_expiry_old(plyr, gen::bodies, co_sats, pairs, expiring, new_parent);
 
 			if (expiring)
 			{
@@ -1310,7 +1287,7 @@ namespace phys
 			else
 			{
 				plyr.safe = plyr.expiry;
-				plyr.expiry = plyr.t_l += plyr.t_p;
+				plyr.expiry = plyr.t_l + plyr.t_p;
 			}
 
 			for (int i = 0; i < co_sats.size(); i++)
@@ -1344,7 +1321,7 @@ namespace phys
 #endif
 	}
 
-	vector<body*> sort_bodies(vector<body*> unsorted)
+	vector<body*> sort_bodies(vector<body*> unsorted)	//Bubble-ish sorting of the bodies by mass, largest to smallest.
 	{
 		vector<body*> sorted;
 		for (int i = 0; i < unsorted.size(); i++)
