@@ -129,7 +129,7 @@ namespace phys					//Declare various classes and functions
 	double vmag(double x, double y);
 	double vmag(vec_n in);
 	vec_n rot_vec(vec_n in, double rot);
-	double to_rad(double ang, double scale, double sc_out = M_2PI);
+	double to_rad(double ang, double scale);
 	using std::atan2;
 
 	struct vec_r
@@ -312,6 +312,8 @@ namespace phys
 		int target = 0;
 		bool isTarget = false;
 		double min_dist;
+		double min_time;
+		double cur_dist;
 		vec_n target_pos;
 		vec_n player_pos;
 
@@ -338,7 +340,12 @@ namespace phys
 		return in > 1 ? 1 : (in < -1 ? -1 : in);
 	}
 
-	double sqr(double in)
+	double ang_scale(double scale, double ang, double scope)
+	{
+		return scale * ang / scope;
+	}
+
+	double sqr(double in)	//Because writing pow(xy, 2) all the time got annoying.
 	{
 		return in*in;
 	}
@@ -415,9 +422,9 @@ namespace phys
 		return in;
 	}
 
-	double to_rad(double ang, double scale, double sc_out)
+	double to_rad(double ang, double scale)
 	{
-		return sc_out * ang / scale;
+		return M_2PI * ang / scale;
 	}
 
 	double switch_co(double in) //Changes cos x to sin x and vice versa. No guarantees as to the sign of the output.
@@ -485,15 +492,16 @@ namespace phys
 	double get_M(double tV, double ecc)
 	{
 		if (ecc > 1) return get_M_H(tV, ecc);
+
+		tV = ang_wrap(tV);
+
 		double cosE = get_cosE(tV, ecc);
 		double sinE = switch_co(cosE);
 
-		double overshoot = floor(tV / M_2PI) * M_2PI;
-
 		if (tV < M_PI)
-			return overshoot + acos(cosE) - ecc * sinE;
+			return acos(cosE) - ecc * sinE;
 		else
-			return overshoot +  M_2PI - acos(cosE) - ecc * -sinE;
+			return M_2PI - acos(cosE) - ecc * -sinE;
 	}
 
 	double get_M_E(double E, double ecc)
@@ -561,18 +569,23 @@ namespace phys
 		return M;
 	}
 
-	double M_to_time(body sat, double M, double w_time_min = -100)
+	double M_to_time(body sat, double M, double w_time_min = NAN, double digits = 16)
 	{
 		double d_time = M / sat.Mn;
 		double w_time = d_time + sat.epoch;
 
-		if (!(sat.shape || w_time_min < -99))
+		if (!(sat.shape || isnan(w_time_min) ))
 		{
-			while (w_time < w_time_min)
+			while (w_time_min - w_time > pow(10, -digits))
 				w_time += sat.t_p;
 		}
 
 		return w_time;
+	}
+
+	double V_to_time(double V, body sat, double w_time_min = NAN)
+	{
+		return M_to_time(sat, get_M(V, sat.ecc), w_time_min);
 	}
 
 	double Mn_from_V(double ecc, double r, double v)
@@ -586,33 +599,29 @@ namespace phys
 		return sqrt_a(u / pow(ax_a, 3));
 	}
 
-	vector<dual_val> get_extremes(double vel, double ang, double r, double u)
+	vector<double> get_extremes(double vel, double ang, double r, double u)
 	{
-		dual_val out_v, out_r;
-		vector<dual_val> out(2);
+		vector<double> out_v(2), out_r(2);
 
 		double part_div = u / (cos(ang) * vel * r);
-		double part_root = sqrt(sqr(part_div) - 2 * u / r + pow(vel, 2));
+		double part_root = sqrt(sqr(part_div) - 2 * u / r + sqr(vel));
 		double part_area = cos(ang) * vel * r;
 
-		out_v.one = part_div + part_root;
-		out_v.two = part_div - part_root;
+		out_v[0] = part_div + part_root;
+		out_v[1] = part_div - part_root;
 
-		out_r.one = part_area / out_v.one;
-		out_r.two = part_area / out_v.two;
+		out_r[0] = part_area / out_v[0];
+		out_r[1] = part_area / out_v[1];
 
-		out[0] = out_r;
-		out[1] = out_v;
-
-		return out;
+		return out_r;
 	}
 
 	vec_n get_pos_ang(double V, body sat)
 	{
 		vec_r point;
-		point.ang = -V;
+		point.ang = V;
 		point.mag = get_r(point.ang, sat);
-		point.ang += (sat).normal;
+		point.ang += sat.normal;
 
 		return point;
 	}
@@ -620,9 +629,9 @@ namespace phys
 	double get_V_phys(body sat, vec_n pos = vec_n())		//Get the current true anomaly from the physical position
 	{
 		if (vmag(pos) > 0)
-			return sat.normal - atan2(pos);
+			return atan2(pos) - sat.normal;
 		else
-			return sat.normal - atan2(sat.pos - (*sat.parent).pos);
+			return  atan2(sat.pos - (*sat.parent).pos) - sat.normal;
 	}
 
 	double V_bound_H(double ecc)
@@ -641,7 +650,7 @@ namespace phys
 
 		for (int i = 0; i < precision; i++)
 		{
-			if (get_M(mid, sat.ecc) > part)
+			if (get_M_H(mid, sat.ecc) > part)
 				ceil = mid;
 			else
 				floor = mid;
@@ -649,7 +658,7 @@ namespace phys
 			mid = (ceil + floor) / 2;
 		}
 
-		return (ceil + floor) / 2;
+		return ang_wrap(mid);
 	}
 
 	double do_orbit_precise(double part, body sat, int precision)
@@ -659,13 +668,18 @@ namespace phys
 		double ceil = M_2PI;
 		double floor = 0;
 		double mid = M_PI;
+		double M_pot;
 
 		for (int i = 0; i < precision; i++)
 		{
-			if (get_M_E(mid, sat.ecc) > part)
-				ceil = mid;
+			M_pot = get_M_E(mid, sat.ecc);	//Try a potential value of E
+
+			if (M_pot > part)				//If the corresponding M is too large
+				ceil = mid;					//half the search space by lowering the upper bound.
+			else if (M_pot < part)			//If it's too small,
+				floor = mid;				//half the search space by increasing the lower bound.
 			else
-				floor = mid;
+				break;						//In the unlikely event that the value should correspond exactly, return it.
 
 			mid = (ceil + floor) / 2;
 		}
@@ -703,12 +717,10 @@ namespace phys
 		if (sat.isSun)
 			return;
 
-		if (sat.shape == 0)
+		if (!sat.shape)
 			part = ang_wrap(part);
 
 		V = do_orbit_precise(part, sat, log2(pow(10, digits)));
-		if (sat.inverse)
-			V = ang_wrap(-V);
 
 		radius = get_r(V, sat);
 
@@ -718,13 +730,13 @@ namespace phys
 
 		vel.mag = sqrt(2 * (sat.En + parent.u / radius));
 		vel.ang = acos(sat.Ar / (radius * vel.mag));
-		if (V < M_PI)
+		if (V > M_PI)
 			vel.ang = -vel.ang;
 
-		if (sat.inverse)
+		if (!sat.inverse)
 			vel.mag = -vel.mag;
 
-		vel.ang = -V -vel.ang + sat.normal + M_PI2;
+		vel.ang = V -vel.ang + sat.normal + M_PI2;
 		vel.ang = ang_wrap(vel.ang + M_PI);
 
 		vel_out = vel;
@@ -736,14 +748,10 @@ namespace phys
 		vector<body*> list_in = list;
 		vector<double> starts;			//Current V-values for bodies
 		vector<double> ends;			//V-values for bodies at the end of the relevant time span
-		vector<int>	its;				//The iterators for the bodies
+		vector<double> diffs;
 		list.clear();
 		int precision;
 		int precision_base = 1000;
-
-		vector<double> min_dists;
-		vector<double> min_times;
-		vector<double> last_times;
 
 		long i_total = 0;
 
@@ -754,46 +762,77 @@ namespace phys
 		Instead, we use the inverse process. We
 		*/
 
-		std::cout << "Begin.\n";
+		double start, end, diff, start_t, end_t;
 
-		double start, end, start_t;
 		start_t = sat.safe;
+		end_t = sat.expiry;
+
+		double fidelty = 20;
+		int t_fid = 15;
+
+		vec_n sat_pos, sat_pos_old;
+		double sat_tim, sat_tim_old;
 		{
-			vec_n sat_pos;
-			do_orbit(sat, start_t, 5, sat_pos);
-			start = get_V_phys(sat, sat_pos);
-			do_orbit(sat, sat.expiry, 5, sat_pos);
-			end = get_V_phys(sat, sat_pos);
-			while (end <= start)
+			vec_n cur_pos, end_pos;
+
+			do_orbit(sat, start_t, fidelty, cur_pos);
+			do_orbit(sat, end_t, fidelty, end_pos);
+
+			start = get_V_phys(sat, cur_pos);
+			end = get_V_phys(sat, end_pos);
+
+			start = ang_wrap(start);
+
+			double laps = 0;
+			if (sat.ecc < 0.9999999999)
+				laps = floor((end_t - start_t) / sat.t_p) * sat.t_p;
+
+			while (end <= start + laps)
 				end += M_2PI;
+
+			//end += M_2PI;
+
+			diff = end - start;
+			sat_pos = cur_pos;
+			sat_tim = start_t;
 		}
 
-		for (int i = 0; i < list_in.size(); i++)
+		//std::cout << "V differential: " << start <<" - "<< end << std::endl;
+
+		for (int i = list_in.size()-1; i >= 0; i--)
 		{
 			body &pln = *list_in[i];
 			if (pln.parent == sat.parent && !(pln.isPlayer || pln.isSun))
 			{
-				vec_n cur_pos;
-				do_orbit(pln, start_t, 5, cur_pos);
+				vec_n cur_pos, end_pos;
+				do_orbit(pln, start_t, fidelty, cur_pos);
+				do_orbit(pln, end_t, fidelty, end_pos);
 
-				vec_n end_pos;
-				do_orbit(pln, sat.expiry, 5, end_pos);
+				double pln_start = get_V_phys(pln, cur_pos);
+				double pln_end = get_V_phys(pln, end_pos);
+
+				pln_start = ang_wrap(pln_start);
+
+				double laps = floor((end_t - start_t) / pln.t_p);
+				while (pln_end < pln_start + laps * M_2PI)
+					pln_end += M_2PI;
+
+				//std::cout << pln.name << std::endl;
+				//std::cout << pln_start << " - " << pln_end << std::endl;
+
+				starts.push_back(pln_start);			//Get the current true anomaly of the body. 
+				ends.push_back(pln_end);
 
 				list.push_back(pln.self);
-				starts.push_back(get_V_phys(pln, cur_pos));		//Get the current true anomaly of the body. 
-				ends.push_back(get_V_phys(pln, end_pos));
-				its.push_back(0);
-
-				double laps = floor((sat.expiry - start_t) / pln.t_p);
-
-				while (ends[ends.size() - 1] < starts[starts.size() - 1] + laps * M_2PI)
-					ends[ends.size() - 1] += M_2PI;
-
-				min_times.push_back(DBL_MAX);
-				min_dists.push_back(DBL_MAX);
-				last_times.push_back(start_t - pow(10, -10));
+				diffs.push_back(pln_end - pln_start);
 			}
 		}
+
+		vector<double> min_dists(list.size(), DBL_MAX);
+		vector<double> min_times(list.size(), DBL_MAX);
+		vector<double> last_times(list.size(), start_t - pow(10.0, -10.0));
+		vector<int>	its(list.size(), 0);
+		vector<unsigned char> past_peak(list.size(), false);
 
 		int end_body = -1;
 		double end_time = DBL_MAX;
@@ -801,48 +840,94 @@ namespace phys
 
 		if (list.size())
 		{
-			precision = precision_base * ang_wrap(end - start) / M_2PI;
+			precision = precision_base * ((end) - start) / M_2PI;
 			if (precision < precision_base / 20)
 				precision = precision_base / 20;
 
-			vec_n sat_pos_old;
-			double sat_tim_old = 0;
+			/*
+			std::cout << "___________________" << std::endl;
+
+			std::cout << sat.name << ": " << std::endl;
+			std::cout << start << " - " << diff / M_2PI << " - " << end << std::endl << std::endl;
+
+			std::cout << M_to_time(sat, get_M(start, sat.ecc), start_t, t_fid) << " - " << M_to_time(sat, get_M(end, sat.ecc), end_t, t_fid) << std::endl;
+			std::cout << M_to_time(sat, get_M(end, sat.ecc), end_t, t_fid) - M_to_time(sat, get_M(start, sat.ecc), start_t, t_fid) << std::endl << std::endl;
+
+			std::cout << "Vdff: " << start_t << " - " << end_t << std::endl;
+			std::cout << "Tdff: " << end_t - start_t << std::endl << std::endl;
+
+			std::cout << start_t - M_to_time(sat, get_M(start, sat.ecc), last_times[0], t_fid) << std::endl;
+			std::cout << sat.t_p << std::endl;
+
+			std::cout << "___________________" << std::endl;
+			
+			for (int i = 0; i < list.size(); i++)
+			{
+				body &pln = *list[i];
+
+				std::cout << pln.name  << ": " << std::endl;
+				std::cout << "Vdff: " << starts[i] << " - " << diffs[i]/M_2PI << " - " << ends[i] << std::endl;
+				std::cout << "Tims: " << M_to_time(pln, get_M(starts[i], pln.ecc), start_t, t_fid) << " - " << M_to_time(pln, get_M(ends[i], pln.ecc), end_t, t_fid) << std::endl;
+				std::cout << "Diff: " << M_to_time(pln, get_M(ends[i], pln.ecc), end_t, t_fid) - M_to_time(pln, get_M(starts[i], pln.ecc), start_t, t_fid) << std::endl;
+				std::cout << "Laps: " << (M_to_time(pln, get_M(starts[i], pln.ecc), start_t, t_fid) + M_to_time(pln, get_M(ends[i], pln.ecc), end_t, t_fid))/pln.t_p << std::endl;
+				std::cout << "T_p:  " << pln.Mn << std::endl;
+
+				std::cout << "___________________" << std::endl;
+			}
+			//system("pause");
+			//*/
 
 			for (int i2 = 0; i2 < precision; i2++)
 			{
-				double Vs = to_rad(i2, precision, end - start);
+				double Vs = start + ang_scale(diff, i2, precision);
 
-				vec_n sat_pos = get_pos_ang(start + Vs, sat);
-				double sat_tim = M_to_time(sat, get_M(Vs, sat.ecc), start_t);
+				sat_pos_old = sat_pos;
+				sat_tim_old = sat_tim;
+
+				sat_pos = get_pos_ang(Vs, sat);
+				sat_tim = M_to_time(sat, get_M(Vs, sat.ecc), sat_tim_old, t_fid);
 
 				vec_n sat_pos_diff = sat_pos - sat_pos_old;
 				double sat_tim_diff = sat_tim - sat_tim_old;
+
+				//std::cout << "It: " << i2 << " / " << precision << std::endl;
 
 				for (int i = 0; i < list.size(); i++)
 				{
 					i_total++;
 					body &pln = *list[i];
-					double Vp = starts[i] + to_rad(its[i], precision, ends[i] - starts[i]);
-					double pln_tim = M_to_time(pln, get_M(Vp, pln.ecc), start_t);
+					double Vp = starts[i] + ang_scale(diffs[i], its[i], precision);
+					double pln_tim = M_to_time(pln, get_M(Vp, pln.ecc), last_times[i], t_fid);
+					last_times[i] = pln_tim;
 					vec_n pln_pos = get_pos_ang(Vp, pln);
+
+					//std::cout << "1#" << pln.name << std::endl;
+					//std::cout << sat_tim_old << " - " << pln_tim << " - " << sat_tim << std::endl << std::endl;
 
 					while (pln_tim < sat_tim_old)
 					{
 						its[i]++;
-						Vp = starts[i] + to_rad(its[i], precision, ends[i] - starts[i]);
-						pln_tim = M_to_time(pln, get_M(Vp, pln.ecc), last_times[i]);
+						Vp = starts[i] + ang_scale(diffs[i], its[i], precision);
+						pln_tim = M_to_time(pln, get_M(Vp, pln.ecc), last_times[i], t_fid);
 						last_times[i] = pln_tim;
 						i_total++;
+						//std::cout << "2#" << pln.name << std::endl;
+						//std::cout << sat_tim_old << " - " << pln_tim << " - " << sat_tim << std::endl << std::endl;
 					}
 
 					while (pln_tim < sat_tim)
-					{						double diff_part = (pln_tim - sat_tim_old) / sat_tim_diff;	//What percentage of the current time interval has passed in the moment we're observing.
+					{
+						//std::cout << "3#" << pln.name << std::endl;
+						//std::cout << sat_tim_old << " - " << pln_tim << " - " << sat_tim << std::endl << std::endl;
+
+						double diff_part = (pln_tim - sat_tim_old) / sat_tim_diff;	//What percentage of the current time interval has passed in the moment we're observing.
 						vec_n sat_pos_est = sat_pos_old + sat_pos_diff * diff_part;
 						vec_n pln_pos = get_pos_ang(Vp, pln);
 						i_total++;
 						double dist_est = vmag(sat_pos_est - pln_pos);
 
-						if (dist_est < min_dists[i])
+
+						if (dist_est < min_dists[i] && past_peak[i])
 						{
 							min_dists[i] = dist_est;
 							min_times[i] = pln_tim;
@@ -852,21 +937,17 @@ namespace phys
 								ending = true;
 								end_body = i;
 								end_time = pln_tim;
+								break;
 							}
 						}
-						else if (dist_est < pln.SOI)
-						{
-							if (end_body == i)
-								break;
-						}
+						else if (dist_est < min_dists[i] && i2 > 0)
+							past_peak[i] = true;
 
 						its[i]++;
-						Vp = starts[i] + to_rad(its[i], precision, ends[i] - starts[i]);
-						pln_tim = M_to_time(pln, get_M(Vp, pln.ecc), last_times[i]);
+						Vp = starts[i] + ang_scale(diffs[i], its[i], precision);
+						pln_tim = M_to_time(pln, get_M(Vp, pln.ecc), last_times[i], t_fid);
 						last_times[i] = pln_tim;
 					}
-					sat_pos_old = sat_pos;
-					sat_tim_old = sat_tim;
 				}
 			}
 		}
@@ -876,7 +957,6 @@ namespace phys
 
 		mins_out.push_back(min_dists);
 		mins_out.push_back(min_times);
-		std::cout << "PL I: " << i_total << std::endl;
 	}
 
 	void get_expiry_phys(body &sat, vector<body*> list, vector<body*> &list_out, vector<vector<double>> &mins_out, bool &will_expire, int &new_parent)
@@ -888,15 +968,23 @@ namespace phys
 
 		vector<double> min_dists;
 		vector<double> min_times;
-
+		int fidelty = 10;		double start_t = sat.safe;		double end_t = sat.expiry;
 		for (int i = 0; i < list_in.size(); i++)
 		{
 			body &pln = *list_in[i];
 			if (pln.parent == sat.parent && !(pln.isPlayer || pln.isSun))
-			{				vec_n cur_pos;
-				do_orbit(pln, sat.safe, 5, cur_pos);				vec_n end_pos;
-				do_orbit(pln, sat.expiry, 5, end_pos);
-				list.push_back(pln.self);
+			{				vec_n cur_pos, end_pos;
+				do_orbit(pln, start_t, fidelty, cur_pos);
+				do_orbit(pln, end_t, fidelty, end_pos);
+
+				double pln_start = get_V_phys(pln, cur_pos);
+				double pln_end = get_V_phys(pln, end_pos);
+
+				pln_start = ang_wrap(pln_start);
+
+				double laps = floor((end_t - start_t) / pln.t_p);
+				while (pln_end < pln_start + laps * M_2PI)
+					pln_end += M_2PI;				list.push_back(pln.self);
 
 				min_times.push_back(DBL_MAX);
 				min_dists.push_back(DBL_MAX);
@@ -1033,7 +1121,7 @@ namespace phys
 		{
 			repeat = false;
 
-			rel_ang = M_PI2 + vel_r.ang - pos_r.ang;
+			rel_ang = pos_r.ang + M_PI2 - vel_r.ang;
 			rel_ang = ang_wrap(rel_ang, 2);
 
 			if (abs(rel_ang) > M_PI2)
@@ -1051,36 +1139,34 @@ namespace phys
 
 		} while (repeat);
 
-		vector<dual_val> r_vec_vector = get_extremes(vel_r.mag, rel_ang, pos_r.mag, u);
+		vector<double> r_vec = get_extremes(vel_r.mag, rel_ang, pos_r.mag, u);
 
-		dual_val r_vec = r_vec_vector[0];
-		dual_val r_vec_vel = r_vec_vector[1];
-
-		sat.ax_a = (r_vec.two + r_vec.one) / 2;
-		sat.ecc = (r_vec.two - r_vec.one) / (r_vec.two + r_vec.one);
+		sat.ax_a = (r_vec[1] + r_vec[0]) / 2;
+		sat.ecc = (r_vec[1] - r_vec[0]) / (r_vec[1] + r_vec[0]);
 		sat.ax_b = sqrt_a(1 - sqr(sat.ecc)) * sat.ax_a;
 		sat.shape = sat.ecc > 1;
 		sat.SOI = sat.ax_a * pow(sat.u / u, 0.4);
 
-		double tV = get_V_r(pos_r.mag, sat);	//The current true anomaly. Sweeps counter-clockwise
+		double tV = get_V_r(pos_r.mag, sat);	//The current true anomaly.
 		if (rel_ang < 0)
 			tV = ang_wrap(-tV);
 
-		sat.normal = pos_r.ang + tV;
-
-		if (sat.inverse)
-			tV = ang_wrap(-tV);
-
+		sat.normal = ang_wrap(pos_r.ang - tV, 2);
+		sat.Mn = Mn_from_r(sat.ax_a, u);						//Store mean angular motion of the body, as per yet another equation dug up from obscure wikipedia stubs
 		sat.En = sqr(vel_r.mag) / 2 - u / pos_r.mag;			//Store orbital Energy, velocital energy plus gravitational energy
 		sat.Ar = vel_r.mag * pos_r.mag * cos(rel_ang);			//Store area swept per unit of time, altitude times velocity times cosine-of-the-angle
-		sat.Mn = Mn_from_r(sat.ax_a, u);						//Store mean angular motion of the body, as per yet another equation dug up from obscure wikipedia stubs
+
+		if (sat.inverse)
+			sat.Mn *= -1;
+
+
 		sat.epoch = w_time - get_M(tV, sat.ecc) / sat.Mn;
-		sat.t_p = M_2PI / sat.Mn;
+		sat.t_p = M_2PI / abs(sat.Mn);
 		sat.expiry = w_time + sat.t_p;
 		sat.safe = w_time;
 		sat.expire = 0;
 
-		if (sat.shape || r_vec.two > parent.SOI)
+		if (sat.shape || r_vec[1] > parent.SOI)
 		{
 			double V_max = get_V_r(parent.SOI, sat);
 			double M_max = get_M(V_max, sat.ecc);
@@ -1088,6 +1174,9 @@ namespace phys
 			sat.expire = 1;
 			sat.V_exp = V_max;
 		}
+
+		if (sat.inverse)
+			sat.V_exp *= -1;
 	}
 
 	//End orbital algorithms
@@ -1110,8 +1199,8 @@ namespace phys
 
 		double V_span = V_end - V_start;
 
-		for (int i2 = 0; i2 <= subdiv; i2++)
-			out.push_back(get_pos_ang(V_start + to_rad(i2, subdiv, V_span), sat));
+		for (int i = 0; i <= subdiv; i++)
+			out.push_back(get_pos_ang(V_start + ang_scale(V_span, i, subdiv), sat));
 
 		return out;
 	}
@@ -1148,15 +1237,14 @@ namespace phys
 			sat.vel = vel_buffer[i] + (*sat.parent).vel;
 			sat.t_l = w_time;
 
-			if (!sat.expire)
+			body &new_parent = *get_parent(sat, bodies);
+			if (new_parent.self != sat.parent)
+				expired = true;
+			sat.parent = &new_parent;
+
+			if (!(sat.expire || expired))
 				sat.expiry = sat.t_l + sat.t_p;
-			else
-			{
-				body &new_parent = *get_parent(sat, bodies);
-				if (new_parent.self != sat.parent)
-					expired = true;
-				sat.parent = &new_parent;
-			}
+
 			out.push_back(sat.pos);
 		}
 
@@ -1261,13 +1349,13 @@ namespace phys
 		else
 			gen::w_time_diff = 0.01;
 		gen::w_time += gen::w_time_diff;
-
+
 		vec_n eng_thrust = do_game_tick();
 		bool eng_mode = vmag(eng_thrust);
 
 		screen_state.bodies = do_phys_tick(gen::bodies, gen::w_time, eng_mode, eng_thrust);
 
-		if (gen::last_predict + 0.0001 * shared::cps < shared::r_time && 1)
+		if ((eng_mode || 1) && gen::last_predict + 0.1 * shared::cps < shared::r_time && 1)
 		{
 			vector<vector<double>> pairs;
 			body &plyr = *gen::bodies.back();
@@ -1285,7 +1373,7 @@ namespace phys
 			}
 			else
 			{
-				plyr.safe = plyr.expiry;
+				plyr.safe = plyr.t_l;//plyr.expiry;
 				plyr.expiry = plyr.t_l + plyr.t_p;
 			}
 
@@ -1293,7 +1381,10 @@ namespace phys
 			{
 				if (co_sats[i] == gen::bodies[game::target])
 				{
+					if (pairs[0][i] == DBL_MAX) break;
+
 					game::min_dist = pairs[0][i];
+					game::min_time = pairs[1][i];
 				}
 			}
 
@@ -1301,6 +1392,8 @@ namespace phys
 			gen::last_predict = shared::r_time;
 		}
 
+
+		game::cur_dist = vmag((*gen::bodies.back()).pos - (*gen::bodies[game::target]).pos);
 		vector<vector<vec_n>> tails_out = gen::tails;
 
 		for (int i = 0; i < tails_out.size(); i++)
@@ -1378,7 +1471,7 @@ namespace phys
 		moon.pos.x = -25300;
 		moon.pos.y = 0;
 		moon.vel.x = 0;
-		moon.vel.y = 46000;
+		moon.vel.y = -46000;
 		moon.u = pow(10, 8);
 		moon.name = "moon";
 
@@ -1386,7 +1479,7 @@ namespace phys
 		planet.pos.x = -25000;
 		planet.pos.y = 0;
 		planet.vel.x = 0;
-		planet.vel.y = 40000;
+		planet.vel.y = -40000;
 		planet.u = pow(10, 10);
 		planet.name = "planet";
 
@@ -1394,7 +1487,7 @@ namespace phys
 		pluto.pos.x = -30000;
 		pluto.pos.y = -0;
 		pluto.vel.x = 0;
-		pluto.vel.y = 40000;
+		pluto.vel.y = -40000;
 		pluto.u = pow(10, 10);
 		pluto.name = "pluto";
 
@@ -1402,7 +1495,7 @@ namespace phys
 		dune.pos.x = -35000;
 		dune.pos.y = 0;
 		dune.vel.x = 0;
-		dune.vel.y = 40000;
+		dune.vel.y = -40000;
 		dune.u = pow(10, 10);
 		dune.name = "dune";
 
@@ -1410,7 +1503,7 @@ namespace phys
 		yavin.pos.x = -40000;
 		yavin.pos.y = 0;
 		yavin.vel.x = 0;
-		yavin.vel.y = 40000;
+		yavin.vel.y = -40000;
 		yavin.u = pow(10, 10);
 		yavin.name = "yavin";
 
@@ -1418,7 +1511,7 @@ namespace phys
 		plyr.pos.x = -40200;
 		plyr.pos.y = 0;
 		plyr.vel.x = 0;
-		plyr.vel.y = 50000;
+		plyr.vel.y = -50000;
 		plyr.u = 1;
 		plyr.isPlayer = true;
 		plyr.name = "plyr";
@@ -1468,7 +1561,7 @@ namespace render_debug			//To be removed once the neccesary render_tools functio
 	using shared::vec_n;
 	using shared::window2;
 	sf::Font debug_font;
-	bool nonsense = debug_font.loadFromFile("arial.ttf");
+	bool nonsense = debug_font.loadFromFile("courier.ttf");
 
 	bool window_is_clear = false;
 
@@ -1547,13 +1640,15 @@ namespace render_debug			//To be removed once the neccesary render_tools functio
 		render_lines(in.paths, in.bodies[in.focus], in.zoom);
 
 		std::vector<std::string> texts;
-		texts.push_back(std::to_string(phys::rock::thrust));
-		texts.push_back(std::to_string(phys::to_rad(phys::rock::rot, phys::M_2PI, 4)));
-		texts.push_back(std::to_string(phys::to_rad(phys::atan2(phys::thrust_debug), phys::M_2PI, 4)));
+		texts.push_back("Engine: " + std::to_string(phys::rock::thrust));
+		texts.push_back("GM_rot: " + std::to_string(phys::ang_scale(4, phys::rock::rot, phys::M_2PI)));
+		texts.push_back("PH_rot: " + std::to_string(phys::ang_scale(4, phys::atan2(phys::thrust_debug), phys::M_2PI)));
 
-		texts.push_back(std::to_string((*phys::gen::bodies.back()).ecc));
+		texts.push_back("Eccent: " + std::to_string((*phys::gen::bodies.back()).ecc));
 
-		texts.push_back(std::to_string(phys::game::min_dist));
+		texts.push_back("PrDist: " + std::to_string(phys::game::min_dist));
+		texts.push_back("PrTime: " + std::to_string(phys::game::min_time - phys::gen::w_time));
+		texts.push_back("AcDist: " + std::to_string(phys::game::cur_dist));
 
 		render_texts(texts);
 		render_player(in.player_rotation, in.bodies.back(), in.bodies[in.focus], in.zoom);
