@@ -28,7 +28,55 @@ struct vec_n
 	double z;
 };
 
+Vector2f generate_goal(std::vector<vec_n>cordinats, int sun_r, int radius) {
 
+	Vector2f goal_cordinats;
+
+	srand(time(0));
+
+	for (;;) {
+
+		goal_cordinats.x = rand() % (2 * radius) + cordinats[cordinats.size() - 1].x - radius;
+
+		if (goal_cordinats.x < cordinats[cordinats.size()-1].x - sun_r) {
+			break;
+		}
+		else if (goal_cordinats.x > cordinats[cordinats.size()-1].x + sun_r) {
+			break;
+		}
+
+	}
+
+	for (;;) {
+
+		goal_cordinats.y = rand() % (2 * radius) + cordinats[cordinats.size() - 1].y - radius;
+
+		if (goal_cordinats.y < cordinats[cordinats.size()-1].y - sun_r) {
+			break;
+		}
+		else if (goal_cordinats.y > cordinats[cordinats.size()-1].y + sun_r) {
+			break;
+		}
+
+	}
+	std::cout << goal_cordinats.x << std::endl << goal_cordinats.y << std::endl;
+	return(goal_cordinats);
+
+}
+
+bool goal_collision(CircleShape goal, Vector2f goal_cordinats, std::vector<vec_n>cordinats, float player_r) {
+
+	bool goal_collided=0;
+
+	float distance = sqrt((cordinats[cordinats.size() - 1].x - goal_cordinats.x)*(cordinats[cordinats.size() - 1].x - goal_cordinats.x) + (cordinats[cordinats.size() - 1].y - goal_cordinats.y)*(cordinats[cordinats.size() - 1].y - goal_cordinats.y));
+
+	if (distance < player_r + goal.getRadius()) {
+		goal_collided = 1;
+	}
+
+	return(goal_collided);
+
+}
 
 void option_menue() {
 
@@ -217,7 +265,7 @@ void ingame_menue() {
 
 }
 
-void main_render(std::vector<vec_n> cordinats, std::vector<CircleShape> planets, Sprite player) {
+void main_render(std::vector<vec_n> cordinats, std::vector<CircleShape> planets, Sprite player, CircleShape goal, Vector2f goal_cordinats) {
 
 	Vector2f viewport_center; //cordinates at the center of the viewport/window
 	viewport_center.x = window2.getSize().x / 2;
@@ -227,27 +275,37 @@ void main_render(std::vector<vec_n> cordinats, std::vector<CircleShape> planets,
 	modifi_cordinates.x = cordinats[cordinats.size()-1].x - viewport_center.x;
 	modifi_cordinates.y = cordinats[cordinats.size() - 1].y - viewport_center.y;
 
+	Vector2f goal_new = goal_cordinats;
+
 	///*
 	for (int i = 0; i < cordinats.size(); i++) {
 		cordinats[i].x -= modifi_cordinates.x;
 		cordinats[i].y -= modifi_cordinates.y;
 	}
+
+	goal_new.x -= modifi_cordinates.x;
+	goal_new.y -= modifi_cordinates.y;
+
 	//*/
 	//set new position based on calculated values 
 	player.setPosition(Vector2f(cordinats[cordinats.size() - 1].x, cordinats[cordinats.size() - 1].y));
 	for (int i = 0; i < 9; i++) {
 		planets[i].setPosition(Vector2f(cordinats[i].x, cordinats[i].y));
 	}
-
+	goal.setPosition(goal_new);
 	window2.clear();
 
 	for (int i = 0; i < planets.size(); i++) {
 		window2.draw(planets[i]);
 	}
+	
+	window2.draw(goal);
 
 	window2.draw(player);
 
 	window2.display();
+
+
 
 }
 
@@ -404,7 +462,8 @@ int main() {
 	int modifi_scale = 10;
 	int radius[9] = { 20 * modifi_scale, 10 * modifi_scale, 10 * modifi_scale, 10 * modifi_scale, 10 * modifi_scale, 10 * modifi_scale, 10 * modifi_scale, 10 * modifi_scale, 10 * modifi_scale }; //radius for the planets 
 	float scale = 0.5;
-
+	CircleShape goal(30);
+	goal.setOrigin(15, 15);
 
 	Texture planet_textures[9];
 	if (!planet_textures[0].loadFromFile("sun_texture.png")) {
@@ -460,6 +519,9 @@ int main() {
 	cordinats[0].y = planets[0].getPosition().y;
 	planets[0].setRadius(radius[0]);
 	planets[0].setOrigin(radius[0], radius[0]);
+	int scop = 2000;
+	Vector2f goal_cordinats(generate_goal(cordinats, radius[8]*1.5, scop));
+	goal.setPosition(goal_cordinats);
 
 	while (window2.isOpen()) {
 		restart = 0;
@@ -527,9 +589,11 @@ int main() {
 				}
 			}
 
-
+			if (goal_collision(goal,goal_cordinats,cordinats,player_radius)==1){
+				goal_cordinats = generate_goal(cordinats, radius[8] * 1.5, scop);
+			}
 		//collision(planets, cordinats, player, player_radius);
-			main_render(cordinats, planets, player);
+			main_render(cordinats, planets, player, goal, goal_cordinats);
 			if (collided == 1)
 			{
 				break;
