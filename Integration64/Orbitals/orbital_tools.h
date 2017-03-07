@@ -294,6 +294,13 @@ namespace phys
 		long double two = 0;
 	};
 
+	struct exp_p
+	{
+		int id;
+		double time;
+		double dist;
+	};
+
 	namespace gen
 	{
 		double w_time = 0;
@@ -332,6 +339,14 @@ namespace phys
 		double mass = 0;
 		double f_p_t = 1;
 		double eng_F = 1;
+	}
+
+	namespace pred
+	{
+		double begin;
+		double end;
+
+		
 	}
 
 	//Begin generic vector math functions
@@ -742,222 +757,202 @@ namespace phys
 		vel_out = vel;
 	}
 
-	void get_expiry_old(body &sat, vector<body*> list, vector<body*> &list_out, vector<vector<double>> &mins_out, bool &will_expire, int &new_parent)
-		//This one's gonna be tough.
+	struct get_expiry
 	{
-		vector<body*> list_in = list;
-		vector<double> starts;			//Current V-values for bodies
-		vector<double> ends;			//V-values for bodies at the end of the relevant time span
-		vector<double> diffs;
-		list.clear();
-		int precision;
-		int precision_base = 1000;
+		//With this many return variables, it's easier to make it a single-function class
+		vector<body*> list_out;
+		vector<double> min_time_out;
+		vector<double> min_dist_out;
+		bool will_expire;
+		int new_parent;
 
-		long i_total = 0;
-
-		/*
-		We'll try to find if there's any body, orbiting the same parent as the player, into whose SOI the player will enter, and when.
-		We could just check a lot of moments in time with do_orbit(), but that function is expensive as hell.
-
-		Instead, we use the inverse process. We
-		*/
-
-		double start, end, diff, start_t, end_t;
-
-		start_t = sat.safe;
-		end_t = sat.expiry;
-
-		double fidelty = 20;
-		int t_fid = 15;
-
-		vec_n sat_pos, sat_pos_old;
-		double sat_tim, sat_tim_old;
+		get_expiry(body &sat, vector<body*> list)
+			//This one's gonna be tough.
 		{
-			vec_n cur_pos, end_pos;
-
-			do_orbit(sat, start_t, fidelty, cur_pos);
-			do_orbit(sat, end_t, fidelty, end_pos);
-
-			start = get_V_phys(sat, cur_pos);
-			end = get_V_phys(sat, end_pos);
-
-			start = ang_wrap(start);
-
-			double laps = 0;
-			if (sat.ecc < 0.9999999999)
-				laps = floor((end_t - start_t) / sat.t_p) * sat.t_p;
-
-			while (end <= start + laps)
-				end += M_2PI;
-
-			//end += M_2PI;
-
-			diff = end - start;
-			sat_pos = cur_pos;
-			sat_tim = start_t;
-		}
-
-		//std::cout << "V differential: " << start <<" - "<< end << std::endl;
-
-		for (int i = list_in.size()-1; i >= 0; i--)
-		{
-			body &pln = *list_in[i];
-			if (pln.parent == sat.parent && !(pln.isPlayer || pln.isSun))
-			{
-				vec_n cur_pos, end_pos;
-				do_orbit(pln, start_t, fidelty, cur_pos);
-				do_orbit(pln, end_t, fidelty, end_pos);
-
-				double pln_start = get_V_phys(pln, cur_pos);
-				double pln_end = get_V_phys(pln, end_pos);
-
-				pln_start = ang_wrap(pln_start);
-
-				double laps = floor((end_t - start_t) / pln.t_p);
-				while (pln_end < pln_start + laps * M_2PI)
-					pln_end += M_2PI;
-
-				//std::cout << pln.name << std::endl;
-				//std::cout << pln_start << " - " << pln_end << std::endl;
-
-				starts.push_back(pln_start);			//Get the current true anomaly of the body. 
-				ends.push_back(pln_end);
-
-				list.push_back(pln.self);
-				diffs.push_back(pln_end - pln_start);
-			}
-		}
-
-		vector<double> min_dists(list.size(), DBL_MAX);
-		vector<double> min_times(list.size(), DBL_MAX);
-		vector<double> last_times(list.size(), start_t - pow(10.0, -10.0));
-		vector<int>	its(list.size(), 0);
-		vector<unsigned char> past_peak(list.size(), false);
-
-		int end_body = -1;
-		double end_time = DBL_MAX;
-		bool ending = false;
-
-		if (list.size())
-		{
-			precision = precision_base * ((end) - start) / M_2PI;
-			if (precision < precision_base / 20)
-				precision = precision_base / 20;
+			vector<body*> list_in = list;
+			vector<double> starts;			//Current V-values for bodies
+			vector<double> ends;			//V-values for bodies at the end of the relevant time span
+			vector<double> diffs;
+			vector<vector<double>> queue_dists;
+			list.clear();
+			int precision;
+			int precision_base = 1000;
 
 			/*
-			std::cout << "___________________" << std::endl;
+			We'll try to find if there's any body, orbiting the same parent as the player, into whose SOI the player will enter, and when.
+			We could just check a lot of moments in time with do_orbit(), but that function is expensive as hell.
 
-			std::cout << sat.name << ": " << std::endl;
-			std::cout << start << " - " << diff / M_2PI << " - " << end << std::endl << std::endl;
+			Instead, we use the inverse process. We check an interval of values of V for the player
+			*/
 
-			std::cout << M_to_time(sat, get_M(start, sat.ecc), start_t, t_fid) << " - " << M_to_time(sat, get_M(end, sat.ecc), end_t, t_fid) << std::endl;
-			std::cout << M_to_time(sat, get_M(end, sat.ecc), end_t, t_fid) - M_to_time(sat, get_M(start, sat.ecc), start_t, t_fid) << std::endl << std::endl;
+			double start, end, diff, start_t, end_t;
 
-			std::cout << "Vdff: " << start_t << " - " << end_t << std::endl;
-			std::cout << "Tdff: " << end_t - start_t << std::endl << std::endl;
+			start_t = sat.safe;
+			end_t = sat.expiry;
 
-			std::cout << start_t - M_to_time(sat, get_M(start, sat.ecc), last_times[0], t_fid) << std::endl;
-			std::cout << sat.t_p << std::endl;
+			double fidelty = 20;
+			int t_fid = 15;
 
-			std::cout << "___________________" << std::endl;
-			
-			for (int i = 0; i < list.size(); i++)
+			vec_n sat_pos, sat_pos_old;
+			double sat_tim, sat_tim_old;
 			{
-				body &pln = *list[i];
+				vec_n cur_pos, end_pos;
 
-				std::cout << pln.name  << ": " << std::endl;
-				std::cout << "Vdff: " << starts[i] << " - " << diffs[i]/M_2PI << " - " << ends[i] << std::endl;
-				std::cout << "Tims: " << M_to_time(pln, get_M(starts[i], pln.ecc), start_t, t_fid) << " - " << M_to_time(pln, get_M(ends[i], pln.ecc), end_t, t_fid) << std::endl;
-				std::cout << "Diff: " << M_to_time(pln, get_M(ends[i], pln.ecc), end_t, t_fid) - M_to_time(pln, get_M(starts[i], pln.ecc), start_t, t_fid) << std::endl;
-				std::cout << "Laps: " << (M_to_time(pln, get_M(starts[i], pln.ecc), start_t, t_fid) + M_to_time(pln, get_M(ends[i], pln.ecc), end_t, t_fid))/pln.t_p << std::endl;
-				std::cout << "T_p:  " << pln.Mn << std::endl;
+				do_orbit(sat, start_t, fidelty, cur_pos);
+				do_orbit(sat, end_t, fidelty, end_pos);
 
-				std::cout << "___________________" << std::endl;
+				start = get_V_phys(sat, cur_pos);
+				end = get_V_phys(sat, end_pos);
+
+				start = ang_wrap(start);
+
+				double laps = 0;
+				if (sat.ecc < 0.9999999999)
+					laps = floor((end_t - start_t) / sat.t_p) * sat.t_p;
+
+				while (end <= start + laps)
+					end += M_2PI;
+
+				//end += M_2PI;
+
+				diff = end - start;
+				sat_pos = cur_pos;
+				sat_tim = start_t;
 			}
-			//system("pause");
-			//*/
 
-			for (int i2 = 0; i2 < precision; i2++)
+
+			for (int i = list_in.size() - 1; i >= 0; i--)
 			{
-				double Vs = start + ang_scale(diff, i2, precision);
-
-				sat_pos_old = sat_pos;
-				sat_tim_old = sat_tim;
-
-				sat_pos = get_pos_ang(Vs, sat);
-				sat_tim = M_to_time(sat, get_M(Vs, sat.ecc), sat_tim_old, t_fid);
-
-				vec_n sat_pos_diff = sat_pos - sat_pos_old;
-				double sat_tim_diff = sat_tim - sat_tim_old;
-
-				//std::cout << "It: " << i2 << " / " << precision << std::endl;
-
-				for (int i = 0; i < list.size(); i++)
+				body &pln = *list_in[i];
+				if (pln.parent == sat.parent && !(pln.isPlayer || pln.isSun))
 				{
-					i_total++;
-					body &pln = *list[i];
-					double Vp = starts[i] + ang_scale(diffs[i], its[i], precision);
-					double pln_tim = M_to_time(pln, get_M(Vp, pln.ecc), last_times[i], t_fid);
-					last_times[i] = pln_tim;
-					vec_n pln_pos = get_pos_ang(Vp, pln);
+					vec_n cur_pos, end_pos;
+					do_orbit(pln, start_t, fidelty, cur_pos);
+					do_orbit(pln, end_t, fidelty, end_pos);
 
-					//std::cout << "1#" << pln.name << std::endl;
-					//std::cout << sat_tim_old << " - " << pln_tim << " - " << sat_tim << std::endl << std::endl;
+					double pln_start = get_V_phys(pln, cur_pos);
+					double pln_end = get_V_phys(pln, end_pos);
 
-					while (pln_tim < sat_tim_old)
+					pln_start = ang_wrap(pln_start);
+
+					double laps = floor((end_t - start_t) / pln.t_p);
+					while (pln_end < pln_start + laps * M_2PI)
+						pln_end += M_2PI;
+
+					starts.push_back(pln_start);			//Get the current true anomaly of the body. 
+					ends.push_back(pln_end);
+
+					list.push_back(pln.self);
+					diffs.push_back(pln_end - pln_start);
+					queue_dists.push_back(vector<double>(5, 0));
+				}
+			}
+
+			vector<double> min_dists(list.size(), DBL_MAX);
+			vector<double> min_times(list.size(), DBL_MAX);
+			vector<double> last_times(list.size(), start_t - pow(10.0, -10.0));
+			vector<int>	its(list.size(), 0);
+			vector<unsigned char> past_peak(list.size(), false);
+
+			int end_body = -1;
+			double end_time = DBL_MAX;
+			bool ending = false;
+
+			if (list.size())
+			{
+				precision = precision_base * ((end)-start) / M_2PI;
+				if (precision < precision_base / 20)
+					precision = precision_base / 20;
+
+
+				for (int i2 = 0; i2 < precision; i2++)
+				{
+					double Vs = start + ang_scale(diff, i2, precision);
+
+					sat_pos_old = sat_pos;
+					sat_tim_old = sat_tim;
+
+					sat_pos = get_pos_ang(Vs, sat);
+					sat_tim = M_to_time(sat, get_M(Vs, sat.ecc), sat_tim_old, t_fid);
+
+					vec_n sat_pos_diff = sat_pos - sat_pos_old;
+					double sat_tim_diff = sat_tim - sat_tim_old;
+
+					//std::cout << "It: " << i2 << " / " << precision << std::endl;
+
+					for (int i = 0; i < list.size(); i++)
 					{
-						its[i]++;
-						Vp = starts[i] + ang_scale(diffs[i], its[i], precision);
-						pln_tim = M_to_time(pln, get_M(Vp, pln.ecc), last_times[i], t_fid);
+						body &pln = *list[i];
+						double Vp = starts[i] + ang_scale(diffs[i], its[i], precision);
+						double pln_tim = M_to_time(pln, get_M(Vp, pln.ecc), last_times[i], t_fid);
 						last_times[i] = pln_tim;
-						i_total++;
-						//std::cout << "2#" << pln.name << std::endl;
-						//std::cout << sat_tim_old << " - " << pln_tim << " - " << sat_tim << std::endl << std::endl;
-					}
-
-					while (pln_tim < sat_tim)
-					{
-						//std::cout << "3#" << pln.name << std::endl;
-						//std::cout << sat_tim_old << " - " << pln_tim << " - " << sat_tim << std::endl << std::endl;
-
-						double diff_part = (pln_tim - sat_tim_old) / sat_tim_diff;	//What percentage of the current time interval has passed in the moment we're observing.
-						vec_n sat_pos_est = sat_pos_old + sat_pos_diff * diff_part;
 						vec_n pln_pos = get_pos_ang(Vp, pln);
-						i_total++;
-						double dist_est = vmag(sat_pos_est - pln_pos);
 
+						//std::cout << "1#" << pln.name << std::endl;
+						//std::cout << sat_tim_old << " - " << pln_tim << " - " << sat_tim << std::endl << std::endl;
 
-						if (dist_est < min_dists[i] && past_peak[i])
+						while (pln_tim < sat_tim_old)
 						{
-							min_dists[i] = dist_est;
-							min_times[i] = pln_tim;
-
-							if (dist_est < pln.SOI && (pln_tim < end_time || !ending))
-							{
-								ending = true;
-								end_body = i;
-								end_time = pln_tim;
-								break;
-							}
+							its[i]++;
+							Vp = starts[i] + ang_scale(diffs[i], its[i], precision);
+							pln_tim = M_to_time(pln, get_M(Vp, pln.ecc), last_times[i], t_fid);
+							last_times[i] = pln_tim;
+							//std::cout << "2#" << pln.name << std::endl;
+							//std::cout << sat_tim_old << " - " << pln_tim << " - " << sat_tim << std::endl << std::endl;
 						}
-						else if (dist_est < min_dists[i] && i2 > 0)
-							past_peak[i] = true;
 
-						its[i]++;
-						Vp = starts[i] + ang_scale(diffs[i], its[i], precision);
-						pln_tim = M_to_time(pln, get_M(Vp, pln.ecc), last_times[i], t_fid);
-						last_times[i] = pln_tim;
+						while (pln_tim < sat_tim)
+						{
+							//std::cout << "3#" << pln.name << std::endl;
+							//std::cout << sat_tim_old << " - " << pln_tim << " - " << sat_tim << std::endl << std::endl;
+
+							double diff_part = (pln_tim - sat_tim_old) / sat_tim_diff;	//What percentage of the current time interval has passed in the moment we're observing.
+							vec_n sat_pos_est = sat_pos_old + sat_pos_diff * diff_part;
+							vec_n pln_pos = get_pos_ang(Vp, pln);
+							double dist_est = vmag(sat_pos_est - pln_pos);
+
+
+							if (dist_est < min_dists[i] && past_peak[i])
+							{
+								min_dists[i] = dist_est;
+								min_times[i] = pln_tim;
+
+								if (dist_est < pln.SOI && (pln_tim < end_time || !ending))
+								{
+									ending = true;
+									end_body = i;
+									end_time = pln_tim;
+									break;
+								}
+							}
+							else if (!past_peak[i])
+							{
+								if (dist_est < queue_dists[i][0])
+									past_peak[i] = true;
+
+								queue_dists[i].push_back(dist_est);
+								queue_dists[i].erase(queue_dists[i].begin());
+							}
+
+
+							its[i]++;
+							Vp = starts[i] + ang_scale(diffs[i], its[i], precision);
+							pln_tim = M_to_time(pln, get_M(Vp, pln.ecc), last_times[i], t_fid);
+							last_times[i] = pln_tim;
+						}
 					}
 				}
 			}
-		}
-		list_out = list;
-		will_expire = ending;
-		new_parent = end_body;
+			list_out = list;
+			will_expire = ending;
+			new_parent = end_body;
 
-		mins_out.push_back(min_dists);
-		mins_out.push_back(min_times);
-	}
+			min_dist_out = min_dists;
+			min_time_out = min_times;
+		}
+	};
+
+	
 
 	void get_expiry_phys(body &sat, vector<body*> list, vector<body*> &list_out, vector<vector<double>> &mins_out, bool &will_expire, int &new_parent)
 	{
@@ -1357,19 +1352,23 @@ namespace phys
 
 		if ((eng_mode || 1) && gen::last_predict + 0.1 * shared::cps < shared::r_time && 1)
 		{
-			vector<vector<double>> pairs;
+			//vector<vector<double>> pairs;
 			body &plyr = *gen::bodies.back();
-			vector<body*> co_sats;
-			bool expiring;
-			int new_parent;
-			double expire_time;
 
-			get_expiry_old(plyr, gen::bodies, co_sats, pairs, expiring, new_parent);
+			get_expiry data(plyr, gen::bodies);
+
+			vector<body*> co_sats = data.list_out;
+			vector<double> pairs_t = data.min_time_out;
+			vector<double> pairs_d = data.min_dist_out;
+
+			bool expiring = data.will_expire;
+			int new_parent = data.new_parent;
+
 
 			if (expiring)
 			{
 				plyr.expire = 2;
-				plyr.expiry = pairs[0][new_parent];
+				plyr.expiry = pairs_t[new_parent];
 			}
 			else
 			{
@@ -1381,10 +1380,10 @@ namespace phys
 			{
 				if (co_sats[i] == gen::bodies[game::target])
 				{
-					if (pairs[0][i] == DBL_MAX) break;
+					if (pairs_d[i] == DBL_MAX) break;
 
-					game::min_dist = pairs[0][i];
-					game::min_time = pairs[1][i];
+					game::min_dist = pairs_d[i];
+					game::min_time = pairs_t[i];
 				}
 			}
 
