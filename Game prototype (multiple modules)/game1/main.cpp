@@ -25,7 +25,56 @@ struct vec_n
 	double z;
 };
 
+Vector2f generate_goal(std::vector<vec_n> cordinats, int sun_r) {
 
+	int radius = 2000;
+
+	Vector2f goal_cordinats;
+
+	srand(time(0));
+
+	for(;;){
+	
+		float cordinat = rand() % (2 * radius) + (cordinats[cordinats.size()-1].x - radius);
+	
+		if (cordinat < cordinats[cordinats.size()-1].x - sun_r) {
+			goal_cordinats.x = cordinat;
+			break;
+		}else if (cordinat > cordinats[cordinats.size()-1].x + sun_r){
+			goal_cordinats.x = cordinat;
+			break;
+		}
+
+	}
+
+
+	for (;;) {
+
+		float cordinat = rand() % (2 * radius) + (cordinats[cordinats.size()-1].y - radius);
+
+		if (cordinat < cordinats[cordinats.size()-1].y - sun_r) {
+			goal_cordinats.y = cordinat;
+			break;
+		}
+		else if (cordinat > cordinats[cordinats.size()-1].y + sun_r) {
+			goal_cordinats.y = cordinat;
+			break;
+		}
+
+	}
+	std::cout << goal_cordinats.x << std::endl << goal_cordinats.y << std::endl;
+	return(goal_cordinats);
+}
+
+bool goal_collision(std::vector<vec_n>cordinats, Vector2f goal_cordinats, float player_radius) {
+
+	if ((cordinats[0].x - goal_cordinats.x)*(cordinats[0].x - goal_cordinats.x) + (cordinats[0].y - goal_cordinats.y)*(cordinats[0].y - goal_cordinats.y) < player_radius*player_radius) {
+		return(true);
+	} else {
+		return(false);
+	}
+
+}
 
 void option_menue() {
 
@@ -214,7 +263,7 @@ void ingame_menue() {
 
 }
 
-void main_render(std::vector<vec_n> cordinats, std::vector<CircleShape> planets, Sprite player) {
+void main_render(std::vector<vec_n> cordinats, std::vector<CircleShape> planets, Sprite player, CircleShape goal) {
 
 	Vector2f viewport_center; //cordinates at the center of the viewport/window
 	viewport_center.x = window2.getSize().x / 2;
@@ -224,6 +273,10 @@ void main_render(std::vector<vec_n> cordinats, std::vector<CircleShape> planets,
 	modifi_cordinates.x = cordinats[0].x - viewport_center.x;
 	modifi_cordinates.y = cordinats[0].y - viewport_center.y;
 
+	Vector2f goal_cordinats(goal.getPosition());
+	goal_cordinats.x -= modifi_cordinates.x;
+	goal_cordinats.y -= modifi_cordinates.y;
+	goal.setPosition(goal_cordinats);
 
 	for (int i = 0; i < cordinats.size(); i++) {
 		cordinats[i].x -= modifi_cordinates.x;
@@ -237,14 +290,18 @@ void main_render(std::vector<vec_n> cordinats, std::vector<CircleShape> planets,
 
 	window2.clear();
 
-	window2.draw(player);
-
 	for (int i = 0; i < planets.size(); i++) {
 		window2.draw(planets[i]);
 	}
 
+	window2.draw(goal);
+	window2.draw(player);
+
 	window2.display();
 
+	goal_cordinats.x += modifi_cordinates.x;
+	goal_cordinats.y += modifi_cordinates.y;
+	goal.setPosition(goal_cordinats);
 }
 
 
@@ -458,6 +515,13 @@ int main() {
 	planets[8].setRadius(radius[8]);
 	planets[8].setOrigin(radius[8], radius[8]);
 
+	int sun_r = 200;
+
+	CircleShape goal(30);
+	goal.setOutlineColor(white);
+	Vector2f goal_cordinats(generate_goal(cordinats, sun_r));
+	goal.setPosition(goal_cordinats);
+
 	while (window2.isOpen()) {
 		restart = 0;
 		start_menue();
@@ -476,8 +540,8 @@ int main() {
 
 
 
-			cordinats[0].x = (r - 0.4*k)*cos(k / 50) + planets[8].getPosition().x;
-			cordinats[0].y = (r - 0.5*k)*sin(k / 50) + +planets[8].getPosition().y;
+			cordinats[0].x = r*cos(k / 50) + planets[8].getPosition().x;
+			cordinats[0].y = r*sin(k / 50) + +planets[8].getPosition().y;
 			player.setPosition(Vector2f(cordinats[0].x, cordinats[0].y));
 			
 			
@@ -513,8 +577,12 @@ int main() {
 			}
 
 
-			collision(planets,  cordinats,  player, player_radius);
-			main_render(cordinats, planets, player);
+			//collision(planets,  cordinats,  player, player_radius);
+			if (goal_collision(cordinats, goal_cordinats, sun_r) == true) {
+				goal_cordinats = generate_goal(cordinats, sun_r);
+				goal.setPosition(goal_cordinats);
+			}
+			main_render(cordinats, planets, player, goal);
 			if (collided == 1)
 			{
 				break;

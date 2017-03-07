@@ -1,76 +1,66 @@
-<<<<<<< HEAD
-﻿Build started 2017-01-30 09:03:20.
-     1>Project "C:\Users\alex.modee\Git\Daer-Isac2\Dear_Isaac\Game prototype (multiple modules)\game1\game1.vcxproj" on node 2 (Build target(s)).
-     1>ClCompile:
-         C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin\x86_amd64\CL.exe /c /I"C:\Users\Alex Modee\Documents\Visual Studio 2015\Projects\game1\SFML\include" /ZI /nologo /W3 /WX- /sdl /Od /D _DEBUG /D _CONSOLE /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /Fo"x64\Debug\\" /Fd"x64\Debug\vc140.pdb" /Gd /TP /errorReport:prompt main.cpp
-         main.cpp
-     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\game prototype (multiple modules)\game1\main.cpp(3): fatal error C1083: Cannot open include file: 'SFML\Graphics.hpp': No such file or directory
-     1>Done Building Project "C:\Users\alex.modee\Git\Daer-Isac2\Dear_Isaac\Game prototype (multiple modules)\game1\game1.vcxproj" (Build target(s)) -- FAILED.
-
-Build FAILED.
-
-Time Elapsed 00:00:00.84
-=======
 ﻿  main.cpp
-d:\dokument\git\dear_isaac\game prototype (multiple modules)\game1\main.cpp(40): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-d:\dokument\git\dear_isaac\game prototype (multiple modules)\game1\main.cpp(40): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-d:\dokument\git\dear_isaac\game prototype (multiple modules)\game1\main.cpp(44): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-d:\dokument\git\dear_isaac\game prototype (multiple modules)\game1\main.cpp(46): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-d:\dokument\git\dear_isaac\game prototype (multiple modules)\game1\main.cpp(54): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-d:\dokument\git\dear_isaac\game prototype (multiple modules)\game1\main.cpp(69): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-d:\dokument\git\dear_isaac\game prototype (multiple modules)\game1\main.cpp(70): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-d:\dokument\git\dear_isaac\game prototype (multiple modules)\game1\main.cpp(74): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-d:\dokument\git\dear_isaac\game prototype (multiple modules)\game1\main.cpp(75): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-d:\dokument\git\dear_isaac\game prototype (multiple modules)\game1\main.cpp(86): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-d:\dokument\git\dear_isaac\game prototype (multiple modules)\game1\main.cpp(87): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-d:\dokument\git\dear_isaac\game prototype (multiple modules)\game1\main.cpp(91): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-d:\dokument\git\dear_isaac\game prototype (multiple modules)\game1\main.cpp(92): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-d:\dokument\git\dear_isaac\game prototype (multiple modules)\game1\main.cpp(133): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-d:\dokument\git\dear_isaac\game prototype (multiple modules)\game1\main.cpp(133): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-d:\dokument\git\dear_isaac\game prototype (multiple modules)\game1\main.cpp(137): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-d:\dokument\git\dear_isaac\game prototype (multiple modules)\game1\main.cpp(139): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-d:\dokument\git\dear_isaac\game prototype (multiple modules)\game1\main.cpp(147): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-d:\dokument\git\dear_isaac\game prototype (multiple modules)\game1\main.cpp(162): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-d:\dokument\git\dear_isaac\game prototype (multiple modules)\game1\main.cpp(163): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-d:\dokument\git\dear_isaac\game prototype (multiple modules)\game1\main.cpp(167): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-d:\dokument\git\dear_isaac\game prototype (multiple modules)\game1\main.cpp(168): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-d:\dokument\git\dear_isaac\game prototype (multiple modules)\game1\main.cpp(179): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-d:\dokument\git\dear_isaac\game prototype (multiple modules)\game1\main.cpp(180): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-d:\dokument\git\dear_isaac\game prototype (multiple modules)\game1\main.cpp(184): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-d:\dokument\git\dear_isaac\game prototype (multiple modules)\game1\main.cpp(185): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-d:\dokument\git\dear_isaac\game prototype (multiple modules)\game1\main.cpp(220): warning C4244: '=': conversion from 'unsigned int' to 'float', possible loss of data
-d:\dokument\git\dear_isaac\game prototype (multiple modules)\game1\main.cpp(221): warning C4244: '=': conversion from 'unsigned int' to 'float', possible loss of data
-d:\dokument\git\dear_isaac\game prototype (multiple modules)\game1\main.cpp(224): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-d:\dokument\git\dear_isaac\game prototype (multiple modules)\game1\main.cpp(225): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+d:\dokument\git\dear_isaac\game prototype (multiple modules)\game1\main.cpp(34): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
+d:\dokument\git\dear_isaac\game prototype (multiple modules)\game1\main.cpp(38): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+d:\dokument\git\dear_isaac\game prototype (multiple modules)\game1\main.cpp(53): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+d:\dokument\git\dear_isaac\game prototype (multiple modules)\game1\main.cpp(89): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+d:\dokument\git\dear_isaac\game prototype (multiple modules)\game1\main.cpp(89): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+d:\dokument\git\dear_isaac\game prototype (multiple modules)\game1\main.cpp(93): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+d:\dokument\git\dear_isaac\game prototype (multiple modules)\game1\main.cpp(95): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+d:\dokument\git\dear_isaac\game prototype (multiple modules)\game1\main.cpp(103): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+d:\dokument\git\dear_isaac\game prototype (multiple modules)\game1\main.cpp(118): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+d:\dokument\git\dear_isaac\game prototype (multiple modules)\game1\main.cpp(119): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+d:\dokument\git\dear_isaac\game prototype (multiple modules)\game1\main.cpp(123): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+d:\dokument\git\dear_isaac\game prototype (multiple modules)\game1\main.cpp(124): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+d:\dokument\git\dear_isaac\game prototype (multiple modules)\game1\main.cpp(135): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+d:\dokument\git\dear_isaac\game prototype (multiple modules)\game1\main.cpp(136): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+d:\dokument\git\dear_isaac\game prototype (multiple modules)\game1\main.cpp(140): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+d:\dokument\git\dear_isaac\game prototype (multiple modules)\game1\main.cpp(141): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+d:\dokument\git\dear_isaac\game prototype (multiple modules)\game1\main.cpp(182): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+d:\dokument\git\dear_isaac\game prototype (multiple modules)\game1\main.cpp(182): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+d:\dokument\git\dear_isaac\game prototype (multiple modules)\game1\main.cpp(186): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+d:\dokument\git\dear_isaac\game prototype (multiple modules)\game1\main.cpp(188): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+d:\dokument\git\dear_isaac\game prototype (multiple modules)\game1\main.cpp(196): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+d:\dokument\git\dear_isaac\game prototype (multiple modules)\game1\main.cpp(211): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+d:\dokument\git\dear_isaac\game prototype (multiple modules)\game1\main.cpp(212): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+d:\dokument\git\dear_isaac\game prototype (multiple modules)\game1\main.cpp(216): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+d:\dokument\git\dear_isaac\game prototype (multiple modules)\game1\main.cpp(217): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+d:\dokument\git\dear_isaac\game prototype (multiple modules)\game1\main.cpp(228): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+d:\dokument\git\dear_isaac\game prototype (multiple modules)\game1\main.cpp(229): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
 d:\dokument\git\dear_isaac\game prototype (multiple modules)\game1\main.cpp(233): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-d:\dokument\git\dear_isaac\game prototype (multiple modules)\game1\main.cpp(235): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-d:\dokument\git\dear_isaac\game prototype (multiple modules)\game1\main.cpp(254): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-d:\dokument\git\dear_isaac\game prototype (multiple modules)\game1\main.cpp(255): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-d:\dokument\git\dear_isaac\game prototype (multiple modules)\game1\main.cpp(260): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-d:\dokument\git\dear_isaac\game prototype (multiple modules)\game1\main.cpp(261): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-d:\dokument\git\dear_isaac\game prototype (multiple modules)\game1\main.cpp(290): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-d:\dokument\git\dear_isaac\game prototype (multiple modules)\game1\main.cpp(302): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-d:\dokument\git\dear_isaac\game prototype (multiple modules)\game1\main.cpp(302): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-d:\dokument\git\dear_isaac\game prototype (multiple modules)\game1\main.cpp(306): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-d:\dokument\git\dear_isaac\game prototype (multiple modules)\game1\main.cpp(308): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-d:\dokument\git\dear_isaac\game prototype (multiple modules)\game1\main.cpp(317): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-d:\dokument\git\dear_isaac\game prototype (multiple modules)\game1\main.cpp(333): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-d:\dokument\git\dear_isaac\game prototype (multiple modules)\game1\main.cpp(334): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-d:\dokument\git\dear_isaac\game prototype (multiple modules)\game1\main.cpp(338): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-d:\dokument\git\dear_isaac\game prototype (multiple modules)\game1\main.cpp(339): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-d:\dokument\git\dear_isaac\game prototype (multiple modules)\game1\main.cpp(350): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-d:\dokument\git\dear_isaac\game prototype (multiple modules)\game1\main.cpp(351): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-d:\dokument\git\dear_isaac\game prototype (multiple modules)\game1\main.cpp(355): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-d:\dokument\git\dear_isaac\game prototype (multiple modules)\game1\main.cpp(356): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-d:\dokument\git\dear_isaac\game prototype (multiple modules)\game1\main.cpp(443): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-d:\dokument\git\dear_isaac\game prototype (multiple modules)\game1\main.cpp(447): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-d:\dokument\git\dear_isaac\game prototype (multiple modules)\game1\main.cpp(449): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-d:\dokument\git\dear_isaac\game prototype (multiple modules)\game1\main.cpp(455): warning C4244: 'argument': conversion from 'unsigned int' to 'float', possible loss of data
-d:\dokument\git\dear_isaac\game prototype (multiple modules)\game1\main.cpp(458): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-d:\dokument\git\dear_isaac\game prototype (multiple modules)\game1\main.cpp(459): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-d:\dokument\git\dear_isaac\game prototype (multiple modules)\game1\main.cpp(481): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-d:\dokument\git\dear_isaac\game prototype (multiple modules)\game1\main.cpp(523): warning C4305: '+=': truncation from 'double' to 'float'
-d:\dokument\git\dear_isaac\game prototype (multiple modules)\game1\main.cpp(389): warning C4715: 'start_menue': not all control paths return a value
+d:\dokument\git\dear_isaac\game prototype (multiple modules)\game1\main.cpp(234): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+d:\dokument\git\dear_isaac\game prototype (multiple modules)\game1\main.cpp(269): warning C4244: '=': conversion from 'unsigned int' to 'float', possible loss of data
+d:\dokument\git\dear_isaac\game prototype (multiple modules)\game1\main.cpp(270): warning C4244: '=': conversion from 'unsigned int' to 'float', possible loss of data
+d:\dokument\git\dear_isaac\game prototype (multiple modules)\game1\main.cpp(273): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+d:\dokument\git\dear_isaac\game prototype (multiple modules)\game1\main.cpp(274): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+d:\dokument\git\dear_isaac\game prototype (multiple modules)\game1\main.cpp(286): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+d:\dokument\git\dear_isaac\game prototype (multiple modules)\game1\main.cpp(288): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+d:\dokument\git\dear_isaac\game prototype (multiple modules)\game1\main.cpp(311): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+d:\dokument\git\dear_isaac\game prototype (multiple modules)\game1\main.cpp(312): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+d:\dokument\git\dear_isaac\game prototype (multiple modules)\game1\main.cpp(317): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+d:\dokument\git\dear_isaac\game prototype (multiple modules)\game1\main.cpp(318): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+d:\dokument\git\dear_isaac\game prototype (multiple modules)\game1\main.cpp(347): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+d:\dokument\git\dear_isaac\game prototype (multiple modules)\game1\main.cpp(359): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+d:\dokument\git\dear_isaac\game prototype (multiple modules)\game1\main.cpp(359): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+d:\dokument\git\dear_isaac\game prototype (multiple modules)\game1\main.cpp(363): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+d:\dokument\git\dear_isaac\game prototype (multiple modules)\game1\main.cpp(365): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+d:\dokument\git\dear_isaac\game prototype (multiple modules)\game1\main.cpp(374): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+d:\dokument\git\dear_isaac\game prototype (multiple modules)\game1\main.cpp(390): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+d:\dokument\git\dear_isaac\game prototype (multiple modules)\game1\main.cpp(391): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+d:\dokument\git\dear_isaac\game prototype (multiple modules)\game1\main.cpp(395): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+d:\dokument\git\dear_isaac\game prototype (multiple modules)\game1\main.cpp(396): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+d:\dokument\git\dear_isaac\game prototype (multiple modules)\game1\main.cpp(407): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+d:\dokument\git\dear_isaac\game prototype (multiple modules)\game1\main.cpp(408): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+d:\dokument\git\dear_isaac\game prototype (multiple modules)\game1\main.cpp(412): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+d:\dokument\git\dear_isaac\game prototype (multiple modules)\game1\main.cpp(413): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+d:\dokument\git\dear_isaac\game prototype (multiple modules)\game1\main.cpp(500): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+d:\dokument\git\dear_isaac\game prototype (multiple modules)\game1\main.cpp(504): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+d:\dokument\git\dear_isaac\game prototype (multiple modules)\game1\main.cpp(506): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+d:\dokument\git\dear_isaac\game prototype (multiple modules)\game1\main.cpp(512): warning C4244: 'argument': conversion from 'unsigned int' to 'float', possible loss of data
+d:\dokument\git\dear_isaac\game prototype (multiple modules)\game1\main.cpp(515): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+d:\dokument\git\dear_isaac\game prototype (multiple modules)\game1\main.cpp(516): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+d:\dokument\git\dear_isaac\game prototype (multiple modules)\game1\main.cpp(545): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+d:\dokument\git\dear_isaac\game prototype (multiple modules)\game1\main.cpp(581): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+d:\dokument\git\dear_isaac\game prototype (multiple modules)\game1\main.cpp(591): warning C4305: '+=': truncation from 'double' to 'float'
+d:\dokument\git\dear_isaac\game prototype (multiple modules)\game1\main.cpp(446): warning C4715: 'start_menue': not all control paths return a value
   game1.vcxproj -> D:\Dokument\Git\Dear_Isaac\Game prototype (multiple modules)\x64\Debug\game1.exe
   game1.vcxproj -> D:\Dokument\Git\Dear_Isaac\Game prototype (multiple modules)\x64\Debug\game1.pdb (Full PDB)
->>>>>>> origin/master
