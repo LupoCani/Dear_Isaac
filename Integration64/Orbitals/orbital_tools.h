@@ -233,6 +233,7 @@ namespace shared
 	struct world_state
 	{
 		std::vector<vec_n> bodies;
+		std::vector<vec_n> kesses;
 		std::vector<std::string> names;
 		std::vector<std::vector<vec_n>> paths;
 
@@ -282,6 +283,7 @@ namespace phys
 
 		bool isPlayer = false;	//True if the body is the player
 		bool isSun = false;		//True if the body is the sun
+		bool isKess = false;
 
 		body* parent;		//Pointer to parent body
 		body* self = this;	//Pointer to self
@@ -318,7 +320,9 @@ namespace phys
 		double last_predict = 0;
 
 		vector<body*> bodies;
+		vector<body*> kesses;
 		vector<vector<vec_n>> tails;
+		vector<vec_n> bodies_pos;
 	}
 
 	namespace game
@@ -346,6 +350,9 @@ namespace phys
 		double mass = 0;
 		double f_p_t = 1;
 		double eng_F = 1;
+
+		vec_n eng_thrust;
+		bool eng_mode;
 	}
 
 	namespace pred
@@ -354,6 +361,24 @@ namespace phys
 		double end;
 
 		
+	}
+
+
+	template<class vec_cont>
+	void push_any(vector<vec_cont*> &in, int ind, vec_cont* sat_p)
+	{
+		vector<vec_cont>::iterator ref = in.begin;
+		if (ind < 0)
+			ref = in.end;
+
+		in.insert(ref + ind, sat_p);
+	}
+
+	double rand_part()
+	{
+		double out = rand() % 1000 / 1000.0;
+		std::cout << "rand: "<< out << std::endl;
+		return out;
 	}
 
 	//Begin generic vector math functions
@@ -595,10 +620,11 @@ namespace phys
 	{
 		double d_time = M / sat.Mn;
 		double w_time = d_time + sat.epoch;
+		double diff = pow(10, -digits);
 
 		if (!(sat.shape || isnan(w_time_min) ))
 		{
-			while (w_time_min - w_time > pow(10, -digits))
+			while (w_time_min - w_time > diff)
 				w_time += sat.t_p;
 		}
 
@@ -966,23 +992,9 @@ namespace phys
 			}
 
 			for (int i = 0; i < list.size(); i++)
-			{
 				for (int i2 = 0; i2 < pred_lists[i].size(); i2++)
 					if (pred_lists[i][i2].dist < mins[i].dist && pred_lists[i][i2].dlt > 0)
 						mins[i] = pred_lists[i][i2];
-
-
-				skip if ("yavin" == (*list[i]).name)
-				{
-					std::cout << pred_lists[i].size() << std::endl;
-
-					skip for (int i2 = 0; i2 < pred_lists[i].size(); i2++)
-					{
-						std::cout << pred_lists[i][i2].dist << std::endl;
-					}
-					skip std::cout << "_____________\n";
-				}
-			}
 				
 
 			list_out = list;
@@ -992,8 +1004,6 @@ namespace phys
 			mins_out = mins;
 		}
 	};
-
-	
 
 	void get_expiry_phys(body &sat, vector<body*> list, vector<body*> &list_out, vector<vector<double>> &mins_out, bool &will_expire, int &new_parent)
 	{
@@ -1165,7 +1175,6 @@ namespace phys
 		sat.inverse = false;
 		u = parent.u;
 
-
 		bool repeat;
 		do
 		{
@@ -1257,7 +1266,106 @@ namespace phys
 
 	//End graph algorithms
 
-	vector<vec_n> do_phys_tick(vector<body*> bodies, double w_time, bool phys_mode, vec_n thrust = vec_n())
+	void add_kesslers()
+	{
+		body &plyr = *gen::bodies.back();
+		body &parent = *plyr.parent;
+
+		for (int i = 0; i < 10; i++)
+		{
+			body &kess = *new body;
+
+			vec_r kess_pos;
+			vec_r kess_vel;
+			kess_pos.mag = parent.SOI * rand_part();
+			kess_vel.mag = get_esc_vel(parent, kess_pos.mag) * rand_part() * 1.5;
+
+			kess_pos.ang = rand_part() * M_2PI;
+			kess_vel.ang = kess_pos.ang + M_PI2;
+
+			kess.pos = kess_pos + parent.pos;
+			kess.vel = kess_vel + parent.vel;
+			kess.parent = parent.self;
+			kess.isKess = true;
+			kess.u = 0.01;
+
+			make_orbit(kess, plyr.epoch);
+
+			{
+				using std::endl;
+				using std::cout;
+
+				cout << "Ecc:   " << kess.ecc << endl;
+				cout << "Ax_a:  " << kess.ax_a << endl;	//Semimajor axis
+				cout << "epoch: " << kess.epoch << endl;		//Starting timestamp
+				cout << "t_l:   " << kess.t_l << endl;		//Timestamp at a given time
+				cout << "u:     " << kess.u << endl;		//Gravitational parameter
+				cout << "norm:  " << kess.normal << endl;	//angle of the major axis
+				cout << "shape: " << kess.shape << endl;
+				cout << "inv:   " << kess.inverse << endl;
+				cout << "vel_x: " << kess.vel.x << endl;		//Velocity at a given time
+				cout << "vel_y: " << kess.vel.y << endl;
+				cout << "pos_x: " << kess.pos.x << endl;
+				cout << "pos_y: " << kess.pos.y << endl;
+
+				cout << "En:    " << kess.En << endl;
+				cout << "Ar:    " << kess.Ar << endl;
+				cout << "Mn:    " << kess.Mn << endl;
+				cout << "Name:  " << kess.name << endl;
+				cout << "Parent:" << (*(kess.parent)).name << endl;
+
+				cout << "___________________________\n__________________________\n";
+			}
+
+			gen::kesses.push_back(&kess);
+		}
+
+		std::cout << 10 << std::endl;
+	}
+
+	void kill_kesslers()
+	{
+		using gen::kesses;
+
+		while (kesses.size())
+		{
+			body* sat_p = kesses.back();
+			kesses.pop_back();
+			delete sat_p;
+		}
+
+		std::cout << "Kill\n";
+	}
+
+	void do_kess_tick(vector<body*> list, double w_time)
+	{
+		vector<vec_n> out;
+		bool expired = false;
+
+		vector<vec_n> pos_buffer;
+		vector<vec_n> vel_buffer;
+
+		body& parent = *list[0];
+
+		for (int i = 0; i < list.size(); i++)
+		{
+			body &sat = *list[i];
+			vec_n pos;
+			vec_n vel;
+
+			do_orbit(sat, w_time, 20, pos, vel);
+
+			sat.pos = pos + parent.pos;
+			sat.vel = pos + parent.vel;
+			sat.t_l = w_time;
+
+			out.push_back(sat.pos);
+		}
+
+		shared::screen_state.kesses = out;
+	}
+
+	void do_phys_tick(vector<body*> bodies, double w_time, bool phys_mode, vec_n thrust = vec_n())
 	{
 		vector<vec_n> out;
 		bool expired = false;
@@ -1289,7 +1397,7 @@ namespace phys
 			sat.t_l = w_time;
 
 			body &new_parent = *get_parent(sat, bodies);
-			if (new_parent.self != sat.parent)
+			if (new_parent.self != sat.parent && sat.isPlayer)
 				expired = true;
 			sat.parent = &new_parent;
 
@@ -1312,10 +1420,16 @@ namespace phys
 			gen::tails[gen::tails.size() - 1] = make_tail(plyr, 1000);
 		}
 
-		return out;
+		if (expired)
+		{
+			kill_kesslers();
+			add_kesslers();
+		}
+
+		gen::bodies_pos = out;
 	}
 
-	vec_n do_game_tick()
+	void do_game_tick()
 	{
 		using namespace input;
 
@@ -1380,7 +1494,8 @@ namespace phys
 		screen_state.zoom = game::zoom_mem;
 		screen_state.player_rotation = rock::rot;
 
-		return vec_to_pos(rock::rot, -thrust_actual / (rock::mass + rock::fuel) );
+		rock::eng_thrust = vec_to_pos(rock::rot, -thrust_actual / (rock::mass + rock::fuel) );
+		rock::eng_mode = vmag(rock::eng_thrust);
 	}
 
 #ifdef RENDER_DEBUG_INSTALLED
@@ -1401,27 +1516,25 @@ namespace phys
 			gen::w_time_diff = 0.01;
 		gen::w_time += gen::w_time_diff;
 
-		vec_n eng_thrust = do_game_tick();
-		bool eng_mode = vmag(eng_thrust);
+		do_game_tick();
 
-		screen_state.bodies = do_phys_tick(gen::bodies, gen::w_time, eng_mode, eng_thrust);
+		do_phys_tick(gen::bodies, gen::w_time, rock::eng_mode, rock::eng_thrust);
+		do_kess_tick(gen::kesses, gen::w_time);
 
-		if ((eng_mode || 0) || gen::last_predict + 0.5 * shared::cps < shared::r_time && 1)
+		screen_state.bodies = gen::bodies_pos;
+
+		if (gen::last_predict + 0.5 * shared::cps < shared::r_time)
 		{
-			//vector<vector<double>> pairs;
 			body &plyr = *gen::bodies.back();
 
 			get_expiry data(plyr, gen::bodies);
 
 			vector<body*> co_sats = data.list_out;
-			//vector<double> pairs_t = data.min_time_out;
-			//vector<double> pairs_d = data.min_dist_out;
 
 			vector<pred_p> pairs = data.mins_out;
 
 			bool expiring = data.will_expire;
 			int new_parent = data.new_parent;
-
 
 			if (expiring)
 			{
@@ -1430,7 +1543,7 @@ namespace phys
 			}
 			else
 			{
-				plyr.safe = plyr.t_l;//plyr.expiry;
+				plyr.safe = plyr.t_l;
 				plyr.expiry = plyr.t_l + plyr.t_p;
 			}
 
@@ -1444,11 +1557,8 @@ namespace phys
 					game::min_time = pairs[i].time;
 				}
 			}
-
-
 			gen::last_predict = shared::r_time;
 		}
-
 
 		game::cur_dist = vmag((*gen::bodies.back()).pos - (*gen::bodies[game::target]).pos);
 		vector<vector<vec_n>> tails_out = gen::tails;
@@ -1465,8 +1575,8 @@ namespace phys
 		screen_state.paths = tails_out;
 
 #ifdef RENDER_DEBUG_INSTALLED
-		emode = eng_mode;
-		thrust_debug = eng_thrust;
+		emode = rock::eng_mode;
+		thrust_debug = rock::eng_thrust;
 #endif
 	}
 
@@ -1495,7 +1605,7 @@ namespace phys
 			//Name the largest body as 'sun';
 			(*sorted[0]).isSun = true;
 			(*sorted[0]).SOI = DBL_MAX;
-			//To begin with, assume all sorted orbit the sun.
+			//To begin with, assume all sorted bodies orbit the sun.
 			for (int i = 0; i < sorted.size(); i++)
 				(*sorted[i]).parent = sorted[0];
 		}
@@ -1604,6 +1714,7 @@ namespace phys
 	void engine_init()
 	{
 		phys_init();
+		add_kesslers();
 	}
 }
 
@@ -1690,6 +1801,22 @@ namespace render_debug			//To be removed once the neccesary render_tools functio
 		window2.draw(plyr);
 	}
 
+	void render_kesslers(vector<vec_n> list)
+	{
+		for (int i = 0; i < list.size(); i++)
+		{
+			CircleShape kess(10, 4);
+			kess.setFillColor(sf::Color::Red);
+			kess.setOrigin(5, 5);
+			kess.setPosition(list[i]);
+
+			//std::cout << vmag(list[i]) << std::endl;
+
+			window2.draw(kess);
+		}
+		//std::cout << list.size() << std::endl;
+	}
+
 	void render_all(shared::world_state in)
 	{
 		window2.clear();
@@ -1708,6 +1835,7 @@ namespace render_debug			//To be removed once the neccesary render_tools functio
 		texts.push_back("AcDist: " + std::to_string(phys::game::cur_dist));
 
 		render_texts(texts);
+		render_kesslers(shared::screen_state.kesses);
 		render_player(in.player_rotation, in.bodies.back(), in.bodies[in.focus], in.zoom);
 
 		//window2.display();
