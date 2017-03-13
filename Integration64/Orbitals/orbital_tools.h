@@ -610,7 +610,7 @@ namespace phys
 		double d_time = w_time - sat.epoch;
 		double M = d_time * sat.Mn;
 
-		skip if (sat.shape == 0)
+		if (sat.shape == 0)
 			return ang_wrap(M);
 
 		return M;
@@ -767,7 +767,7 @@ namespace phys
 		if (sat.isSun)
 			return;
 
-		skip if (!sat.shape)
+		if (!sat.shape)
 			part = ang_wrap(part);
 
 		V = do_orbit_precise(part, sat, log2(pow(10, digits)));
@@ -845,8 +845,16 @@ namespace phys
 				if (sat.ecc < 0.9999999999)
 					laps = floor((end_t - start_t) / sat.t_p) * sat.t_p;
 
+				int ilog = 0;
 				while (end <= start + laps)
+				{
 					end += M_2PI;
+
+					ilog++;
+					if (ilog > 10)
+						std::cout << sat.name << ": " << sat.expiry << std::endl, system("pause");
+					
+				}
 
 				//end += M_2PI;
 
@@ -1222,6 +1230,8 @@ namespace phys
 		sat.epoch = w_time - get_M(tV, sat.ecc) / sat.Mn;
 		sat.t_p = M_2PI / abs(sat.Mn);
 		sat.expiry = w_time + sat.t_p;
+		if (sat.isPlayer)
+			std::cout << "Second: " << sat.expiry << std::endl;
 		sat.safe = w_time;
 		sat.expire = 0;
 
@@ -1230,6 +1240,8 @@ namespace phys
 			double V_max = get_V_r(parent.SOI, sat);
 			double M_max = get_M(V_max, sat.ecc);
 			sat.expiry = M_to_time(sat, M_max, sat.epoch);
+			if (sat.isPlayer)
+				std::cout << "Third: " << sat.expiry << std::endl;
 			sat.expire = 1;
 			sat.V_exp = V_max;
 		}
@@ -1399,18 +1411,21 @@ namespace phys
 			sat.vel = vel_buffer[i] + (*sat.parent).vel;
 			sat.t_l = w_time;
 
-			body &new_parent = *get_parent(sat, bodies);
-			if (new_parent.self != sat.parent && sat.isPlayer)
-				expired = true;
-			sat.parent = &new_parent;
-
-			if (!(sat.expire || expired))
-				sat.expiry = sat.t_l + sat.t_p;
-
 			out.push_back(sat.pos);
 		}
 
 		body &plyr = *bodies.back();
+
+
+		{
+			body &new_parent = *get_parent(plyr, bodies);
+			if (new_parent.self != plyr.parent)
+				expired = true;
+			plyr.parent = &new_parent;
+
+			if (!(plyr.expire || expired))
+				plyr.expiry = plyr.t_l + plyr.t_p, std::cout << "First: " << plyr.expiry << std::endl;
+		}
 
 		if (phys_mode || expired || plyr.expire)
 		{
@@ -1541,15 +1556,16 @@ namespace phys
 			bool expiring = data.will_expire;
 			int new_parent = data.new_parent;
 
+
+			plyr.expiry = plyr.t_l + plyr.t_p;
 			if (expiring)
 			{
 				plyr.expire = 2;
-				plyr.expiry = pairs[new_parent].time;
+				skip plyr.expiry = pairs[new_parent].time;
 			}
 			else
 			{
 				plyr.safe = plyr.t_l;
-				plyr.expiry = plyr.t_l + plyr.t_p;
 			}
 
 			for (int i = 0; i < co_sats.size(); i++)
