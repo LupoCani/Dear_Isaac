@@ -767,7 +767,7 @@ namespace phys
 		if (sat.isSun)
 			return;
 
-		if (!sat.shape)
+		skip if (!sat.shape)
 			part = ang_wrap(part);
 
 		V = do_orbit_precise(part, sat, log2(pow(10, digits)));
