@@ -610,7 +610,7 @@ namespace phys
 		double d_time = w_time - sat.epoch;
 		double M = d_time * sat.Mn;
 
-		if (sat.shape == 0)
+		skip if (sat.shape == 0)
 			return ang_wrap(M);
 
 		return M;
