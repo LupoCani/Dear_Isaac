@@ -61,9 +61,9 @@ c:\users\gunnar.wickbom\local misc\github\integration64\orbitals\render_tools.h(
 c:\users\gunnar.wickbom\local misc\github\integration64\orbitals\render_tools.h(531): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
 c:\users\gunnar.wickbom\local misc\github\integration64\orbitals\render_tools.h(532): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
   Generating code
-  52 of 1520 functions ( 3.4%) were compiled, the rest were copied from previous compilation.
+  53 of 1520 functions ( 3.5%) were compiled, the rest were copied from previous compilation.
     0 functions were new in current compilation
-    2 functions had inline decision re-evaluated but remain unchanged
+    8 functions had inline decision re-evaluated but remain unchanged
   Finished generating code
   Orbitals.vcxproj -> C:\Users\gunnar.wickbom\Local Misc\GitHub\Integration64\x64\Release\Orbitals.exe
   Orbitals.vcxproj -> C:\Users\gunnar.wickbom\Local Misc\GitHub\Integration64\x64\Release\Orbitals.pdb (Full PDB)
