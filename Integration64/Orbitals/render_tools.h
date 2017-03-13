@@ -28,6 +28,55 @@ namespace graph{
 
 	//if (shared::window2.create(sf::VideoMode(1080, 860), "Orbitals") );
 
+	Vector2f generate_goal(std::vector<vec_n>cordinats, int sun_r, int radius) {
+
+		Vector2f goal_cordinats;
+
+		srand(time(0));
+
+		for (;;) {
+
+			goal_cordinats.x = rand() % (2 * radius) + cordinats[cordinats.size() - 1].x - radius;
+
+			if (goal_cordinats.x < cordinats[cordinats.size() - 1].x - sun_r) {
+				break;
+			}
+			else if (goal_cordinats.x > cordinats[cordinats.size() - 1].x + sun_r) {
+				break;
+			}
+
+		}
+
+		for (;;) {
+
+			goal_cordinats.y = rand() % (2 * radius) + cordinats[cordinats.size() - 1].y - radius;
+
+			if (goal_cordinats.y < cordinats[cordinats.size() - 1].y - sun_r) {
+				break;
+			}
+			else if (goal_cordinats.y > cordinats[cordinats.size() - 1].y + sun_r) {
+				break;
+			}
+
+		}
+		std::cout << goal_cordinats.x << std::endl << goal_cordinats.y << std::endl;
+		return(goal_cordinats);
+
+	}
+
+	bool goal_collision(CircleShape goal, Vector2f goal_cordinats, std::vector<vec_n>cordinats, float player_r) {
+
+		bool goal_collided = 0;
+
+		float distance = sqrt((cordinats[cordinats.size() - 1].x - goal_cordinats.x)*(cordinats[cordinats.size() - 1].x - goal_cordinats.x) + (cordinats[cordinats.size() - 1].y - goal_cordinats.y)*(cordinats[cordinats.size() - 1].y - goal_cordinats.y));
+
+		if (distance < player_r + goal.getRadius()) {
+			goal_collided = 1;
+		}
+
+		return(goal_collided);
+
+	}
 
 	vec_n render() {
 
