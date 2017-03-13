@@ -1345,6 +1345,9 @@ namespace phys
 		vector<vec_n> pos_buffer;
 		vector<vec_n> vel_buffer;
 
+		if (!list.size())
+			return;
+
 		body& parent = *list[0];
 
 		for (int i = 0; i < list.size(); i++)
@@ -1423,7 +1426,9 @@ namespace phys
 		if (expired)
 		{
 			kill_kesslers();
-			add_kesslers();
+
+			if (!(*plyr.parent).isSun)
+				add_kesslers();
 		}
 
 		gen::bodies_pos = out;
@@ -1801,13 +1806,15 @@ namespace render_debug			//To be removed once the neccesary render_tools functio
 		window2.draw(plyr);
 	}
 
-	void render_kesslers(vector<vec_n> list)
+	void render_kesslers(vector<vec_n> list, vec_n origo, double zoom)
 	{
+		list = handle_scale(list, origo, zoom);
+
 		for (int i = 0; i < list.size(); i++)
 		{
-			CircleShape kess(10, 4);
+			CircleShape kess(2, 4);
 			kess.setFillColor(sf::Color::Red);
-			kess.setOrigin(5, 5);
+			kess.setOrigin(1, 1);
 			kess.setPosition(list[i]);
 
 			//std::cout << vmag(list[i]) << std::endl;
@@ -1835,7 +1842,7 @@ namespace render_debug			//To be removed once the neccesary render_tools functio
 		texts.push_back("AcDist: " + std::to_string(phys::game::cur_dist));
 
 		render_texts(texts);
-		render_kesslers(shared::screen_state.kesses);
+		render_kesslers(shared::screen_state.kesses, in.bodies[in.focus], in.zoom);
 		render_player(in.player_rotation, in.bodies.back(), in.bodies[in.focus], in.zoom);
 
 		//window2.display();
