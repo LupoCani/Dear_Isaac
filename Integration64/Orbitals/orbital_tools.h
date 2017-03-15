@@ -981,7 +981,7 @@ namespace phys
 								ending = true;
 								end_body = i;
 								end_time = pln_tim;
-								end_V = Vp;
+								end_V = Vs;
 								break;
 							}
 
@@ -1007,6 +1007,9 @@ namespace phys
 			will_expire = ending;
 			new_parent = end_body;
 			V_exp = end_V;
+
+			skip if (will_expire)
+				std::cout << "EXP_V: " << V_exp << "\n";
 
 			mins_out = mins;
 		}

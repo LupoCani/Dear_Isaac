@@ -6,8 +6,8 @@ c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration64\orbitals\orbit
 c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration64\orbitals\orbital_tools.h(872): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
 c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration64\orbitals\orbital_tools.h(873): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
 c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration64\orbitals\orbital_tools.h(913): warning C4244: '=': conversion from 'long double' to 'int', possible loss of data
-c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration64\orbitals\orbital_tools.h(1540): warning C4800: 'double': forcing value to bool 'true' or 'false' (performance warning)
-c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration64\orbitals\orbital_tools.h(1849): warning C4244: 'argument': conversion from 'long double' to 'float', possible loss of data
+c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration64\orbitals\orbital_tools.h(1543): warning C4800: 'double': forcing value to bool 'true' or 'false' (performance warning)
+c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration64\orbitals\orbital_tools.h(1852): warning C4244: 'argument': conversion from 'long double' to 'float', possible loss of data
 c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration64\orbitals\render_tools.h(35): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
 c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration64\orbitals\render_tools.h(39): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
 c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration64\orbitals\render_tools.h(52): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
@@ -65,9 +65,9 @@ c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration64\orbitals\rende
 c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration64\orbitals\render_tools.h(580): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
 c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration64\orbitals\render_tools.h(581): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
   Generating code
-  49 of 1522 functions ( 3.2%) were compiled, the rest were copied from previous compilation.
+  48 of 1522 functions ( 3.2%) were compiled, the rest were copied from previous compilation.
     0 functions were new in current compilation
-    2 functions had inline decision re-evaluated but remain unchanged
+    3 functions had inline decision re-evaluated but remain unchanged
   Finished generating code
   Orbitals.vcxproj -> C:\Users\Admin\Bibliotek\Programvara\C++\Dear_Isaac\Integration64\x64\Release\Orbitals.exe
   Orbitals.vcxproj -> C:\Users\Admin\Bibliotek\Programvara\C++\Dear_Isaac\Integration64\x64\Release\Orbitals.pdb (Full PDB)
