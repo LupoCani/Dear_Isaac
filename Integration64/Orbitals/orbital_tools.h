@@ -360,18 +360,29 @@ namespace phys
 		double begin;
 		double end;
 
-		
+		vector<vector<vector<pred_p>>> pred_table; //Structure: Body, moment, item.
+		vector<vector<vector<short>>> pred_queue; //Structure: Body, moment, index.
 	}
 
-
+	
 	template<class vec_cont>
-	void push_any(vector<vec_cont*> &in, int ind, vec_cont* sat_p)
+	void push_any(vector<vec_cont> &in, int ind, vec_cont sat_p)
 	{
 		vector<vec_cont>::iterator ref = in.begin;
 		if (ind < 0)
 			ref = in.end;
 
 		in.insert(ref + ind, sat_p);
+	}
+
+	template<class vec_cont>
+	void pop_any(vector<vec_cont> &in, int ind)
+	{
+		vector<vec_cont>::iterator ref = in.begin;
+		if (ind < 0)
+			ref = in.end;
+
+		in.erase(ref + ind);
 	}
 
 	double rand_part()
@@ -796,7 +807,7 @@ namespace phys
 	{
 		//With this many return variables, it's easier to make it a single-function class
 		vector<body*> list_out;
-		vector<pred_p> mins_out;
+		vector<vector<pred_p>> mins_out;
 		bool will_expire;
 		double V_exp;
 		int new_parent;
@@ -889,7 +900,7 @@ namespace phys
 				}
 			}
 
-			vector<pred_p> mins(list.size());
+			vector<vector<pred_p>> mins(list.size());
 
 			vector<double> last_times(list.size(), start_t - pow(10.0, -10.0));
 			vector<int>	its(list.size(), 0);
@@ -999,17 +1010,14 @@ namespace phys
 
 			for (int i = 0; i < list.size(); i++)
 				for (int i2 = 0; i2 < pred_lists[i].size(); i2++)
-					if (pred_lists[i][i2].dist < mins[i].dist && pred_lists[i][i2].dlt > 0)
-						mins[i] = pred_lists[i][i2];
+					if (pred_lists[i][i2].dlt > 0)
+						mins[i].push_back(pred_lists[i][i2]);
 				
 
 			list_out = list;
 			will_expire = ending;
 			new_parent = end_body;
 			V_exp = end_V;
-
-			skip if (will_expire)
-				std::cout << "EXP_V: " << V_exp << "\n";
 
 			mins_out = mins;
 		}
@@ -1543,6 +1551,114 @@ namespace phys
 		rock::eng_mode = vmag(rock::eng_thrust);
 	}
 
+	void run_predict()
+	{
+		using gen::bodies;
+		using namespace pred;
+
+		body &plyr = *bodies.back();
+
+		get_expiry data(plyr, gen::bodies);
+
+		vector<body*> co_sats = data.list_out;
+
+		vector<vector<pred_p>> pairs = data.mins_out;
+
+		vector<int> cnv;	//Table for translating the prediction function's indexes to regular bodies indexes.
+
+		for (int i = 0; i < pairs.size(); i++)
+			for (int i2 = 0; i2 < bodies.size(); i2++)
+				if (bodies[i2] = co_sats[i])
+					cnv.push_back(i2);
+
+		skip for (int i = 0; i < pairs.size(); i++)
+		{
+			int ip = cnv[i];
+
+			for (int i2 = 0; i2 < pairs[i].size(); i2++)
+			{
+				for (int i3 = 0; i3 < pred_queue[ip][i2].size(); i3++)
+				{
+					pred_queue[ip][i2][i3]--;
+					if (pred_queue[ip][i2][i3] <= 0)
+					{
+						pop_any(pred_queue[ip][i2], i3);
+						pop_any(pred_table[ip][i2], i3);
+					}
+				}
+				for (int i3 = 0; i3 < pred_queue[ip][i2].size(); i3++)
+				{
+					if (pred_queue[ip][i2][i3].time > 0) void;
+				}
+
+				pred_table[ip][i2];
+			}
+		}
+
+		bool expiring = data.will_expire;
+		int new_parent = data.new_parent;
+
+		for (int i = 0; i < pairs.size(); i++)
+		{
+			int ip = cnv[i];
+
+			if (expiring && i == new_parent) continue;
+
+			for (int i2 = 0; i2 < pairs[i].size(); i2++)
+			{
+				vector<double> dists(3);
+
+				for (int i3 = 0; i3 < 3; i++)
+				{
+					vec_n true_pos_plyr, true_pos_pln;
+					body &pln = *bodies[ip];
+
+					double tdiff = (pln.t_p / 500) * (i3 - 1);
+					
+					do_orbit(plyr, pairs[i][i2].time + tdiff, 10, true_pos_plyr);
+					do_orbit(pln,  pairs[i][i2].time + tdiff, 10, true_pos_pln);
+
+					dists[i3] = vmag(true_pos_plyr - true_pos_pln);
+				}
+
+				pairs[i][i2].dist = dists[1];
+
+				if (dists[1] > dists[0] || dists[1] > dists[2])
+					pop_any(pairs[i], i2);
+			}
+		}
+
+		plyr.safe = plyr.t_l;
+
+		if (expiring)
+		{
+			plyr.expire = 2;
+			plyr.V_exp = data.V_exp;
+
+			if (plyr.shape ? pairs[new_parent][0].time <= plyr.expire : pairs[new_parent][0].time <= plyr.t_l + 2 * plyr.t_p)
+				plyr.expiry = pairs[new_parent][0].time;
+		}
+		else
+		{
+			reset_expiry(plyr);
+			set_expiry_regular(plyr);
+		}
+
+		for (int i = 0; i < co_sats.size(); i++)
+		{
+			if (co_sats[i] == gen::bodies[game::target])
+			{
+				if (pairs[i][0].dist == DBL_MAX) break;
+
+				game::min_dist = pairs[i][0].dist;
+				game::min_time = pairs[i][0].time;
+
+				break;
+			}
+		}
+		gen::last_predict = shared::r_time;
+	}
+
 #ifdef RENDER_DEBUG_INSTALLED
 	bool emode = 0;
 	vec_n thrust_debug;
@@ -1578,7 +1694,7 @@ namespace phys
 
 			vector<body*> co_sats = data.list_out;
 
-			vector<pred_p> pairs = data.mins_out;
+			vector<vector<pred_p>> pairs = data.mins_out;
 
 			bool expiring = data.will_expire;
 			int new_parent = data.new_parent;
@@ -1590,9 +1706,9 @@ namespace phys
 			{
 				plyr.expire = 2;
 				plyr.V_exp = data.V_exp;
-				
-				if (plyr.shape ? pairs[new_parent].time <= plyr.expire : pairs[new_parent].time <= plyr.t_l + 2*plyr.t_p)
-					plyr.expiry = pairs[new_parent].time;
+
+				if (plyr.shape ? pairs[new_parent][0].time <= plyr.expire : pairs[new_parent][0].time <= plyr.t_l + 2 * plyr.t_p)
+					plyr.expiry = pairs[new_parent][0].time;
 			}
 			else
 			{
@@ -1604,10 +1720,10 @@ namespace phys
 			{
 				if (co_sats[i] == gen::bodies[game::target])
 				{
-					if (pairs[i].dist == DBL_MAX) break;
+					if (pairs[i][0].dist == DBL_MAX) break;
 
-					game::min_dist = pairs[i].dist;
-					game::min_time = pairs[i].time;
+					game::min_dist = pairs[i][0].dist;
+					game::min_time = pairs[i][0].time;
 				}
 			}
 			gen::last_predict = shared::r_time;
