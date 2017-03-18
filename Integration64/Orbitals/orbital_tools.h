@@ -366,21 +366,21 @@ namespace phys
 
 	
 	template<class vec_cont>
-	void push_any(vector<vec_cont> &in, int ind, vec_cont sat_p)
+	void push_any(vector<vec_cont> &in, int ind, vec_cont element)
 	{
-		vector<vec_cont>::iterator ref = in.begin;
+		vector<vec_cont>::iterator ref = in.begin();
 		if (ind < 0)
-			ref = in.end;
+			ref = in.end();
 
-		in.insert(ref + ind, sat_p);
+		in.insert(ref + ind, element);
 	}
 
-	template<class vec_cont>
-	void pop_any(vector<vec_cont> &in, int ind)
+	template<class vec_cont_2>
+	void pop_any(vector<vec_cont_2> &in, int ind)
 	{
-		vector<vec_cont>::iterator ref = in.begin;
+		vector<vec_cont_2>::iterator ref = in.begin();
 		if (ind < 0)
-			ref = in.end;
+			ref = in.end();
 
 		in.erase(ref + ind);
 	}
@@ -766,7 +766,7 @@ namespace phys
 
 	}
 
-	void do_orbit(body &sat, double w_time, int digits, vec_n &pos_out, vec_n &vel_out = vec_n())
+	void do_orbit(body &sat, double w_time, int digits, vec_n &pos_out, vec_n &vel_out = vec_n(NAN, NAN))
 	{
 		double d_time = w_time - sat.epoch;
 
@@ -786,6 +786,8 @@ namespace phys
 		radius = get_r(V, sat);
 
 		pos_out = get_pos_ang(V, sat);
+
+		if (isnan(vel_out.x)) return;
 
 		vec_r vel;
 
@@ -810,6 +812,7 @@ namespace phys
 		vector<vector<pred_p>> mins_out;
 		bool will_expire;
 		double V_exp;
+		double expire_time;
 		int new_parent;
 
 		get_expiry(body &sat, vector<body*> list)
@@ -1017,6 +1020,7 @@ namespace phys
 			list_out = list;
 			will_expire = ending;
 			new_parent = end_body;
+			expire_time = end_time;
 			V_exp = end_V;
 
 			mins_out = mins;
@@ -1553,6 +1557,8 @@ namespace phys
 
 	void run_predict()
 	{
+		if (shared::r_time < gen::last_predict + shared::cps * 0.1) return;
+
 		using gen::bodies;
 		using namespace pred;
 
@@ -1568,8 +1574,9 @@ namespace phys
 
 		for (int i = 0; i < pairs.size(); i++)
 			for (int i2 = 0; i2 < bodies.size(); i2++)
-				if (bodies[i2] = co_sats[i])
+				if (bodies[i2] == co_sats[i])
 					cnv.push_back(i2);
+
 
 		skip for (int i = 0; i < pairs.size(); i++)
 		{
@@ -1577,7 +1584,7 @@ namespace phys
 
 			for (int i2 = 0; i2 < pairs[i].size(); i2++)
 			{
-				for (int i3 = 0; i3 < pred_queue[ip][i2].size(); i3++)
+				for (int i3 = 0; i3 < pred_table[ip][i2].size(); i3++)
 				{
 					pred_queue[ip][i2][i3]--;
 					if (pred_queue[ip][i2][i3] <= 0)
@@ -1586,9 +1593,27 @@ namespace phys
 						pop_any(pred_table[ip][i2], i3);
 					}
 				}
-				for (int i3 = 0; i3 < pred_queue[ip][i2].size(); i3++)
+
+				if (pairs[i][i2].time < pred_table[ip][i2][0].time)
 				{
-					if (pred_queue[ip][i2][i3].time > 0) void;
+					push_any(pred_table[ip][i2], 0, pairs[i][i2]);
+					continue;
+				}
+				if (pairs[i][i2].time > pred_table[ip][i2].back().time)
+				{
+					pred_table[ip][i2].push_back(pairs[i][i2]);
+					continue;
+				}
+
+				for (int i3 = 1; i3 < pred_table[ip][i2].size(); i3++)
+				{
+					if (pred_table[ip][i2][i3 - 0].time > pairs[i][i2].time &&
+						pred_table[ip][i2][i3 - 1].time < pairs[i][i2].time)
+					{
+						push_any(pred_table[ip][i2], i3, pairs[i][i2]);
+						break;
+					}
+
 				}
 
 				pred_table[ip][i2];
@@ -1597,6 +1622,10 @@ namespace phys
 
 		bool expiring = data.will_expire;
 		int new_parent = data.new_parent;
+		double expire_time = data.expire_time;
+
+		if (expiring)
+			std::cout << "New parent: " << (*co_sats[new_parent]).name <<"\n";
 
 		for (int i = 0; i < pairs.size(); i++)
 		{
@@ -1604,17 +1633,21 @@ namespace phys
 
 			if (expiring && i == new_parent) continue;
 
+
+			if (expiring)
+				std::cout << "Current body: " << (*co_sats[i]).name << "\n";
+
 			for (int i2 = 0; i2 < pairs[i].size(); i2++)
 			{
 				vector<double> dists(3);
 
-				for (int i3 = 0; i3 < 3; i++)
+				for (int i3 = 0; i3 < dists.size(); i3++)
 				{
 					vec_n true_pos_plyr, true_pos_pln;
 					body &pln = *bodies[ip];
 
-					double tdiff = (pln.t_p / 500) * (i3 - 1);
-					
+					double tdiff = (pln.t_p / 50) * (i3 - 1);
+
 					do_orbit(plyr, pairs[i][i2].time + tdiff, 10, true_pos_plyr);
 					do_orbit(pln,  pairs[i][i2].time + tdiff, 10, true_pos_pln);
 
@@ -1624,7 +1657,7 @@ namespace phys
 				pairs[i][i2].dist = dists[1];
 
 				if (dists[1] > dists[0] || dists[1] > dists[2])
-					pop_any(pairs[i], i2);
+					pop_any(pairs[i], i2), i2--;
 			}
 		}
 
@@ -1633,10 +1666,23 @@ namespace phys
 		if (expiring)
 		{
 			plyr.expire = 2;
+
+			/*
+			vec_n true_pos_plyr, true_pos_pln;
+			body &pln = *bodies[cnv[new_parent]];
+
+			do_orbit(plyr, expire_time, 10, true_pos_plyr);
+			do_orbit(pln,  expire_time, 10, true_pos_pln);
+
+			vmag(true_pos_plyr - true_pos_pln);
+			*/
+			
 			plyr.V_exp = data.V_exp;
 
-			if (plyr.shape ? pairs[new_parent][0].time <= plyr.expire : pairs[new_parent][0].time <= plyr.t_l + 2 * plyr.t_p)
-				plyr.expiry = pairs[new_parent][0].time;
+			std::cout << pairs[new_parent].size() << "\n";
+
+			if (plyr.shape ? expire_time <= plyr.expire : expire_time <= plyr.t_l + 2 * plyr.t_p)
+				plyr.expiry = expire_time;
 		}
 		else
 		{
@@ -1648,6 +1694,9 @@ namespace phys
 		{
 			if (co_sats[i] == gen::bodies[game::target])
 			{
+
+				if (!pairs[i].size()) break;
+
 				if (pairs[i][0].dist == DBL_MAX) break;
 
 				game::min_dist = pairs[i][0].dist;
@@ -1688,7 +1737,9 @@ namespace phys
 		body &plyr = *gen::bodies.back();
 		gen::tails[gen::tails.size() - 1] = make_tail(plyr, 1000);
 
-		if (gen::last_predict + 0.5 * shared::cps < shared::r_time && !plyr.inverse)
+		run_predict();
+
+		skip if (gen::last_predict + 0.5 * shared::cps < shared::r_time && !plyr.inverse)
 		{
 			get_expiry data(plyr, gen::bodies);
 
