@@ -1577,49 +1577,6 @@ namespace phys
 				if (bodies[i2] == co_sats[i])
 					cnv.push_back(i2);
 
-
-		skip for (int i = 0; i < pairs.size(); i++)
-		{
-			int ip = cnv[i];
-
-			for (int i2 = 0; i2 < pairs[i].size(); i2++)
-			{
-				for (int i3 = 0; i3 < pred_table[ip][i2].size(); i3++)
-				{
-					pred_queue[ip][i2][i3]--;
-					if (pred_queue[ip][i2][i3] <= 0)
-					{
-						pop_any(pred_queue[ip][i2], i3);
-						pop_any(pred_table[ip][i2], i3);
-					}
-				}
-
-				if (pairs[i][i2].time < pred_table[ip][i2][0].time)
-				{
-					push_any(pred_table[ip][i2], 0, pairs[i][i2]);
-					continue;
-				}
-				if (pairs[i][i2].time > pred_table[ip][i2].back().time)
-				{
-					pred_table[ip][i2].push_back(pairs[i][i2]);
-					continue;
-				}
-
-				for (int i3 = 1; i3 < pred_table[ip][i2].size(); i3++)
-				{
-					if (pred_table[ip][i2][i3 - 0].time > pairs[i][i2].time &&
-						pred_table[ip][i2][i3 - 1].time < pairs[i][i2].time)
-					{
-						push_any(pred_table[ip][i2], i3, pairs[i][i2]);
-						break;
-					}
-
-				}
-
-				pred_table[ip][i2];
-			}
-		}
-
 		bool expiring = data.will_expire;
 		int new_parent = data.new_parent;
 		double expire_time = data.expire_time;
@@ -1630,23 +1587,21 @@ namespace phys
 		for (int i = 0; i < pairs.size(); i++)
 		{
 			int ip = cnv[i];
+			body &pln = *bodies[ip];
 
 			if (expiring && i == new_parent) continue;
-
-
-			if (expiring)
-				std::cout << "Current body: " << (*co_sats[i]).name << "\n";
 
 			for (int i2 = 0; i2 < pairs[i].size(); i2++)
 			{
 				vector<double> dists(3);
 
+				double t_part = (pln.t_p / 1000);
+
 				for (int i3 = 0; i3 < dists.size(); i3++)
 				{
 					vec_n true_pos_plyr, true_pos_pln;
-					body &pln = *bodies[ip];
 
-					double tdiff = (pln.t_p / 50) * (i3 - 1);
+					double tdiff = t_part * (i3 - 1);
 
 					do_orbit(plyr, pairs[i][i2].time + tdiff, 10, true_pos_plyr);
 					do_orbit(pln,  pairs[i][i2].time + tdiff, 10, true_pos_pln);
@@ -1654,10 +1609,64 @@ namespace phys
 					dists[i3] = vmag(true_pos_plyr - true_pos_pln);
 				}
 
+				if (dists[1] > dists[0] && dists[1] > dists[2])	//If the point is literally a local maximum, be rid of it.
+				{
+					pop_any(pairs[i], i2);
+					i2--;
+					continue;
+				}
+
+				int orbits_done = 0;
+				int budget = 100;
+
+				for (int i3 = 2; dists[1] > dists[2]; i3++)
+				{
+					vec_n true_pos_plyr, true_pos_pln;
+
+					double tdiff = t_part * i3;
+
+					do_orbit(plyr, pairs[i][i2].time + tdiff, 15, true_pos_plyr);
+					do_orbit(pln, pairs[i][i2].time + tdiff, 15, true_pos_pln);
+
+					double true_dist = vmag(true_pos_plyr - true_pos_pln);
+
+					pop_any(dists, 0);
+					dists.push_back(true_dist);
+
+					orbits_done++;
+
+					if (orbits_done > budget)
+						break;
+				}
+
+				for (int i3 = 2; dists[1] > dists[0]; i3++)
+				{
+					vec_n true_pos_plyr, true_pos_pln;
+
+					double tdiff = t_part * -i3;
+
+					do_orbit(plyr, pairs[i][i2].time + tdiff, 15, true_pos_plyr);
+					do_orbit(pln, pairs[i][i2].time + tdiff, 15, true_pos_pln);
+
+					double true_dist = vmag(true_pos_plyr - true_pos_pln);
+
+					push_any(dists, 0, true_dist);
+					dists.pop_back();
+
+					orbits_done++;
+
+					if (orbits_done > budget)
+						break;
+				}
+	
 				pairs[i][i2].dist = dists[1];
 
-				if (dists[1] > dists[0] || dists[1] > dists[2])
-					pop_any(pairs[i], i2), i2--;
+				if (dists[1] > dists[0] || dists[1] > dists[2])	//If the point is still not a local minimum, be rid of it.
+				{
+					pop_any(pairs[i], i2);
+					i2--;
+				}
+
 			}
 		}
 
