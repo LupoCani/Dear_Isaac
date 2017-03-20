@@ -288,6 +288,8 @@ namespace phys
 		body* parent;		//Pointer to parent body
 		body* self = this;	//Pointer to self
 		std::string name;	//Name of body
+
+		double size = 1;
 	};
 
 	struct dual_val
@@ -336,6 +338,12 @@ namespace phys
 		vec_n player_pos;
 
 		double zoom_mem = 2;
+
+		vec_n goal_coords;
+		double goal_size;
+		bool goal_active;
+		int goal_parent;
+		int goal_count = -1;
 	}
 
 	namespace rock
@@ -375,10 +383,10 @@ namespace phys
 		in.insert(ref + ind, element);
 	}
 
-	template<class vec_cont_2>
-	void pop_any(vector<vec_cont_2> &in, int ind)
+	template<class vec_cont>
+	void pop_any(vector<vec_cont> &in, int ind)
 	{
-		vector<vec_cont_2>::iterator ref = in.begin();
+		vector<vec_cont>::iterator ref = in.begin();
 		if (ind < 0)
 			ref = in.end();
 
@@ -387,9 +395,8 @@ namespace phys
 
 	double rand_part()
 	{
-		double out = rand() % 1000 / 1000.0;
-		std::cout << "rand: "<< out << std::endl;
-		return out;
+		srand(time(0));
+		return rand() % 1000 / 1000.0;
 	}
 
 	//Begin generic vector math functions
@@ -864,9 +871,6 @@ namespace phys
 					end += M_2PI;
 
 					ilog++;
-					if (ilog > 10)
-						std::cout << sat.name << ": " << sat.expiry << std::endl, system("pause");
-					
 				}
 
 				//end += M_2PI;
@@ -1203,8 +1207,6 @@ namespace phys
 			double V_max = get_V_r(parent.SOI, sat);
 			double M_max = get_M(V_max, sat.ecc);
 			sat.expiry = M_to_time(sat, M_max, sat.epoch);
-			if (sat.isPlayer)
-				std::cout << "Third: " << sat.expiry << std::endl;
 			sat.expire = 1;
 			sat.V_exp = V_max;
 		}
@@ -1274,8 +1276,6 @@ namespace phys
 		sat.epoch = w_time - get_M(tV, sat.ecc) / sat.Mn;
 		sat.t_p = M_2PI / abs(sat.Mn);
 		sat.expiry = w_time + sat.t_p;
-		if (sat.isPlayer)
-			std::cout << "Second: " << sat.expiry << std::endl;
 		sat.safe = w_time;
 		sat.expire = 0;
 
@@ -1309,6 +1309,66 @@ namespace phys
 	}
 
 	//End graph algorithms
+
+	void generate_goal(double radius, double size, int par_id = 0)
+	{
+		double sat_r = (*gen::bodies[par_id]).size;
+		vec_r goal_coords;
+
+		//goal_coords.mag = rand_part() * (radius - sat_r) + sat_r;
+		goal_coords.mag = rand_part() * radius;
+		goal_coords.ang = to_rad(rand_part(), 1);
+
+		/*
+		for (;;) {
+
+		goal_coords.x = rand() % int(2 * radius) + coordinates[0].x - radius;
+
+		if (goal_coords.x < coordinates[0].x - sun_r) {
+		break;
+		}
+		else if (goal_coords.x > coordinates[0].x + sun_r) {
+		break;
+		}
+
+		}
+
+		for (;;) {
+
+		goal_coords.y = rand() % int(2 * radius) + coordinates[0].y - radius;
+
+		if (goal_coords.y < coordinates[0].y - sun_r) {
+		break;
+		}
+		else if (goal_coords.y > coordinates[0].y + sun_r) {
+		break;
+		}
+
+		}
+		*/
+
+		game::goal_coords = goal_coords;
+		game::goal_parent = par_id;
+		game::goal_size = size;
+
+		std::cout << game::goal_coords.x << std::endl << game::goal_coords.y << std::endl;
+	}
+
+	bool compare_goal()
+	{
+		vec_n goal_pos = game::goal_coords + (*gen::bodies[game::goal_parent]).pos;
+
+		body &plyr = *gen::bodies.back();
+
+		double goal_dist = vmag(goal_pos - plyr.pos);
+
+		std::cout << (goal_dist - game::goal_size) << "\n";
+
+		if (goal_dist < game::goal_size)
+			return true;
+
+		return false;
+	}
 
 	void add_kesslers()
 	{
@@ -1456,7 +1516,7 @@ namespace phys
 			plyr.parent = &new_parent;
 
 			if (!(plyr.expire || expired))
-				plyr.expiry = plyr.t_l + plyr.t_p, std::cout << "First: " << plyr.expiry << std::endl;
+				plyr.expiry = plyr.t_l + plyr.t_p;// , std::cout << "First: " << plyr.expiry << std::endl;
 		}
 
 		if (phys_mode || expired || plyr.expire)
@@ -1718,6 +1778,35 @@ namespace phys
 		gen::last_predict = shared::r_time;
 	}
 
+	void run_goal()
+	{
+		if (compare_goal() || game::goal_count < 0)
+		{
+			int par_id = rand() % gen::bodies.size();
+			double size = (*gen::bodies[par_id]).SOI / 10;
+			double radius = (*gen::bodies[par_id]).SOI * 0.8;
+
+			if (par_id == 0)
+			{
+				double radius = 0;
+
+				for (int i = 0; i < gen::bodies.size(); i++)
+				{
+					double r_max = get_r(M_PI, *gen::bodies[i]);
+
+					if (r_max > radius)
+						radius = r_max;
+				}
+
+				radius *= 0.8;
+			}
+
+			generate_goal(radius, size, par_id);
+
+			game::goal_count++;
+		}
+	}
+
 #ifdef RENDER_DEBUG_INSTALLED
 	bool emode = 0;
 	vec_n thrust_debug;
@@ -1748,6 +1837,8 @@ namespace phys
 		gen::tails[gen::tails.size() - 1] = make_tail(plyr, 1000);
 
 		run_predict();
+
+		run_goal();
 
 		skip if (gen::last_predict + 0.5 * shared::cps < shared::r_time && !plyr.inverse)
 		{
@@ -1932,6 +2023,12 @@ namespace phys
 				(*gen::bodies[i]).parent = get_parent(*gen::bodies[i], gen::bodies);	//Check if the newly-determined SOIs make them into moons
 			}
 
+		for (int i = 0; i < gen::bodies.size(); i++)
+		{
+			(*gen::bodies[i]).size = cbrt( (*gen::bodies[i]).u );
+		}
+
+
 		gen::tails = get_tails_basic(gen::bodies, 1000);
 
 		rock::fuel = 1000;
@@ -1963,16 +2060,22 @@ namespace render_debug			//To be removed once the neccesary render_tools functio
 
 	bool window_is_clear = false;
 
+
+	vec_n scale_single(vec_n pos, vec_n origo, double scale = 1, double mid_x = 500, double mid_y = 500)
+	{
+		pos -= origo;
+		pos *= scale;
+		pos.y *= -1;
+
+		pos += vec_n(mid_x, mid_y);
+
+		return pos;
+	}
+
 	vector<vec_n> handle_scale(vector<vec_n> list, vec_n origo, double scale = 1, double mid_x = 500, double mid_y = 500)
 	{
 		for (int i = 0; i < list.size(); i++)
-		{
-			list[i] -= origo;
-			list[i] *= scale;
-			list[i].y *= -1;
-
-			list[i] += vec_n(mid_x, mid_y);
-		}
+			list[i] = scale_single(list[i], origo, scale, mid_x, mid_y);
 
 		return list;
 	}
@@ -2017,9 +2120,7 @@ namespace render_debug			//To be removed once the neccesary render_tools functio
 
 	void render_player(double rot, vec_n pos, vec_n origo, double zoom)
 	{
-		vector<vec_n> temp;
-		temp.push_back(pos);
-		pos = handle_scale(temp, origo, zoom)[0];
+		pos = scale_single(pos, origo, zoom);
 
 		CircleShape plyr(10, 3);
 		plyr.setFillColor(sf::Color::Green);
@@ -2042,11 +2143,26 @@ namespace render_debug			//To be removed once the neccesary render_tools functio
 			kess.setOrigin(1, 1);
 			kess.setPosition(list[i]);
 
-			//std::cout << vmag(list[i]) << std::endl;
 
 			window2.draw(kess);
 		}
-		//std::cout << list.size() << std::endl;
+	}
+
+	void render_goal(vec_n pos, vec_n origo, double zoom)
+	{
+		pos += (*phys::gen::bodies[phys::game::goal_parent]).pos;
+
+		pos = scale_single(pos, origo, zoom);
+
+		double size = phys::game::goal_size * zoom;
+
+		CircleShape kess(size);
+		kess.setFillColor(sf::Color::Magenta);
+		kess.setOrigin(size / 2, size / 2);
+		kess.setPosition(pos);
+
+		window2.draw(kess);
+
 	}
 
 	void render_all(shared::world_state in)
@@ -2069,6 +2185,8 @@ namespace render_debug			//To be removed once the neccesary render_tools functio
 		render_texts(texts);
 		render_kesslers(shared::screen_state.kesses, in.bodies[in.focus], in.zoom);
 		render_player(in.player_rotation, in.bodies.back(), in.bodies[in.focus], in.zoom);
+
+		render_goal(phys::game::goal_coords, in.bodies[in.focus], in.zoom);
 
 		//window2.display();
 	}

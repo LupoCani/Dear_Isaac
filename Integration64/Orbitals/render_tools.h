@@ -28,6 +28,7 @@ namespace graph{
 
 	//if (shared::window2.create(sf::VideoMode(1080, 860), "Orbitals") );
 
+	/*
 	Vector2f generate_goal(std::vector<vec_n>cordinats, int sun_r, int radius) {
 
 		Vector2f goal_cordinats;
@@ -62,7 +63,7 @@ namespace graph{
 		std::cout << goal_cordinats.x << std::endl << goal_cordinats.y << std::endl;
 		return(goal_cordinats);
 
-	}
+	}*/
 
 	bool goal_collision(CircleShape goal, Vector2f goal_cordinats, std::vector<vec_n>cordinats, float player_r) {
 
