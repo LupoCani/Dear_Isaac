@@ -8,6 +8,7 @@
 #include <windows.h>
 #include "orbital_tools.h"
 #include "render_tools.h"
+#include "ui_tools.h"
 #define skip if (false)
 
 using namespace std;
@@ -35,7 +36,7 @@ void main()
 			phys::run_engine();
 
 #ifdef RENDER_DEBUG_INSTALLED
-			render_debug::render_all(shared::screen_state);
+			render_debug::render_all();
 #endif
 			graph::do_render();
 

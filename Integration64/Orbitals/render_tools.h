@@ -136,13 +136,13 @@ namespace graph{
 	double player_radius;
 
 	void main_render() {
-		using shared::screen_state;
+		namespace screen_state = shared::world_state;
 		using shared::window2;
 
 
-		std::vector<vec_n> coordinates = screen_state.bodies;
-		double zoom = screen_state.zoom;
-		int last_i = screen_state.focus;
+		std::vector<vec_n> coordinates = screen_state::bodies;
+		double zoom = screen_state::zoom;
+		int last_i = screen_state::focus;
 
 		Vector2f viewport_center; //cordinates at the center of the viewport/window
 		viewport_center.x = window2.getSize().x / 2;

@@ -21,7 +21,7 @@ namespace shared 					//Declare basic shared parameters
 	clock_t s_time;
 	const double cps = CLOCKS_PER_SEC;
 
-	struct world_state;
+	//namespace world_state;
 }
 
 namespace input					//Declare the input system. In a namespace becuse putting sf:: in phys feels unclean
@@ -219,8 +219,7 @@ namespace phys					//Declare various classes and functions
 	}
 	void vec_r::normalize()
 	{
-		vec_n norm = *this;
-		*this = norm;
+		*this = vec_n(*this);
 	}
 
 }
@@ -230,7 +229,7 @@ namespace shared
 	//struct vec_n : phys::vec_n {};//Copy the ever-so-important vec_n into shared
 	using phys::vec_n;
 
-	struct world_state
+	namespace world_state		//Data for rendering/ui functions to use in rendering
 	{
 		std::vector<vec_n> bodies;
 		std::vector<vec_n> kesses;
@@ -246,8 +245,6 @@ namespace shared
 
 		double player_rotation; //Angle in radians, sweeping counter-clockwise.
 	};
-
-	world_state screen_state;
 }
 
 
@@ -1469,7 +1466,7 @@ namespace phys
 			out.push_back(sat.pos);
 		}
 
-		shared::screen_state.kesses = out;
+		shared::world_state::kesses = out;
 	}
 
 	void do_phys_tick(vector<body*> bodies, double w_time, bool phys_mode, vec_n thrust = vec_n())
@@ -1587,7 +1584,7 @@ namespace phys
 		}
 		if (keyboard.isPressed(key_state::keys::Numpad4))
 		{
-			std::cin >> shared::screen_state.focus;
+			std::cin >> shared::world_state::focus;
 		}
 
 		double thrust_actual = 0;
@@ -1606,10 +1603,10 @@ namespace phys
 		accel.mag = thrust_actual / (rock::mass + rock::fuel);
 		accel.ang = rock::rot;
 
-		using shared::screen_state;
-		screen_state.focus = 6;
-		screen_state.zoom = game::zoom_mem;
-		screen_state.player_rotation = rock::rot;
+		using namespace shared::world_state;
+		focus = 6;
+		zoom = game::zoom_mem;
+		player_rotation = rock::rot;
 
 		rock::eng_thrust = vec_to_pos(rock::rot, -thrust_actual / (rock::mass + rock::fuel) );
 		rock::eng_mode = vmag(rock::eng_thrust);
@@ -1815,8 +1812,6 @@ namespace phys
 
 	void run_engine()
 	{
-		using shared::screen_state;
-
 		gen::w_time_last = gen::w_time;
 		double diff_time = (shared::r_time - shared::l_time) / 100.0 / shared::cps / gen::d_time_fact;
 		if (diff_time < 0.01)
@@ -1830,7 +1825,7 @@ namespace phys
 		do_phys_tick(gen::bodies, gen::w_time, rock::eng_mode, rock::eng_thrust);
 		do_kess_tick(gen::kesses, gen::w_time);
 
-		screen_state.bodies = gen::bodies_pos;
+		shared::world_state::bodies = gen::bodies_pos;
 
 
 		body &plyr = *gen::bodies.back();
@@ -1893,7 +1888,7 @@ namespace phys
 			}
 		}
 
-		screen_state.paths = tails_out;
+		shared::world_state::paths = tails_out;
 
 #ifdef RENDER_DEBUG_INSTALLED
 		emode = rock::eng_mode;
@@ -2165,11 +2160,13 @@ namespace render_debug			//To be removed once the neccesary render_tools functio
 
 	}
 
-	void render_all(shared::world_state in)
+	void render_all()
 	{
+		namespace in = shared::world_state;
+
 		window2.clear();
 		window_is_clear = true;
-		render_lines(in.paths, in.bodies[in.focus], in.zoom);
+		render_lines(in::paths, in::bodies[in::focus], in::zoom);
 
 		std::vector<std::string> texts;
 		texts.push_back("Engine: " + std::to_string(phys::rock::thrust));
@@ -2183,10 +2180,10 @@ namespace render_debug			//To be removed once the neccesary render_tools functio
 		texts.push_back("AcDist: " + std::to_string(phys::game::cur_dist));
 
 		render_texts(texts);
-		render_kesslers(shared::screen_state.kesses, in.bodies[in.focus], in.zoom);
-		render_player(in.player_rotation, in.bodies.back(), in.bodies[in.focus], in.zoom);
+		render_kesslers(shared::world_state::kesses, in::bodies[in::focus], in::zoom);
+		render_player(in::player_rotation, in::bodies.back(), in::bodies[in::focus], in::zoom);
 
-		render_goal(phys::game::goal_coords, in.bodies[in.focus], in.zoom);
+		render_goal(phys::game::goal_coords, in::bodies[in::focus], in::zoom);
 
 		//window2.display();
 	}
