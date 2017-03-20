@@ -273,7 +273,6 @@ namespace shared
 	};
 }
 
-
 namespace phys
 {
 	using std::vector;
@@ -361,6 +360,10 @@ namespace phys
 		vec_n player_pos;
 
 		double zoom_mem = 2;
+
+		double health;
+		double health_max;
+		double eng_secs;
 
 		vec_n goal_coords;
 		double goal_size;
@@ -1330,6 +1333,56 @@ namespace phys
 		return out;
 	}
 
+	vector<vector<vec_n>> get_tails_basic(vector<body*> list, int subdiv = 100)
+	{
+		vector<vector<vec_n>> paths;
+
+		for (int i = 0; i < list.size(); i++)
+		{
+			paths.push_back(make_tail(*list[i], subdiv));
+		}
+		return paths;
+	}
+
+	void get_tails_future(vector<body*> list, int subdiv = 100)
+	{
+		body &plyr = *list.back();
+
+		if (plyr.expire)
+		{
+			double exp_time = plyr.expiry;
+
+			vec_n fut_plyr_pos, fut_pln_pos, fut_rel_pos;
+			vec_n fut_plyr_vel, fut_pln_vel, fut_rel_vel;
+
+			do_orbit(plyr, exp_time, 15, fut_plyr_pos, fut_plyr_vel);
+			do_orbit(plyr, exp_time, 15, fut_pln_pos, fut_pln_vel);
+
+			fut_rel_pos = fut_plyr_pos - fut_pln_pos;
+			fut_rel_vel = fut_plyr_vel - fut_pln_vel;
+
+			body& plyr_fut = *new body;
+			{
+				plyr_fut.pos = fut_plyr_pos;
+				plyr_fut.vel = fut_plyr_vel;
+				plyr_fut.u = 1;
+				plyr_fut.isPlayer = true;
+			}
+
+			body& pln_fut = *new body;
+			{
+				pln_fut.pos = fut_pln_pos;
+				pln_fut.vel = fut_pln_vel;
+				pln_fut.u = 1;
+				pln_fut.isPlayer = true;
+			}
+			
+
+		}
+
+
+	}
+
 	//End graph algorithms
 
 	void generate_goal(double radius, double size, int par_id = 0)
@@ -1634,7 +1687,7 @@ namespace phys
 		rock::eng_mode = vmag(rock::eng_thrust);
 	}
 
-	void run_predict()
+	void do_predict()
 	{
 		using gen::bodies;
 		using namespace pred;
@@ -1853,7 +1906,7 @@ namespace phys
 		body &plyr = *gen::bodies.back();
 		gen::tails[gen::tails.size() - 1] = make_tail(plyr, 1000);
 
-		run_predict();
+		do_predict();
 
 		run_goal();
 
@@ -1949,17 +2002,6 @@ namespace phys
 		}
 
 		return sorted;
-	}
-
-	vector<vector<vec_n>> get_tails_basic(vector<body*> list, int subdiv = 100)
-	{
-		vector<vector<vec_n>> paths;
-
-		for (int i = 0; i < list.size(); i++)
-		{
-			paths.push_back(make_tail(*list[i], subdiv));
-		}
-		return paths;
 	}
 
 	void phys_init()
