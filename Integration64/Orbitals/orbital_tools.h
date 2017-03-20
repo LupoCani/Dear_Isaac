@@ -346,6 +346,7 @@ namespace phys
 		vector<body*> bodies;
 		vector<body*> kesses;
 		vector<vector<vec_n>> tails;
+		vector<vector<vec_n>> tails_future;
 		vector<vec_n> bodies_pos;
 	}
 
@@ -394,11 +395,11 @@ namespace phys
 		double begin;
 		double end;
 
-		vector<vector<vector<pred_p>>> pred_table; //Structure: Body, moment, item.
-		vector<vector<vector<short>>> pred_queue; //Structure: Body, moment, index.
+		bool invalid = false;
+
+		int next_parent;	//The id of the predicted parent
 	}
 
-	
 	template<class vec_cont>
 	void push_any(vector<vec_cont> &in, int ind, vec_cont element)
 	{
@@ -863,6 +864,8 @@ namespace phys
 			We could just check a lot of moments in time with do_orbit(), but that function is expensive as hell.
 
 			Instead, we use the inverse process. We check an interval of values of V for the player
+
+			Cont' TBA
 			*/
 
 			double start, end, diff, start_t, end_t;
@@ -1045,7 +1048,6 @@ namespace phys
 					if (pred_lists[i][i2].dlt > 0)
 						mins[i].push_back(pred_lists[i][i2]);
 				
-
 			list_out = list;
 			will_expire = ending;
 			new_parent = end_body;
@@ -1297,7 +1299,6 @@ namespace phys
 		if (sat.inverse)
 			sat.Mn *= -1;
 
-
 		sat.epoch = w_time - get_M(tV, sat.ecc) / sat.Mn;
 		sat.t_p = M_2PI / abs(sat.Mn);
 		sat.expiry = w_time + sat.t_p;
@@ -1344,12 +1345,15 @@ namespace phys
 		return paths;
 	}
 
-	void get_tails_future(vector<body*> list, int subdiv = 100)
+	void set_tails_future(vector<body*> list, int subdiv = 100)
 	{
 		body &plyr = *list.back();
+		gen::tails_future.clear();
 
-		if (plyr.expire)
+		if (plyr.expire == 2)
 		{
+			body &pln = *list[pred::next_parent];
+
 			double exp_time = plyr.expiry;
 
 			vec_n fut_plyr_pos, fut_pln_pos, fut_rel_pos;
@@ -1361,26 +1365,29 @@ namespace phys
 			fut_rel_pos = fut_plyr_pos - fut_pln_pos;
 			fut_rel_vel = fut_plyr_vel - fut_pln_vel;
 
-			body& plyr_fut = *new body;
-			{
-				plyr_fut.pos = fut_plyr_pos;
-				plyr_fut.vel = fut_plyr_vel;
-				plyr_fut.u = 1;
-				plyr_fut.isPlayer = true;
-			}
-
 			body& pln_fut = *new body;
 			{
-				pln_fut.pos = fut_pln_pos;
-				pln_fut.vel = fut_pln_vel;
-				pln_fut.u = 1;
-				pln_fut.isPlayer = true;
+				pln_fut.pos = vec_n();
+				pln_fut.vel = vec_n();
+				pln_fut.u = pln.u;
 			}
-			
 
+			body& plyr_fut = *new body;
+			{
+				plyr_fut.pos = fut_rel_pos;
+				plyr_fut.vel = fut_rel_vel;
+				plyr_fut.u = 1;
+				plyr_fut.parent = pln_fut.self;
+			}
+
+			make_orbit(plyr_fut, exp_time);
+			set_expiry_regular(plyr_fut);
+
+			gen::tails_future.push_back(make_tail(plyr_fut, subdiv));
+
+			delete plyr_fut.self;
+			delete pln_fut.self;
 		}
-
-
 	}
 
 	//End graph algorithms
@@ -1466,34 +1473,10 @@ namespace phys
 
 			make_orbit(kess, plyr.epoch);
 
-			{
-				using std::endl;
-				using std::cout;
-
-				cout << "Ecc:   " << kess.ecc << endl;
-				cout << "Ax_a:  " << kess.ax_a << endl;	//Semimajor axis
-				cout << "epoch: " << kess.epoch << endl;		//Starting timestamp
-				cout << "t_l:   " << kess.t_l << endl;		//Timestamp at a given time
-				cout << "u:     " << kess.u << endl;		//Gravitational parameter
-				cout << "norm:  " << kess.normal << endl;	//angle of the major axis
-				cout << "shape: " << kess.shape << endl;
-				cout << "inv:   " << kess.inverse << endl;
-				cout << "vel_x: " << kess.vel.x << endl;		//Velocity at a given time
-				cout << "vel_y: " << kess.vel.y << endl;
-				cout << "pos_x: " << kess.pos.x << endl;
-				cout << "pos_y: " << kess.pos.y << endl;
-
-				cout << "En:    " << kess.En << endl;
-				cout << "Ar:    " << kess.Ar << endl;
-				cout << "Mn:    " << kess.Mn << endl;
-				cout << "Name:  " << kess.name << endl;
-				cout << "Parent:" << (*(kess.parent)).name << endl;
-
-				cout << "___________________________\n__________________________\n";
-			}
-
 			if (get_r(M_PI, kess) < parent.SOI)
-				gen::kesses.push_back(&kess);	
+				gen::kesses.push_back(&kess);
+			else
+				delete kess.self;
 		}
 
 		std::cout << gen::kesses.size() << std::endl;
@@ -1594,7 +1577,10 @@ namespace phys
 		if (phys_mode || expired || plyr.expire)
 		{
 			if (expired || phys_mode)
+			{
 				make_orbit(plyr, w_time);
+				pred::invalid = true;
+			}
 
 			if (expired || phys_mode || plyr.safe < plyr.t_l)
 				plyr.safe = plyr.t_l;
@@ -1603,6 +1589,8 @@ namespace phys
 			{
 				plyr.expire = false;
 				set_expiry_regular(plyr);
+
+				std::cout << "Just in casen";
 			}
 				
 		}
@@ -1691,6 +1679,9 @@ namespace phys
 	{
 		using gen::bodies;
 		using namespace pred;
+
+		bool invalid = pred::invalid;
+		pred::invalid = false;
 
 		body &plyr = *bodies.back();
 
@@ -1798,8 +1789,13 @@ namespace phys
 				{
 					pop_any(pairs[i], i2);
 					i2--;
+					continue;
 				}
 
+				if (pairs[i][i2].dist < (*bodies[cnv[i]]).SOI)
+				{
+					expiring = true;
+				}
 			}
 		}
 
@@ -1826,10 +1822,16 @@ namespace phys
 			if (plyr.shape ? expire_time <= plyr.expire : expire_time <= plyr.t_l + 2 * plyr.t_p)
 				plyr.expiry = expire_time;
 		}
-		else
+		else if (plyr.expire != 2 || invalid)
 		{
 			reset_expiry(plyr);
 			set_expiry_regular(plyr);
+			std::cout << "Not expiring!\n";
+			for (int i = 0; i < cnv.size(); i++)
+			{
+				if (cnv[i] == 4 && pairs[i].size())
+					std::cout << pairs[i][0].dist << "\n";
+			}
 		}
 
 		for (int i = 0; i < co_sats.size(); i++)
@@ -1902,7 +1904,6 @@ namespace phys
 
 		shared::world_state::bodies = gen::bodies_pos;
 
-
 		body &plyr = *gen::bodies.back();
 		gen::tails[gen::tails.size() - 1] = make_tail(plyr, 1000);
 
@@ -1910,6 +1911,9 @@ namespace phys
 
 		run_goal();
 
+		set_tails_future(gen::bodies, 100);
+
+		/*
 		skip if (gen::last_predict + 0.5 * shared::cps < shared::r_time && !plyr.inverse)
 		{
 			get_expiry data(plyr, gen::bodies);
@@ -1950,17 +1954,24 @@ namespace phys
 			}
 			gen::last_predict = shared::r_time;
 		}
+		*/
 
 		game::cur_dist = vmag((*gen::bodies.back()).pos - (*gen::bodies[game::target]).pos);
 		vector<vector<vec_n>> tails_out = gen::tails;
 
+
+		if (gen::tails_future.size())
+			tails_out.push_back(gen::tails_future[0]);
+
 		for (int i = 0; i < tails_out.size(); i++)
 		{
-			vec_n par_pos = (*(*gen::bodies[i]).parent).pos;
+			vec_n par_pos = (*gen::bodies[pred::next_parent]).pos;
+
+			if (i < gen::bodies.size())
+				par_pos = (*(*gen::bodies[i]).parent).pos;
+
 			for (int i2 = 0; i2 < tails_out[i].size(); i2++)
-			{
 				tails_out[i][i2] += par_pos;
-			}
 		}
 
 		shared::world_state::paths = tails_out;
@@ -2058,7 +2069,7 @@ namespace phys
 		plyr.pos.x = -40200;
 		plyr.pos.y = 0;
 		plyr.vel.x = 0;
-		plyr.vel.y = -45000;
+		plyr.vel.y = -50000;
 		plyr.u = 1;
 		plyr.isPlayer = true;
 		plyr.name = "plyr";
@@ -2241,6 +2252,7 @@ namespace render_debug			//To be removed once the neccesary render_tools functio
 		texts.push_back("PrDist: " + std::to_string(phys::game::min_dist));
 		texts.push_back("PrTime: " + std::to_string(phys::game::min_time - phys::gen::w_time));
 		texts.push_back("AcDist: " + std::to_string(phys::game::cur_dist));
+		texts.push_back("Expire: " + std::to_string((*phys::gen::bodies.back()).expire));
 
 		render_texts(texts);
 		render_kesslers(shared::world_state::kesses, in::bodies[in::focus], in::zoom);
