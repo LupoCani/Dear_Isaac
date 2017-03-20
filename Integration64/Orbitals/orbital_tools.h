@@ -1557,12 +1557,13 @@ namespace phys
 
 	void run_predict()
 	{
-		if (shared::r_time < gen::last_predict + shared::cps * 0.1) return;
-
 		using gen::bodies;
 		using namespace pred;
 
 		body &plyr = *bodies.back();
+
+		if (shared::r_time < gen::last_predict + shared::cps * 0.1) return;
+		if (plyr.inverse) return;
 
 		get_expiry data(plyr, gen::bodies);
 
@@ -1658,7 +1659,7 @@ namespace phys
 					if (orbits_done > budget)
 						break;
 				}
-	
+
 				pairs[i][i2].dist = dists[1];
 
 				if (dists[1] > dists[0] || dists[1] > dists[2])	//If the point is still not a local minimum, be rid of it.
