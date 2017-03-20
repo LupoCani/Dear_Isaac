@@ -360,18 +360,29 @@ namespace phys
 		double begin;
 		double end;
 
-		
+		vector<vector<vector<pred_p>>> pred_table; //Structure: Body, moment, item.
+		vector<vector<vector<short>>> pred_queue; //Structure: Body, moment, index.
 	}
 
-
+	
 	template<class vec_cont>
-	void push_any(vector<vec_cont*> &in, int ind, vec_cont* sat_p)
+	void push_any(vector<vec_cont> &in, int ind, vec_cont element)
 	{
-		vector<vec_cont>::iterator ref = in.begin;
+		vector<vec_cont>::iterator ref = in.begin();
 		if (ind < 0)
-			ref = in.end;
+			ref = in.end();
 
-		in.insert(ref + ind, sat_p);
+		in.insert(ref + ind, element);
+	}
+
+	template<class vec_cont_2>
+	void pop_any(vector<vec_cont_2> &in, int ind)
+	{
+		vector<vec_cont_2>::iterator ref = in.begin();
+		if (ind < 0)
+			ref = in.end();
+
+		in.erase(ref + ind);
 	}
 
 	double rand_part()
@@ -755,7 +766,7 @@ namespace phys
 
 	}
 
-	void do_orbit(body &sat, double w_time, int digits, vec_n &pos_out, vec_n &vel_out = vec_n())
+	void do_orbit(body &sat, double w_time, int digits, vec_n &pos_out, vec_n &vel_out = vec_n(NAN, NAN))
 	{
 		double d_time = w_time - sat.epoch;
 
@@ -775,6 +786,8 @@ namespace phys
 		radius = get_r(V, sat);
 
 		pos_out = get_pos_ang(V, sat);
+
+		if (isnan(vel_out.x)) return;
 
 		vec_r vel;
 
@@ -796,10 +809,10 @@ namespace phys
 	{
 		//With this many return variables, it's easier to make it a single-function class
 		vector<body*> list_out;
-		//vector<double> min_time_out;
-		//vector<double> min_dist_out;
-		vector<pred_p> mins_out;
+		vector<vector<pred_p>> mins_out;
 		bool will_expire;
+		double V_exp;
+		double expire_time;
 		int new_parent;
 
 		get_expiry(body &sat, vector<body*> list)
@@ -890,7 +903,7 @@ namespace phys
 				}
 			}
 
-			vector<pred_p> mins(list.size());
+			vector<vector<pred_p>> mins(list.size());
 
 			vector<double> last_times(list.size(), start_t - pow(10.0, -10.0));
 			vector<int>	its(list.size(), 0);
@@ -906,6 +919,7 @@ namespace phys
 
 			int end_body = -1;
 			double end_time = DBL_MAX;
+			double end_V = NAN;
 			bool ending = false;
 
 			if (list.size())
@@ -981,15 +995,13 @@ namespace phys
 								ending = true;
 								end_body = i;
 								end_time = pln_tim;
+								end_V = Vs;
 								break;
 							}
-							
 
 							if (pln_td.dist < logs_td[i][0].dist)
 								past_peak[i] = true;
 							
-
-
 							its[i]++;
 							Vp = starts[i] + ang_scale(diffs[i], its[i], precision);
 							pln_tim = M_to_time(pln, get_M(Vp, pln.ecc), last_times[i], t_fid);
@@ -1001,13 +1013,15 @@ namespace phys
 
 			for (int i = 0; i < list.size(); i++)
 				for (int i2 = 0; i2 < pred_lists[i].size(); i2++)
-					if (pred_lists[i][i2].dist < mins[i].dist && pred_lists[i][i2].dlt > 0)
-						mins[i] = pred_lists[i][i2];
+					if (pred_lists[i][i2].dlt > 0)
+						mins[i].push_back(pred_lists[i][i2]);
 				
 
 			list_out = list;
 			will_expire = ending;
 			new_parent = end_body;
+			expire_time = end_time;
+			V_exp = end_V;
 
 			mins_out = mins;
 		}
@@ -1169,6 +1183,36 @@ namespace phys
 		return parent_presumed;
 	}
 
+	void reset_expiry(body &sat)
+	{
+		sat.expire = 0;
+		if (!sat.shape)
+			sat.expiry = sat.t_l + sat.t_p;
+		sat.V_exp = 0;
+	}
+
+	void set_expiry_regular(body &sat, double apo = NAN)
+	{
+		
+		if (isnan(apo))
+			apo = get_r(M_PI, sat);
+
+		body &parent = *sat.parent;
+		if (sat.shape || apo > parent.SOI)
+		{
+			double V_max = get_V_r(parent.SOI, sat);
+			double M_max = get_M(V_max, sat.ecc);
+			sat.expiry = M_to_time(sat, M_max, sat.epoch);
+			if (sat.isPlayer)
+				std::cout << "Third: " << sat.expiry << std::endl;
+			sat.expire = 1;
+			sat.V_exp = V_max;
+		}
+
+		if (sat.inverse)
+			sat.V_exp *= -1;
+	}
+
 	void make_orbit(body &sat, double w_time)
 	{
 		body &parent = *sat.parent;
@@ -1235,19 +1279,7 @@ namespace phys
 		sat.safe = w_time;
 		sat.expire = 0;
 
-		if (sat.shape || r_vec[1] > parent.SOI)
-		{
-			double V_max = get_V_r(parent.SOI, sat);
-			double M_max = get_M(V_max, sat.ecc);
-			sat.expiry = M_to_time(sat, M_max, sat.epoch);
-			if (sat.isPlayer)
-				std::cout << "Third: " << sat.expiry << std::endl;
-			sat.expire = 1;
-			sat.V_exp = V_max;
-		}
-
-		if (sat.inverse)
-			sat.V_exp *= -1;
+		set_expiry_regular(sat, r_vec[1]);
 	}
 
 	//End orbital algorithms
@@ -1435,7 +1467,12 @@ namespace phys
 			if (expired || phys_mode || plyr.safe < plyr.t_l)
 				plyr.safe = plyr.t_l;
 
-			gen::tails[gen::tails.size() - 1] = make_tail(plyr, 1000);
+			if (expired)
+			{
+				plyr.expire = false;
+				set_expiry_regular(plyr);
+			}
+				
 		}
 
 		if (expired)
@@ -1518,6 +1555,168 @@ namespace phys
 		rock::eng_mode = vmag(rock::eng_thrust);
 	}
 
+	void run_predict()
+	{
+		if (shared::r_time < gen::last_predict + shared::cps * 0.1) return;
+
+		using gen::bodies;
+		using namespace pred;
+
+		body &plyr = *bodies.back();
+
+		get_expiry data(plyr, gen::bodies);
+
+		vector<body*> co_sats = data.list_out;
+
+		vector<vector<pred_p>> pairs = data.mins_out;
+
+		vector<int> cnv;	//Table for translating the prediction function's indexes to regular bodies indexes.
+
+		for (int i = 0; i < pairs.size(); i++)
+			for (int i2 = 0; i2 < bodies.size(); i2++)
+				if (bodies[i2] == co_sats[i])
+					cnv.push_back(i2);
+
+		bool expiring = data.will_expire;
+		int new_parent = data.new_parent;
+		double expire_time = data.expire_time;
+
+		if (expiring)
+			std::cout << "New parent: " << (*co_sats[new_parent]).name <<"\n";
+
+		for (int i = 0; i < pairs.size(); i++)
+		{
+			int ip = cnv[i];
+			body &pln = *bodies[ip];
+
+			if (expiring && i == new_parent) continue;
+
+			for (int i2 = 0; i2 < pairs[i].size(); i2++)
+			{
+				vector<double> dists(3);
+
+				double t_part = (pln.t_p / 1000);
+
+				for (int i3 = 0; i3 < dists.size(); i3++)
+				{
+					vec_n true_pos_plyr, true_pos_pln;
+
+					double tdiff = t_part * (i3 - 1);
+
+					do_orbit(plyr, pairs[i][i2].time + tdiff, 10, true_pos_plyr);
+					do_orbit(pln,  pairs[i][i2].time + tdiff, 10, true_pos_pln);
+
+					dists[i3] = vmag(true_pos_plyr - true_pos_pln);
+				}
+
+				if (dists[1] > dists[0] && dists[1] > dists[2])	//If the point is literally a local maximum, be rid of it.
+				{
+					pop_any(pairs[i], i2);
+					i2--;
+					continue;
+				}
+
+				int orbits_done = 0;
+				int budget = 100;
+
+				for (int i3 = 2; dists[1] > dists[2]; i3++)
+				{
+					vec_n true_pos_plyr, true_pos_pln;
+
+					double tdiff = t_part * i3;
+
+					do_orbit(plyr, pairs[i][i2].time + tdiff, 15, true_pos_plyr);
+					do_orbit(pln, pairs[i][i2].time + tdiff, 15, true_pos_pln);
+
+					double true_dist = vmag(true_pos_plyr - true_pos_pln);
+
+					pop_any(dists, 0);
+					dists.push_back(true_dist);
+
+					orbits_done++;
+
+					if (orbits_done > budget)
+						break;
+				}
+
+				for (int i3 = 2; dists[1] > dists[0]; i3++)
+				{
+					vec_n true_pos_plyr, true_pos_pln;
+
+					double tdiff = t_part * -i3;
+
+					do_orbit(plyr, pairs[i][i2].time + tdiff, 15, true_pos_plyr);
+					do_orbit(pln, pairs[i][i2].time + tdiff, 15, true_pos_pln);
+
+					double true_dist = vmag(true_pos_plyr - true_pos_pln);
+
+					push_any(dists, 0, true_dist);
+					dists.pop_back();
+
+					orbits_done++;
+
+					if (orbits_done > budget)
+						break;
+				}
+	
+				pairs[i][i2].dist = dists[1];
+
+				if (dists[1] > dists[0] || dists[1] > dists[2])	//If the point is still not a local minimum, be rid of it.
+				{
+					pop_any(pairs[i], i2);
+					i2--;
+				}
+
+			}
+		}
+
+		plyr.safe = plyr.t_l;
+
+		if (expiring)
+		{
+			plyr.expire = 2;
+
+			/*
+			vec_n true_pos_plyr, true_pos_pln;
+			body &pln = *bodies[cnv[new_parent]];
+
+			do_orbit(plyr, expire_time, 10, true_pos_plyr);
+			do_orbit(pln,  expire_time, 10, true_pos_pln);
+
+			vmag(true_pos_plyr - true_pos_pln);
+			*/
+			
+			plyr.V_exp = data.V_exp;
+
+			std::cout << pairs[new_parent].size() << "\n";
+
+			if (plyr.shape ? expire_time <= plyr.expire : expire_time <= plyr.t_l + 2 * plyr.t_p)
+				plyr.expiry = expire_time;
+		}
+		else
+		{
+			reset_expiry(plyr);
+			set_expiry_regular(plyr);
+		}
+
+		for (int i = 0; i < co_sats.size(); i++)
+		{
+			if (co_sats[i] == gen::bodies[game::target])
+			{
+
+				if (!pairs[i].size()) break;
+
+				if (pairs[i][0].dist == DBL_MAX) break;
+
+				game::min_dist = pairs[i][0].dist;
+				game::min_time = pairs[i][0].time;
+
+				break;
+			}
+		}
+		gen::last_predict = shared::r_time;
+	}
+
 #ifdef RENDER_DEBUG_INSTALLED
 	bool emode = 0;
 	vec_n thrust_debug;
@@ -1543,39 +1742,48 @@ namespace phys
 
 		screen_state.bodies = gen::bodies_pos;
 
-		if (gen::last_predict + 0.5 * shared::cps < shared::r_time)
-		{
-			body &plyr = *gen::bodies.back();
 
+		body &plyr = *gen::bodies.back();
+		gen::tails[gen::tails.size() - 1] = make_tail(plyr, 1000);
+
+		run_predict();
+
+		skip if (gen::last_predict + 0.5 * shared::cps < shared::r_time && !plyr.inverse)
+		{
 			get_expiry data(plyr, gen::bodies);
 
 			vector<body*> co_sats = data.list_out;
 
-			vector<pred_p> pairs = data.mins_out;
+			vector<vector<pred_p>> pairs = data.mins_out;
 
 			bool expiring = data.will_expire;
 			int new_parent = data.new_parent;
 
 
-			plyr.expiry = plyr.t_l + plyr.t_p;
+			plyr.safe = plyr.t_l;
+
 			if (expiring)
 			{
 				plyr.expire = 2;
-				skip plyr.expiry = pairs[new_parent].time;
+				plyr.V_exp = data.V_exp;
+
+				if (plyr.shape ? pairs[new_parent][0].time <= plyr.expire : pairs[new_parent][0].time <= plyr.t_l + 2 * plyr.t_p)
+					plyr.expiry = pairs[new_parent][0].time;
 			}
 			else
 			{
-				plyr.safe = plyr.t_l;
+				reset_expiry(plyr);
+				set_expiry_regular(plyr);
 			}
 
 			for (int i = 0; i < co_sats.size(); i++)
 			{
 				if (co_sats[i] == gen::bodies[game::target])
 				{
-					if (pairs[i].dist == DBL_MAX) break;
+					if (pairs[i][0].dist == DBL_MAX) break;
 
-					game::min_dist = pairs[i].dist;
-					game::min_time = pairs[i].time;
+					game::min_dist = pairs[i][0].dist;
+					game::min_time = pairs[i][0].time;
 				}
 			}
 			gen::last_predict = shared::r_time;
