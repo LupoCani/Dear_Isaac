@@ -226,24 +226,50 @@ namespace phys					//Declare various classes and functions
 
 namespace shared
 {
-	//struct vec_n : phys::vec_n {};//Copy the ever-so-important vec_n into shared
 	using phys::vec_n;
 
 	namespace world_state		//Data for rendering/ui functions to use in rendering
 	{
-		std::vector<vec_n> bodies;
-		std::vector<vec_n> kesses;
-		std::vector<std::string> names;
-		std::vector<std::vector<vec_n>> paths;
+		//Physical variables:
 
-		double zoom = 1;
-		int focus = 0;
-		int target = -1;
-		double target_time;
-		vec_n target_close;
-		vec_n player_close;
+		std::vector<vec_n> bodies;				//List of bodies' positions. The first value is the sun, the last is the player.
+		std::vector<double> sizes;				//List of bodies' sizes. Specifically, unzoomed radius.
+		std::vector<vec_n> kesses;				//List of kessler fields
+		std::vector<double> sizes_kess;			//List of kessler fields' sizes. Specifically, the unzoomed radius
+		
+		std::vector<std::string> names;			//List of the names for every corresponding body
+		std::vector<std::vector<vec_n>> paths;	//List of paths. Every path is a vector of points to be rendered as connected lines.
 
-		double player_rotation; //Angle in radians, sweeping counter-clockwise.
+		//Screen variables:
+
+		double zoom = 1;	//The current zoom level. Larger values mean more close zoom.
+		int focus = 0;		//The body the view focuses on.
+		int target = -1;	//The body selected by the player to target.
+
+		//Target approach variables:
+
+		std::vector<double> target_time;	//The time of the two closest approaches the player will make
+		std::vector<vec_n> target_close;	//The target's position in the two closest approaches
+		std::vector<vec_n> player_close;	//The player's position in the two closest approaches
+		
+		//Assist variables:
+
+		std::vector<vec_n> min_pos;	//A list of minimum altitudes for existing bodies.
+		std::vector<vec_n> max_pos;	//A list of maximum altitudes for existing bodies. 
+
+		//Player status variables:
+
+		double player_rotation;		//Angle in radians, sweeping counter-clockwise.
+		double player_thrust;		//The current amount of engine thrust.
+		double player_thrust_max;	//The maximum amount of engine thrust.
+
+		//Game variables:
+
+		vec_n  target_pos;	//The center of the target zone.
+		double target_rad;	//The radius of the target zone.
+
+		int target_parent;		//The id of the body around which the target is placed.
+		int target_parent_2;	//If the above is a moon, this is the id of the planet the moon orbits.
 	};
 }
 
@@ -390,10 +416,9 @@ namespace phys
 		in.erase(ref + ind);
 	}
 
-	double rand_part()
+	double rand_part(double scale = 1)
 	{
-		srand(time(0));
-		return rand() % 1000 / 1000.0;
+		return rand() % 1000 / 1000.0 * scale;
 	}
 
 	//Begin generic vector math functions
@@ -1347,8 +1372,6 @@ namespace phys
 		game::goal_coords = goal_coords;
 		game::goal_parent = par_id;
 		game::goal_size = size;
-
-		std::cout << game::goal_coords.x << std::endl << game::goal_coords.y << std::endl;
 	}
 
 	bool compare_goal()
@@ -1358,8 +1381,6 @@ namespace phys
 		body &plyr = *gen::bodies.back();
 
 		double goal_dist = vmag(goal_pos - plyr.pos);
-
-		std::cout << (goal_dist - game::goal_size) << "\n";
 
 		if (goal_dist < game::goal_size)
 			return true;
@@ -1372,14 +1393,14 @@ namespace phys
 		body &plyr = *gen::bodies.back();
 		body &parent = *plyr.parent;
 
-		for (int i = 0; i < 10; i++)
+		for (int i = 0; gen::kesses.size() < 5; i++)
 		{
 			body &kess = *new body;
 
 			vec_r kess_pos;
 			vec_r kess_vel;
 			kess_pos.mag = parent.SOI * rand_part();
-			kess_vel.mag = get_esc_vel(parent, kess_pos.mag) * rand_part() * 1.5;
+			kess_vel.mag = get_esc_vel(parent, kess_pos.mag) * rand_part() * 0.9;
 
 			kess_pos.ang = rand_part() * M_2PI;
 			kess_vel.ang = kess_pos.ang + M_PI2;
@@ -1418,10 +1439,11 @@ namespace phys
 				cout << "___________________________\n__________________________\n";
 			}
 
-			gen::kesses.push_back(&kess);
+			if (get_r(M_PI, kess) < parent.SOI)
+				gen::kesses.push_back(&kess);	
 		}
 
-		std::cout << 10 << std::endl;
+		std::cout << gen::kesses.size() << std::endl;
 	}
 
 	void kill_kesslers()
@@ -1438,7 +1460,7 @@ namespace phys
 		std::cout << "Kill\n";
 	}
 
-	void do_kess_tick(vector<body*> list, double w_time)
+	void do_kess_tick(vector<body*> list, vector<body*> list_pln, double w_time)
 	{
 		vector<vec_n> out;
 		bool expired = false;
@@ -1449,7 +1471,7 @@ namespace phys
 		if (!list.size())
 			return;
 
-		body& parent = *list[0];
+		body& parent = *(*list_pln.back()).parent;
 
 		for (int i = 0; i < list.size(); i++)
 		{
@@ -1460,7 +1482,7 @@ namespace phys
 			do_orbit(sat, w_time, 20, pos, vel);
 
 			sat.pos = pos + parent.pos;
-			sat.vel = pos + parent.vel;
+			sat.vel = vel + parent.vel;
 			sat.t_l = w_time;
 
 			out.push_back(sat.pos);
@@ -1823,7 +1845,7 @@ namespace phys
 		do_game_tick();
 
 		do_phys_tick(gen::bodies, gen::w_time, rock::eng_mode, rock::eng_thrust);
-		do_kess_tick(gen::kesses, gen::w_time);
+		do_kess_tick(gen::kesses, gen::bodies, gen::w_time);
 
 		shared::world_state::bodies = gen::bodies_pos;
 
@@ -1994,7 +2016,7 @@ namespace phys
 		plyr.pos.x = -40200;
 		plyr.pos.y = 0;
 		plyr.vel.x = 0;
-		plyr.vel.y = -50000;
+		plyr.vel.y = -45000;
 		plyr.u = 1;
 		plyr.isPlayer = true;
 		plyr.name = "plyr";
@@ -2157,7 +2179,6 @@ namespace render_debug			//To be removed once the neccesary render_tools functio
 		kess.setPosition(pos);
 
 		window2.draw(kess);
-
 	}
 
 	void render_all()

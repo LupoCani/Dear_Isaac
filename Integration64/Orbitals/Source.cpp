@@ -16,6 +16,8 @@ using namespace std;
 
 void main()
 {
+	srand(time(0));
+
 	phys::engine_init();
 	graph::graph_init();
 
