@@ -1791,16 +1791,23 @@ namespace phys
 					i2--;
 					continue;
 				}
-
-				if (pairs[i][i2].dist < (*bodies[cnv[i]]).SOI)
-				{
-					expiring = true;
-				}
 			}
 		}
 
 		plyr.safe = plyr.t_l;
 
+
+		vector<bool> complete;
+		int cur_id = -1;
+
+		for (int i = 0; i < bodies.size(); i++)
+			complete.push_back(1);
+
+		for (int i = 0; i < pairs.size(); i++)
+		{
+			complete[cnv[i]] = pairs[i].size();
+		}
+		
 		if (expiring)
 		{
 			plyr.expire = 2;
@@ -1819,13 +1826,16 @@ namespace phys
 
 			std::cout << pairs[new_parent].size() << "\n";
 
+			pred::next_parent = cnv[data.new_parent];
+
 			if (plyr.shape ? expire_time <= plyr.expire : expire_time <= plyr.t_l + 2 * plyr.t_p)
 				plyr.expiry = expire_time;
 		}
-		else if (plyr.expire != 2 || invalid)
+		else if (plyr.expire != 2 || complete[pred::next_parent])
 		{
 			reset_expiry(plyr);
 			set_expiry_regular(plyr);
+
 			std::cout << "Not expiring!\n";
 			for (int i = 0; i < cnv.size(); i++)
 			{
