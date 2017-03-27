@@ -282,6 +282,12 @@ namespace shared
 
 		int target_parent;		//The id of the body around which the target is placed.
 		int target_parent_2;	//If the above is a moon, this is the id of the planet the moon orbits.
+
+		//Score varibles:
+
+		double eng_secs = 0;
+		double goal_count = -1;
+		double score = 0;
 	};
 }
 
@@ -2440,8 +2446,8 @@ namespace phys
 		}
 		else
 		{
-			reset_expiry(plyr);
-			set_expiry_regular(plyr);
+			plyr.entering = false;
+			std::cout << "Not expiring!\n";
 		}
 
 		for (int i = 0; i < co_sats.size(); i++)
@@ -2603,8 +2609,8 @@ namespace phys
 		}
 		else
 		{
-			reset_expiry(plyr);
-			set_expiry_regular(plyr);
+			std::cout << "Not expiring! \n";
+			plyr.entering = false;
 		}
 
 		for (int i = 0; i < co_sats.size(); i++)
@@ -2660,7 +2666,6 @@ namespace phys
 #ifdef RENDER_DEBUG_INSTALLED
 	bool emode = 0;
 	vec_n thrust_debug;
-
 #endif
 
 	void run_engine()
