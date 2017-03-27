@@ -2888,7 +2888,7 @@ namespace phys
 		{
 			body &sat = *gen::bodies[i];
 
-			sat.size = cbrt(sat.u) / 100;
+			sat.size = cbrt(sat.u) / 40;
 			shared::world_state::sizes.push_back(sat.size);
 		}
 
