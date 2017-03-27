@@ -238,6 +238,8 @@ namespace shared
 {
 	using phys::vec_n;
 
+	short game_state = 0;
+
 	namespace world_state		//Data for rendering/ui functions to use in rendering
 	{
 		//Physical variables:
@@ -2883,7 +2885,10 @@ namespace phys
 
 		for (int i = 0; i < gen::bodies.size(); i++)
 		{
-			(*gen::bodies[i]).size = cbrt( (*gen::bodies[i]).u );
+			body &sat = *gen::bodies[i];
+
+			sat.size = cbrt(sat.u);
+			shared::world_state::sizes.push_back(sat.size);
 		}
 
 
