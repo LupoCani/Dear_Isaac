@@ -513,7 +513,7 @@ namespace graph{
 		title.setFillColor(white);
 		title.setPosition(Vector2f(window2.getSize().x / 2 - title.getLocalBounds().width*0.5, 200));
 
-		int header_pos_y[3] = { 400, 500, 600 };
+		int header_pos_y[3] = { window2.getSize().y*1.5/4, window2.getSize().y * 2/ 4, window2.getSize().y*2.5/4 };
 
 
 

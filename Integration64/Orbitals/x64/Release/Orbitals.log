@@ -1,79 +1,93 @@
-﻿  Source.cpp
-c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration64\orbitals\orbital_tools.h(156): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration64\orbitals\orbital_tools.h(834): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
-c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration64\orbitals\orbital_tools.h(1119): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
-c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration64\orbitals\orbital_tools.h(1120): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
-c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration64\orbitals\orbital_tools.h(1148): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
-c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration64\orbitals\orbital_tools.h(1149): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
-c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration64\orbitals\orbital_tools.h(1189): warning C4244: '=': conversion from 'long double' to 'int', possible loss of data
-c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration64\orbitals\orbital_tools.h(1335): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
-c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration64\orbitals\orbital_tools.h(1336): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
-c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration64\orbitals\orbital_tools.h(1367): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
-c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration64\orbitals\orbital_tools.h(1368): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
-c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration64\orbitals\orbital_tools.h(1408): warning C4244: '=': conversion from 'long double' to 'int', possible loss of data
-c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration64\orbitals\orbital_tools.h(2110): warning C4800: 'double': forcing value to bool 'true' or 'false' (performance warning)
-c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration64\orbitals\orbital_tools.h(2250): warning C4800: 'unsigned __int64': forcing value to bool 'true' or 'false' (performance warning)
-c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration64\orbitals\orbital_tools.h(2978): warning C4244: 'argument': conversion from 'long double' to 'float', possible loss of data
-c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration64\orbitals\orbital_tools.h(3007): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration64\orbitals\orbital_tools.h(3009): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration64\orbitals\render_tools.h(72): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration64\orbitals\render_tools.h(148): warning C4244: '=': conversion from 'unsigned int' to 'float', possible loss of data
-c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration64\orbitals\render_tools.h(149): warning C4244: '=': conversion from 'unsigned int' to 'float', possible loss of data
-c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration64\orbitals\render_tools.h(168): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration64\orbitals\render_tools.h(174): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration64\orbitals\render_tools.h(200): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration64\orbitals\render_tools.h(263): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration64\orbitals\render_tools.h(267): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration64\orbitals\render_tools.h(269): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration64\orbitals\render_tools.h(275): warning C4244: 'argument': conversion from 'unsigned int' to 'float', possible loss of data
-c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration64\orbitals\render_tools.h(278): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration64\orbitals\render_tools.h(279): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration64\orbitals\render_tools.h(329): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration64\orbitals\render_tools.h(329): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration64\orbitals\render_tools.h(333): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration64\orbitals\render_tools.h(335): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration64\orbitals\render_tools.h(343): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration64\orbitals\render_tools.h(358): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration64\orbitals\render_tools.h(359): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration64\orbitals\render_tools.h(363): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration64\orbitals\render_tools.h(364): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration64\orbitals\render_tools.h(375): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration64\orbitals\render_tools.h(376): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration64\orbitals\render_tools.h(380): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration64\orbitals\render_tools.h(381): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration64\orbitals\render_tools.h(420): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration64\orbitals\render_tools.h(420): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration64\orbitals\render_tools.h(424): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration64\orbitals\render_tools.h(426): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration64\orbitals\render_tools.h(436): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration64\orbitals\render_tools.h(451): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration64\orbitals\render_tools.h(452): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration64\orbitals\render_tools.h(456): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration64\orbitals\render_tools.h(457): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration64\orbitals\render_tools.h(468): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration64\orbitals\render_tools.h(469): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration64\orbitals\render_tools.h(473): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration64\orbitals\render_tools.h(474): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration64\orbitals\render_tools.h(430): warning C4101: 'output': unreferenced local variable
-c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration64\orbitals\render_tools.h(514): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration64\orbitals\render_tools.h(528): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration64\orbitals\render_tools.h(528): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration64\orbitals\render_tools.h(532): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration64\orbitals\render_tools.h(534): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration64\orbitals\render_tools.h(543): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration64\orbitals\render_tools.h(559): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration64\orbitals\render_tools.h(560): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration64\orbitals\render_tools.h(564): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration64\orbitals\render_tools.h(565): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration64\orbitals\render_tools.h(576): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration64\orbitals\render_tools.h(577): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration64\orbitals\render_tools.h(581): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-c:\users\admin\bibliotek\programvara\c++\dear_isaac\integration64\orbitals\render_tools.h(582): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-Source.cpp(19): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
-  Generating code
-  76 of 1648 functions ( 4.6%) were compiled, the rest were copied from previous compilation.
-    0 functions were new in current compilation
-    42 functions had inline decision re-evaluated but remain unchanged
-  Finished generating code
-  Orbitals.vcxproj -> C:\Users\Admin\Bibliotek\Programvara\C++\Dear_Isaac\Integration64\x64\Release\Orbitals.exe
-  Orbitals.vcxproj -> C:\Users\Admin\Bibliotek\Programvara\C++\Dear_Isaac\Integration64\x64\Release\Orbitals.pdb (Full PDB)
+﻿Build started 2017-03-27 10:01:37.
+     1>Project "C:\Users\alex.modee\Git\Daer-Isac2\Dear_Isaac\Integration64\Orbitals\Orbitals.vcxproj" on node 2 (Build target(s)).
+     1>ClCompile:
+         C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin\x86_amd64\CL.exe /c /Zi /nologo /W3 /WX- /sdl /O2 /Oi /GL /D _MBCS /Gm- /EHsc /MD /GS /Gy /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /Fo"x64\Release\\" /Fd"x64\Release\vc140.pdb" /Gd /TP /errorReport:prompt Source.cpp
+         Source.cpp
+     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\integration64\orbitals\orbital_tools.h(156): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\integration64\orbitals\orbital_tools.h(834): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\integration64\orbitals\orbital_tools.h(1119): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\integration64\orbitals\orbital_tools.h(1120): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\integration64\orbitals\orbital_tools.h(1148): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\integration64\orbitals\orbital_tools.h(1149): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\integration64\orbitals\orbital_tools.h(1189): warning C4244: '=': conversion from 'long double' to 'int', possible loss of data
+     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\integration64\orbitals\orbital_tools.h(1335): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\integration64\orbitals\orbital_tools.h(1336): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\integration64\orbitals\orbital_tools.h(1367): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\integration64\orbitals\orbital_tools.h(1368): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\integration64\orbitals\orbital_tools.h(1408): warning C4244: '=': conversion from 'long double' to 'int', possible loss of data
+     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\integration64\orbitals\orbital_tools.h(2110): warning C4800: 'double': forcing value to bool 'true' or 'false' (performance warning)
+     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\integration64\orbitals\orbital_tools.h(2250): warning C4800: 'unsigned __int64': forcing value to bool 'true' or 'false' (performance warning)
+     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\integration64\orbitals\orbital_tools.h(2978): warning C4244: 'argument': conversion from 'long double' to 'float', possible loss of data
+     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\integration64\orbitals\orbital_tools.h(3007): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\integration64\orbitals\orbital_tools.h(3009): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\integration64\orbitals\render_tools.h(72): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\integration64\orbitals\render_tools.h(148): warning C4244: '=': conversion from 'unsigned int' to 'float', possible loss of data
+     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\integration64\orbitals\render_tools.h(149): warning C4244: '=': conversion from 'unsigned int' to 'float', possible loss of data
+     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\integration64\orbitals\render_tools.h(168): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\integration64\orbitals\render_tools.h(174): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\integration64\orbitals\render_tools.h(200): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\integration64\orbitals\render_tools.h(263): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\integration64\orbitals\render_tools.h(267): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\integration64\orbitals\render_tools.h(269): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\integration64\orbitals\render_tools.h(275): warning C4244: 'argument': conversion from 'unsigned int' to 'float', possible loss of data
+     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\integration64\orbitals\render_tools.h(278): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\integration64\orbitals\render_tools.h(279): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\integration64\orbitals\render_tools.h(329): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\integration64\orbitals\render_tools.h(329): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\integration64\orbitals\render_tools.h(333): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\integration64\orbitals\render_tools.h(335): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\integration64\orbitals\render_tools.h(343): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\integration64\orbitals\render_tools.h(358): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\integration64\orbitals\render_tools.h(359): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\integration64\orbitals\render_tools.h(363): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\integration64\orbitals\render_tools.h(364): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\integration64\orbitals\render_tools.h(375): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\integration64\orbitals\render_tools.h(376): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\integration64\orbitals\render_tools.h(380): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\integration64\orbitals\render_tools.h(381): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\integration64\orbitals\render_tools.h(420): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\integration64\orbitals\render_tools.h(420): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\integration64\orbitals\render_tools.h(424): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\integration64\orbitals\render_tools.h(426): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\integration64\orbitals\render_tools.h(436): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\integration64\orbitals\render_tools.h(451): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\integration64\orbitals\render_tools.h(452): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\integration64\orbitals\render_tools.h(456): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\integration64\orbitals\render_tools.h(457): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\integration64\orbitals\render_tools.h(468): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\integration64\orbitals\render_tools.h(469): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\integration64\orbitals\render_tools.h(473): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\integration64\orbitals\render_tools.h(474): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\integration64\orbitals\render_tools.h(430): warning C4101: 'output': unreferenced local variable
+     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\integration64\orbitals\render_tools.h(514): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\integration64\orbitals\render_tools.h(516): warning C4838: conversion from 'double' to 'int' requires a narrowing conversion
+     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\integration64\orbitals\render_tools.h(516): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\integration64\orbitals\render_tools.h(516): warning C4838: conversion from 'unsigned int' to 'int' requires a narrowing conversion
+     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\integration64\orbitals\render_tools.h(528): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\integration64\orbitals\render_tools.h(528): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\integration64\orbitals\render_tools.h(532): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\integration64\orbitals\render_tools.h(534): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\integration64\orbitals\render_tools.h(543): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\integration64\orbitals\render_tools.h(559): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\integration64\orbitals\render_tools.h(560): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\integration64\orbitals\render_tools.h(564): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\integration64\orbitals\render_tools.h(565): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\integration64\orbitals\render_tools.h(576): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\integration64\orbitals\render_tools.h(577): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\integration64\orbitals\render_tools.h(581): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\integration64\orbitals\render_tools.h(582): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+     1>Source.cpp(20): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
+       Link:
+         C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin\x86_amd64\link.exe /ERRORREPORT:PROMPT /OUT:"C:\Users\alex.modee\Git\Daer-Isac2\Dear_Isaac\Integration64\x64\Release\Orbitals.exe" /NOLOGO /LIBPATH:"C:\Users\alex.modee\Git\Daer-Isac2\Dear_Isaac\Integration64\Orbitals\SFML-2.4.2\lib" "sfml-system.lib" "sfml-window.lib" "sfml-graphics.lib" kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:\Users\alex.modee\Git\Daer-Isac2\Dear_Isaac\Integration64\x64\Release\Orbitals.pdb" /OPT:REF /OPT:ICF /LTCG:incremental /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\Users\alex.modee\Git\Daer-Isac2\Dear_Isaac\Integration64\x64\Release\Orbitals.lib" /MACHINE:X64 x64\Release\Source.obj
+         Generating code
+     1>c:\users\alex.modee\git\daer-isac2\dear_isaac\integration64\orbitals\render_tools.h(615): warning C4715: 'graph::start_menue': not all control paths return a value
+         2 of 1656 functions ( 0.1%) were compiled, the rest were copied from previous compilation.
+           0 functions were new in current compilation
+           0 functions had inline decision re-evaluated but remain unchanged
+         Finished generating code
+         Orbitals.vcxproj -> C:\Users\alex.modee\Git\Daer-Isac2\Dear_Isaac\Integration64\x64\Release\Orbitals.exe
+     1>Done Building Project "C:\Users\alex.modee\Git\Daer-Isac2\Dear_Isaac\Integration64\Orbitals\Orbitals.vcxproj" (Build target(s)).
+
+Build succeeded.
+
+Time Elapsed 00:00:01.43

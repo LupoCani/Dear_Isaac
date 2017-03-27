@@ -16,6 +16,7 @@ using namespace std;
 
 void main()
 {
+
 	srand(time(0));
 
 	phys::engine_init();
@@ -25,7 +26,7 @@ void main()
 
 	long long i = 0;
 	long long t_cap = 5;
-
+	graph::start_menue();
 	while (true)
 	{
 		using namespace shared;
