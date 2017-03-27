@@ -44,7 +44,7 @@ namespace ui
 		Text text("test", font);
 		text.setCharacterSize(30);
 		text.setStyle(Text::Bold);
-		text.setColor(Color::Red);
+		text.setFillColor(Color::Red);
 
 		//window draw.(text);
 	}
