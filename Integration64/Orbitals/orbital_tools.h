@@ -449,6 +449,16 @@ namespace phys
 		in.erase(ref + ind);
 	}
 
+	template<class vec_cont>
+	int find_in(vector<vec_cont> &in, vec_cont element)
+	{
+		for (int i = 0; i < in.size(); i++)
+			if (in[i] == element)
+				return i;
+
+		return -1;
+	}
+
 	double rand_part(double scale = 1)
 	{
 		return rand() % 1000 / 1000.0 * scale;
@@ -1850,34 +1860,6 @@ namespace phys
 		goal_coords.mag = rand_part() * radius;
 		goal_coords.ang = to_rad(rand_part(), 1);
 
-		/*
-		for (;;) {
-
-		goal_coords.x = rand() % int(2 * radius) + coordinates[0].x - radius;
-
-		if (goal_coords.x < coordinates[0].x - sun_r) {
-		break;
-		}
-		else if (goal_coords.x > coordinates[0].x + sun_r) {
-		break;
-		}
-
-		}
-
-		for (;;) {
-
-		goal_coords.y = rand() % int(2 * radius) + coordinates[0].y - radius;
-
-		if (goal_coords.y < coordinates[0].y - sun_r) {
-		break;
-		}
-		else if (goal_coords.y > coordinates[0].y + sun_r) {
-		break;
-		}
-
-		}
-		*/
-
 		game::goal_coords = goal_coords;
 		game::goal_parent = par_id;
 		game::goal_size = size;
@@ -2667,6 +2649,9 @@ namespace phys
 			}
 
 			generate_goal(radius, size, par_id);
+
+			shared::world_state::target_parent = par_id;
+			shared::world_state::target_parent_2 = find_in(gen::bodies, (*gen::bodies[par_id]).parent);
 
 			game::goal_count++;
 		}
