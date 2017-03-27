@@ -163,14 +163,14 @@ namespace graph{
 
 		//set new position based on calculated values 
 		vector<double> scales(0);
-
+		namespace ws = shared::world_state;
 		coordinates = handle_scale(coordinates, last_i, zoom, viewport_center.x, viewport_center.y);
-		int scalling = 12;
-		int radius[9] = { 80*zoom*scalling, 20 * zoom*scalling, 20 * zoom*scalling, 20 * zoom*scalling, 20 * zoom*scalling, 20 * zoom*scalling, 20 * zoom*scalling, 20 * zoom*scalling, 20 * zoom*scalling }; //radius for the planets 
+		int scalling = 15;
+		int radius[9] = { ws::sizes[0]*zoom,ws::sizes[1] * zoom, ws::sizes[2] * zoom, ws::sizes[3] * zoom,ws::sizes[4] * zoom, ws::sizes[5] * zoom, ws::sizes[6] }; //radius for the planets 
 
-		player.setScale(100*zoom, 100* zoom);
-		player.setPosition(coordinates[last_i]);
-		for (int i = 0; i < 9; i++) {
+		player.setScale(10*zoom, 10* zoom);
+		player.setPosition(400,400);
+		for (int i = 0; i < 6; i++) {
 			planets[i].setPosition(coordinates[i]);
 
 			scales.push_back(planets[i].getRadius());
@@ -202,10 +202,11 @@ namespace graph{
 
 		window2.draw(player);
 		window2.display();
-
+		/*
 		for (int i = 0; i < 9; i++) {
 			planets[i].setRadius(scales[i]);
 		}
+		*/
 	}
 
 
