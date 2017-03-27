@@ -35,9 +35,11 @@ namespace input					//Declare the input system. In a namespace becuse putting sf
 		std::vector<int>  pressed_last;
 		std::vector<bool> buttons;
 		std::vector<bool> buttons_last;
+
 		struct keys : sf::Keyboard {
 			using Keyboard::Key;
 		};
+
 		struct btns : sf::Mouse {
 			using Mouse::Button;
 		};
@@ -64,6 +66,14 @@ namespace input					//Declare the input system. In a namespace becuse putting sf
 		bool wasPressed(int key)
 		{
 			return isAt(key, pressed) >= 0 && isAt(key, pressed_last) < 0;
+		}
+		bool isPressed_any()
+		{
+			return pressed.size();
+		}
+		bool wasPressed_any()
+		{
+			return pressed.size() && !pressed_last.size();
 		}
 
 		bool msDown(short button)

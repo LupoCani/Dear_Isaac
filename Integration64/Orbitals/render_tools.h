@@ -537,7 +537,10 @@ namespace graph{
 		bool selected[3] = { 0, 0, 0 };
 
 		while (play == 0) {
-			Event input;
+			//Event input;
+			using namespace input;
+
+			run_input();
 
 			for (int i = 0; i <= 2; i++) {
 				float activ_header_poss = option_header[i].getPosition().y + option_header[i].getLocalBounds().height*1.3;
@@ -550,9 +553,13 @@ namespace graph{
 				}
 			}
 
-			while (window2.pollEvent(input)) {
+			//while (window2.pollEvent(input))
+			
+			{
 
-				if ((input.type == Event::KeyPressed) && (input.key.code == Keyboard::Down)) {
+				//if ((input.type == Event::KeyPressed) && (input.key.code == Keyboard::Down)) 
+				if (input::keyboard.wasPressed(input::key_state::keys::Down))
+				{
 					for (int i = 0; i <= 2; i++) {
 						if (selected[i] == 1) {
 							if (i <= 1) {
@@ -569,7 +576,9 @@ namespace graph{
 					}
 				}
 
-				if ((input.type == Event::KeyPressed) && (input.key.code == Keyboard::Up)) {
+				//if ((input.type == Event::KeyPressed) && (input.key.code == Keyboard::Up)) 
+				if (input::keyboard.wasPressed(input::key_state::keys::Up))
+				{
 					for (int i = 0; i <= 2; i++) {
 						if (selected[i] == 1) {
 							if (i >= 1) {
@@ -586,7 +595,9 @@ namespace graph{
 					}
 				}
 
-				if ((input.type == Event::KeyPressed) && (input.key.code != Keyboard::Up) && (input.key.code != Keyboard::Down)) {
+				//if ((input.type == Event::KeyPressed) && (input.key.code != Keyboard::Up) && (input.key.code != Keyboard::Down))
+				if (keyboard.wasPressed_any() && ! (input::keyboard.wasPressed(input::key_state::keys::Down) || input::keyboard.wasPressed(input::key_state::keys::Up)))
+				{
 					if (selected[0] == 1) {
 						play = 1;
 					}
@@ -599,7 +610,6 @@ namespace graph{
 						option_menue();
 					}
 				}
-
 			}
 			window2.clear();
 			for (int i = 0; i <= 2; i++) {
@@ -608,8 +618,6 @@ namespace graph{
 			window2.draw(title);
 			window2.draw(underline);
 			window2.display();
-
-
 		}
 
 	}
