@@ -788,6 +788,7 @@ namespace phys
 	//End orbital equation functions
 
 	//Begin orbital algorithms
+
 	double do_orbit_precise_H(double part, body sat, int precision)
 	{
 		double ceil = V_bound_H(sat.ecc);
@@ -1833,26 +1834,26 @@ namespace phys
 			vec_n fut_plyr_pos, fut_pln_pos, fut_rel_pos;
 			vec_n fut_plyr_vel, fut_pln_vel, fut_rel_vel;
 
-			do_orbit(plyr, exp_time, 15, fut_plyr_pos, fut_plyr_vel);
-			do_orbit(plyr, exp_time, 15, fut_pln_pos, fut_pln_vel);
+			do_orbit(plyr, exp_time, 10, fut_plyr_pos, fut_plyr_vel);
+			do_orbit(pln, exp_time, 10, fut_pln_pos, fut_pln_vel);
 
-			fut_rel_pos = fut_plyr_pos - fut_pln_pos;
-			fut_rel_vel = fut_plyr_vel - fut_pln_vel;
+			//fut_rel_pos = fut_plyr_pos - fut_pln_pos;
+			//fut_rel_vel = fut_plyr_vel - fut_pln_vel;
 
 			game::target_pos = fut_pln_pos;
 			game::player_pos = fut_plyr_pos;
 
 			body& pln_fut = *new body;
 			{
-				pln_fut.pos = vec_n();
-				pln_fut.vel = vec_n();
+				pln_fut.pos = fut_pln_pos;
+				pln_fut.vel = fut_pln_vel;
 				pln_fut.u = pln.u;
 			}
 
 			body& plyr_fut = *new body;
 			{
-				plyr_fut.pos = fut_rel_pos;
-				plyr_fut.vel = fut_rel_vel;
+				plyr_fut.pos = fut_plyr_pos;
+				plyr_fut.vel = fut_plyr_vel;
 				plyr_fut.u = 1;
 				plyr_fut.parent = pln_fut.self;
 			}
@@ -2629,16 +2630,14 @@ namespace phys
 
 			plyr.entry = expire_time;
 
-			std::cout << plyr.expire() << "\n";
-
 			if (plyr.shape ? expire_time <= plyr.expire() : expire_time <= plyr.t_l + 2 * plyr.t_p)
 				plyr.entry = expire_time;
+
+			pred::next_parent = cnv[data.new_parent];
 		}
 		else
 		{
-			std::cout << "Not expiring! \n";
 			plyr.entering = false;
-			std::cout << plyr.expire() << "\n";
 		}
 
 		for (int i = 0; i < co_sats.size(); i++)
@@ -3054,26 +3053,28 @@ namespace render_debug			//To be removed once the neccesary render_tools functio
 
 	void render_coll(vec_n origo, double zoom)
 	{
-		double size = 5;
+		
 		{
+			double size = 6;
 			shared::vec_n pos = phys::game::target_pos;
 
 			pos = scale_single(pos, origo, zoom);
 
 			CircleShape kess(size);
-			kess.setFillColor(sf::Color::Magenta);
+			kess.setFillColor(sf::Color::Blue);
 			kess.setOrigin(size / 2, size / 2);
 			kess.setPosition(pos);
 
 			window2.draw(kess);
 		}
 		{
+			double size = 3;
 			shared::vec_n pos = phys::game::player_pos;
 
 			pos = scale_single(pos, origo, zoom);
 
 			CircleShape kess(size);
-			kess.setFillColor(sf::Color::Magenta);
+			kess.setFillColor(sf::Color::Red);
 			kess.setOrigin(size / 2, size / 2);
 			kess.setPosition(pos);
 
@@ -3123,17 +3124,17 @@ namespace render_debug			//To be removed once the neccesary render_tools functio
 }
 #endif // RENDER_DEBUG_INSTALLED
 
-namespace render_base
+namespace basics
 {
 	using namespace sf;
 	using shared::window2;
 
-	void clear()
+	void begin()
 	{
 		window2.clear();
+		input::run_input();
 	}
-
-	void render()
+	void done()
 	{
 		window2.display();
 	}
