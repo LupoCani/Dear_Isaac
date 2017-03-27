@@ -288,6 +288,9 @@ namespace shared
 		double eng_secs = 0;
 		double goal_count = -1;
 		double score = 0;
+
+		double health;
+		double health_max;
 	};
 }
 
@@ -2108,6 +2111,14 @@ namespace phys
 
 		rock::eng_thrust = vec_to_pos(rock::rot, -thrust_actual / (rock::mass + rock::fuel) );
 		rock::eng_mode = vmag(rock::eng_thrust);
+
+
+		shared::world_state::score = pow(10, 9) * sqr(game::goal_count) / game::eng_secs;
+		shared::world_state::goal_count = game::goal_count;
+		shared::world_state::eng_secs = game::eng_secs;
+
+		shared::world_state::health = game::health;
+		shared::world_state::health_max = game::health_max;
 	}
 
 	void do_predict_new()
