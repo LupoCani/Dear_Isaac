@@ -144,6 +144,7 @@ namespace graph{
 		double zoom = screen_state::zoom;
 		int last_i = screen_state::focus;
 
+
 		Vector2f viewport_center; //cordinates at the center of the viewport/window
 		viewport_center.x = window2.getSize().x / 2;
 		viewport_center.y = window2.getSize().y / 2;
@@ -164,15 +165,17 @@ namespace graph{
 		vector<double> scales(0);
 
 		coordinates = handle_scale(coordinates, last_i, zoom, viewport_center.x, viewport_center.y);
+		int scalling = 12;
+		int radius[9] = { 80*zoom*scalling, 20 * zoom*scalling, 20 * zoom*scalling, 20 * zoom*scalling, 20 * zoom*scalling, 20 * zoom*scalling, 20 * zoom*scalling, 20 * zoom*scalling, 20 * zoom*scalling }; //radius for the planets 
 
-		player.setScale(0.5 *zoom, 0.5 *zoom);
+		player.setScale(100*zoom, 100* zoom);
 		player.setPosition(coordinates[last_i]);
 		for (int i = 0; i < 9; i++) {
 			planets[i].setPosition(coordinates[i]);
 
 			scales.push_back(planets[i].getRadius());
-			planets[i].setRadius(scales[i] * zoom);
-
+		//	planets[i].setRadius(scales[i] * zoom);
+			planets[i].setRadius(radius[i]);
 			if (planets[i].getRadius() < 5)
 				planets[i].setRadius(5);
 
@@ -187,9 +190,13 @@ namespace graph{
 		window2.clear();
 #endif // RENDER_DEBUG_INSTALLED
 
-		
+		namespace ws = shared::world_state;
 
-		for (int i = 0; i < planets.size(); i++) {
+		if (ws::target_parent_2 == 0 ) {
+			planets[ws::target_parent].setOutlineColor(Color(242, 46, 176));
+			planets[ws::target_parent].setOutlineThickness(radius[ws::target_parent] * 0.2);
+		}
+		for (int i = 0; i < 5; i++) {
 			window2.draw(planets[i]);
 		}
 
