@@ -115,6 +115,12 @@ namespace input					//Declare the input system. In a namespace becuse putting sf
 				keyboard.scroll = input.mouseWheel.delta;
 		}
 	}
+
+	namespace flush_back
+	{
+		bool play = false;
+	}
+
 }
 
 namespace phys					//Declare various classes and functions
@@ -2700,6 +2706,11 @@ namespace phys
 			gen::w_time_diff = 0.01;
 		gen::w_time += gen::w_time_diff;
 
+		if (!input::flush_back::play)
+			return;
+		else
+			shared::game_state = 1;
+
 		do_game_tick();
 
 		do_phys_tick(gen::bodies, gen::w_time, rock::eng_mode, rock::eng_thrust);
@@ -2935,6 +2946,8 @@ namespace render_debug			//To be removed once the neccesary render_tools functio
 
 	bool window_is_clear = false;
 
+	short count = 0;
+
 
 	vec_n scale_single(vec_n pos, vec_n origo, double scale = 1, double mid_x = 500, double mid_y = 500)
 	{
@@ -3070,6 +3083,17 @@ namespace render_debug			//To be removed once the neccesary render_tools functio
 
 	void render_all()
 	{
+		if (!input::flush_back::play)
+		{
+			return;
+		}
+		else if (count < 10)
+		{
+			count++;
+			return;
+		}
+
+
 		namespace in = shared::world_state;
 
 		window_is_clear = true;

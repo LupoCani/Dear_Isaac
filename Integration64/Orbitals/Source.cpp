@@ -26,7 +26,6 @@ void main()
 
 	long long i = 0;
 	long long t_cap = 5;
-	graph::start_menue();
 	while (true)
 	{
 		using namespace shared;
@@ -40,11 +39,10 @@ void main()
 
 			phys::run_engine();
 
+			graph::do_render();
 #ifdef RENDER_DEBUG_INSTALLED
 			render_debug::render_all();
 #endif
-			graph::do_render();
-
 			ui::run_ui();
 
 			render_base::render();

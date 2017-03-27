@@ -23,6 +23,7 @@ namespace graph{
 	Color grey(177, 190, 198);
 	Color white(255, 255, 255);
 
+	int start_menue();
 
 	//window2 = sf::RenderWindow(sf::VideoMode(1080, 860), "Orbitals");
 
@@ -138,10 +139,16 @@ namespace graph{
 
 
 
-	void main_render() {
+	void main_render() 
+	{
 		namespace screen_state = shared::world_state;
 		using shared::window2;
 
+		if (shared::game_state == 0)
+		{
+			start_menue();
+			return;
+		}
 
 		std::vector<vec_n> coordinates = screen_state::bodies;
 		double zoom = screen_state::zoom;
@@ -206,7 +213,7 @@ namespace graph{
 		}
 
 		window2.draw(player);
-		window2.display();
+		//window2.display();
 		/*
 		for (int i = 0; i < 9; i++) {
 			planets[i].setRadius(scales[i]);
@@ -411,7 +418,7 @@ namespace graph{
 				window2.draw(option_header[i]);
 			}
 			window2.draw(underline);
-			window2.display();
+			//window2.display();
 
 		}
 
@@ -510,12 +517,14 @@ namespace graph{
 				window2.draw(option_header[i]);
 			}
 			window2.draw(underline);
-			window2.display();
+			//window2.display();
 
 		}
 
 	}
 
+
+	bool selected_start[3] = { 0, 0, 0 };
 	int start_menue() {
 		using shared::window2;
 		Text title;
@@ -526,7 +535,6 @@ namespace graph{
 		title.setPosition(Vector2f(window2.getSize().x / 2 - title.getLocalBounds().width*0.5, 200));
 
 		int header_pos_y[3] = { window2.getSize().y*1.5/4, window2.getSize().y * 2/ 4, window2.getSize().y*2.5/4 };
-
 
 
 		Text option_header[3];
@@ -546,40 +554,39 @@ namespace graph{
 		underline.setPosition(Vector2f(window2.getSize().x / 2 - underline.getSize().x*0.5, option_header[0].getPosition().y + option_header[0].getLocalBounds().height*1.3));
 
 		bool play = 0;
-		bool selected[3] = { 0, 0, 0 };
 
-		while (play == 0) {
+		{
 			//Event input;
 			using namespace input;
-
-			run_input();
 
 			for (int i = 0; i <= 2; i++) {
 				float activ_header_poss = option_header[i].getPosition().y + option_header[i].getLocalBounds().height*1.3;
 				if (underline.getPosition().y == activ_header_poss) {
-					selected[i] = 1;
+					selected_start[i] = 1;
 				}
 				if (underline.getPosition().y != activ_header_poss) {
-					selected[i] = 0;
+					selected_start[i] = 0;
 
 				}
 			}
-
-			//while (window2.pollEvent(input))
 			
 			{
 
 				//if ((input.type == Event::KeyPressed) && (input.key.code == Keyboard::Down)) 
-				if (input::keyboard.wasPressed(input::key_state::keys::Down))
+				if (input::keyboard.isPressed(input::key_state::keys::Down))
 				{
-					for (int i = 0; i <= 2; i++) {
-						if (selected[i] == 1) {
-							if (i <= 1) {
+					for (int i = 0; i <= 2; i++)
+					{
+						if (selected_start[i] == 1)
+						{
+							if (i <= 1)
+							{
 								underline.setSize(Vector2f(option_header[i + 1].getLocalBounds().width * 1.5, 2));
 								underline.setPosition(Vector2f(window2.getSize().x / 2 - underline.getSize().x*0.5, option_header[i + 1].getPosition().y + option_header[i + 1].getLocalBounds().height*1.3));
 								break;
 							}
-							else {
+							else 
+							{
 								underline.setSize(Vector2f(option_header[0].getLocalBounds().width * 1.5, 2));
 								underline.setPosition(Vector2f(window2.getSize().x / 2 - underline.getSize().x*0.5, option_header[0].getPosition().y + option_header[0].getLocalBounds().height*1.3));
 								break;
@@ -589,10 +596,10 @@ namespace graph{
 				}
 
 				//if ((input.type == Event::KeyPressed) && (input.key.code == Keyboard::Up)) 
-				if (input::keyboard.wasPressed(input::key_state::keys::Up))
+				if (input::keyboard.isPressed(input::key_state::keys::Up))
 				{
 					for (int i = 0; i <= 2; i++) {
-						if (selected[i] == 1) {
+						if (selected_start[i] == 1) {
 							if (i >= 1) {
 								underline.setSize(Vector2f(option_header[i - 1].getLocalBounds().width * 1.5, 2));
 								underline.setPosition(Vector2f(window2.getSize().x / 2 - underline.getSize().x*0.5, header_pos_y[i - 1] + option_header[i - 1].getLocalBounds().height*1.3));
@@ -608,28 +615,27 @@ namespace graph{
 				}
 
 				//if ((input.type == Event::KeyPressed) && (input.key.code != Keyboard::Up) && (input.key.code != Keyboard::Down))
-				if (keyboard.wasPressed_any() && ! (input::keyboard.wasPressed(input::key_state::keys::Down) || input::keyboard.wasPressed(input::key_state::keys::Up)))
+				if (keyboard.isPressed_any() && ! (input::keyboard.isPressed(input::key_state::keys::Down) || input::keyboard.isPressed(input::key_state::keys::Up)))
 				{
-					if (selected[0] == 1) {
-						play = 1;
+					if (selected_start[0] == 1) {
+						input::flush_back::play = true;
 					}
-					if (selected[2] == 1) {
+					if (selected_start[2] == 1) {
 						window2.close();
 						return 0;
-						break;
 					}
-					if (selected[1] == 1) {
+					if (selected_start[1] == 1) {
 						option_menue();
 					}
 				}
 			}
-			window2.clear();
+			//window2.clear();
 			for (int i = 0; i <= 2; i++) {
 				window2.draw(option_header[i]);
 			}
 			window2.draw(title);
 			window2.draw(underline);
-			window2.display();
+			//window2.display();
 		}
 
 	}
