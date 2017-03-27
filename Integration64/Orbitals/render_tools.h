@@ -135,6 +135,9 @@ namespace graph{
 	Texture player_s;
 	double player_radius;
 
+
+
+
 	void main_render() {
 		namespace screen_state = shared::world_state;
 		using shared::window2;
@@ -168,9 +171,11 @@ namespace graph{
 		int scalling = 15;
 		int radius[9] = { ws::sizes[0]*zoom,ws::sizes[1] * zoom, ws::sizes[2] * zoom, ws::sizes[3] * zoom,ws::sizes[4] * zoom, ws::sizes[5] * zoom, ws::sizes[6] }; //radius for the planets 
 
-		player.setScale(10*zoom, 10* zoom);
-		player.setPosition(400,400);
+		//player.setScale(10*zoom, 10* zoom);
+		player.setPosition(Vector2f(coordinates[coordinates.size() ].x, coordinates[coordinates.size() ].x));
+
 		for (int i = 0; i < 6; i++) {
+			planets[i].setOrigin(planets[i].getRadius() / 1, planets[i].getRadius() / 1);
 			planets[i].setPosition(coordinates[i]);
 
 			scales.push_back(planets[i].getRadius());
@@ -179,16 +184,16 @@ namespace graph{
 			if (planets[i].getRadius() < 5)
 				planets[i].setRadius(5);
 
-			planets[i].setOrigin(planets[i].getRadius() / 1, planets[i].getRadius() / 1);
+			
 		}
-
-#ifdef RENDER_DEBUG_INSTALLED
+	
+//#ifdef RENDER_DEBUG_INSTALLED
 		if (!render_debug::window_is_clear)
 			window2.clear();
 		render_debug::window_is_clear = false;
-#else
+//#else
 		window2.clear();
-#endif // RENDER_DEBUG_INSTALLED
+//#endif // RENDER_DEBUG_INSTALLED
 
 		namespace ws = shared::world_state;
 
@@ -213,7 +218,7 @@ namespace graph{
 	//Texture planet_textures[9];
 	//*
 
-
+	Texture player_texture;
 	void render_init() { //paste into begining of main function
 		using shared::window2;
 
@@ -261,12 +266,11 @@ namespace graph{
 
 		}
 
-		Texture player_texture;
-		if (!player_s.loadFromFile("Character_sprite.png")) {
+		if (!player_texture.loadFromFile("player_texture.png")) {
 			//handle exception
 		}
 
-		player.setTexture(player_s);
+		player.setTexture(player_texture);
 		player.setOrigin(32, 32); //center the origin of the player (half the with, half the height)
 		float player_radius = player.getLocalBounds().width / 2.5; // radius of circle containing sprite; pass to collision function
 
@@ -402,7 +406,7 @@ namespace graph{
 
 			}
 
-			window2.clear();
+	
 			for (int i = 0; i <= 1; i++) {
 				window2.draw(option_header[i]);
 			}

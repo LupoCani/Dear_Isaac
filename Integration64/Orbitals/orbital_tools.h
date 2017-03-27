@@ -1833,6 +1833,9 @@ namespace phys
 			fut_rel_pos = fut_plyr_pos - fut_pln_pos;
 			fut_rel_vel = fut_plyr_vel - fut_pln_vel;
 
+			game::target_pos = fut_pln_pos;
+			game::player_pos = fut_plyr_pos;
+
 			body& pln_fut = *new body;
 			{
 				pln_fut.pos = vec_n();
@@ -2121,6 +2124,8 @@ namespace phys
 		shared::world_state::health_max = game::health_max;
 	}
 
+
+	/*
 	void do_predict_new()
 	{
 		using gen::bodies;
@@ -2265,19 +2270,19 @@ namespace phys
 		{
 			plyr.entering = true;
 
-			/*
-			vec_n true_pos_plyr, true_pos_pln;
+			
+			//vec_n true_pos_plyr, true_pos_pln;
 			body &pln = *bodies[cnv[new_parent]];
 
-			do_orbit(plyr, expire_time, 10, true_pos_plyr);
-			do_orbit(pln,  expire_time, 10, true_pos_pln);
+			//do_orbit(plyr, expire_time, 10, true_pos_plyr);
+			//do_orbit(pln,  expire_time, 10, true_pos_pln);
 
-			vmag(true_pos_plyr - true_pos_pln);
-			*/
+			//vmag(true_pos_plyr - true_pos_pln);
+			
 			
 			plyr.V_ent = data.V_exp;
 
-			std::cout << pairs[new_parent].size() << "\n";
+			std::cout << plyr.expire();
 
 			pred::next_parent = cnv[data.new_parent];
 
@@ -2316,6 +2321,9 @@ namespace phys
 		gen::last_predict = shared::r_time;
 	}
 
+	*/
+
+	/*
 	void do_predict_safe()
 	{
 		using gen::bodies;
@@ -2438,15 +2446,14 @@ namespace phys
 		{
 			plyr.entry = true;
 
-			/*
-			vec_n true_pos_plyr, true_pos_pln;
-			body &pln = *bodies[cnv[new_parent]];
+			
+			//vec_n true_pos_plyr, true_pos_pln;
+			//body &pln = *bodies[cnv[new_parent]];
 
-			do_orbit(plyr, expire_time, 10, true_pos_plyr);
-			do_orbit(pln,  expire_time, 10, true_pos_pln);
+			//do_orbit(plyr, expire_time, 10, true_pos_plyr);
+			//do_orbit(pln,  expire_time, 10, true_pos_pln);
 
-			vmag(true_pos_plyr - true_pos_pln);
-			*/
+			//vmag(true_pos_plyr - true_pos_pln);
 
 			plyr.V_ent = data.V_exp;
 
@@ -2478,6 +2485,7 @@ namespace phys
 		}
 		gen::last_predict = shared::r_time;
 	}
+	*/
 
 	void do_predict()
 	{
@@ -2599,7 +2607,7 @@ namespace phys
 
 		if (expiring)
 		{
-			plyr.entry = true;
+			plyr.entering = true;
 
 			/*
 			vec_n true_pos_plyr, true_pos_pln;
@@ -2613,7 +2621,9 @@ namespace phys
 
 			plyr.V_ent = data.V_exp;
 
-			std::cout << pairs[new_parent].size() << "\n";
+			plyr.entry = expire_time;
+
+			std::cout << plyr.expire() << "\n";
 
 			if (plyr.shape ? expire_time <= plyr.expire() : expire_time <= plyr.t_l + 2 * plyr.t_p)
 				plyr.entry = expire_time;
@@ -2622,6 +2632,7 @@ namespace phys
 		{
 			std::cout << "Not expiring! \n";
 			plyr.entering = false;
+			std::cout << plyr.expire() << "\n";
 		}
 
 		for (int i = 0; i < co_sats.size(); i++)
@@ -3006,8 +3017,8 @@ namespace render_debug			//To be removed once the neccesary render_tools functio
 			kess.setFillColor(sf::Color::Red);
 			kess.setOrigin(1, 1);
 			kess.setPosition(list[i]);
-
-
+			
+			
 			window2.draw(kess);
 		}
 	}
@@ -3028,11 +3039,39 @@ namespace render_debug			//To be removed once the neccesary render_tools functio
 		window2.draw(kess);
 	}
 
+	void render_coll(vec_n origo, double zoom)
+	{
+		double size = 5;
+		{
+			shared::vec_n pos = phys::game::target_pos;
+
+			pos = scale_single(pos, origo, zoom);
+
+			CircleShape kess(size);
+			kess.setFillColor(sf::Color::Magenta);
+			kess.setOrigin(size / 2, size / 2);
+			kess.setPosition(pos);
+
+			window2.draw(kess);
+		}
+		{
+			shared::vec_n pos = phys::game::player_pos;
+
+			pos = scale_single(pos, origo, zoom);
+
+			CircleShape kess(size);
+			kess.setFillColor(sf::Color::Magenta);
+			kess.setOrigin(size / 2, size / 2);
+			kess.setPosition(pos);
+
+			window2.draw(kess);
+		}
+	}
+
 	void render_all()
 	{
 		namespace in = shared::world_state;
 
-		window2.clear();
 		window_is_clear = true;
 		render_lines(in::paths, in::bodies[in::focus], in::zoom);
 
@@ -3053,8 +3092,25 @@ namespace render_debug			//To be removed once the neccesary render_tools functio
 		render_player(in::player_rotation, in::bodies.back(), in::bodies[in::focus], in::zoom);
 
 		render_goal(phys::game::goal_coords, in::bodies[in::focus], in::zoom);
+		render_coll(in::bodies[in::focus], in::zoom);
 
 		//window2.display();
 	}
 }
 #endif // RENDER_DEBUG_INSTALLED
+
+namespace render_base
+{
+	using namespace sf;
+	using shared::window2;
+
+	void clear()
+	{
+		window2.clear();
+	}
+
+	void render()
+	{
+		window2.display();
+	}
+}

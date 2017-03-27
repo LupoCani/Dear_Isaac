@@ -34,6 +34,8 @@ void main()
 
 		if (l_time + cps * 0.00001 < r_time)
 		{
+			render_base::clear();
+
 			input::run_input();
 
 			phys::run_engine();
@@ -42,6 +44,10 @@ void main()
 			render_debug::render_all();
 #endif
 			graph::do_render();
+
+			ui::run_ui();
+
+			render_base::render();
 
 			l_time = r_time;
 			i++;
