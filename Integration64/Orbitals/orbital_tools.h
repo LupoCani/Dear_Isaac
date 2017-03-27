@@ -285,12 +285,12 @@ namespace shared
 
 		//Score varibles:
 
-		double eng_secs = 0;
-		double goal_count = -1;
-		double score = 0;
+		double eng_secs = 0;	//Abstract amount of time engine has been on
+		double goal_count = -1;	//Amount of goals that have been collected
+		double score = 0;		//Amount of points, represented by the score
 
-		double health;
-		double health_max;
+		double health;			//Current health
+		double health_max;		//Size of health bar
 	};
 }
 

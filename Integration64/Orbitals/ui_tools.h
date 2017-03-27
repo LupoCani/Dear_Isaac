@@ -20,7 +20,12 @@ namespace ui
 {
 	using namespace sf;
 	using namespace std;
+	namespace ws = shared::world_state;
 
+	void hp(double hp, double hp_max)
+	{
+
+	}
 
 	void run_ui()
 	{
@@ -29,6 +34,18 @@ namespace ui
 
 	void ui_init()
 	{
+		double hp = ws::health;
+		double hp_max = ws::health_max;
 
+		Font font;
+		if (!font.loadFromFile("ALGER.ttf")) {
+		}
+
+		Text text("test", font);
+		text.setCharacterSize(30);
+		text.setStyle(Text::Bold);
+		text.setColor(Color::Red);
+
+		window draw.(text);
 	}
 }
