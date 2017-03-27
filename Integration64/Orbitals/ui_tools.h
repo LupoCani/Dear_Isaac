@@ -46,6 +46,6 @@ namespace ui
 		text.setStyle(Text::Bold);
 		text.setColor(Color::Red);
 
-		window draw.(text);
+		//window draw.(text);
 	}
 }
