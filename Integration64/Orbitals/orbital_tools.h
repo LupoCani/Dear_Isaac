@@ -355,6 +355,11 @@ namespace phys
 		body* self = this;	//Pointer to self
 		std::string name;	//Name of body
 
+		void split()
+		{
+			self = this;
+		}
+
 		double size = 1;
 	};
 
@@ -1825,15 +1830,16 @@ namespace phys
 
 	void set_tails_future(vector<body*> list, int subdiv = 100)
 	{
-		body &plyr = *list.back();
+		body plyr = *list.back();
 		gen::tails_future.clear();
 
 		body& pln_fut = *new body;
 		body& plyr_fut = *new body;
+		body& gramp = *new body;
 
 		if (plyr.entering)
 		{
-			body &pln = *list[pred::next_parent];
+			body pln = *list[pred::next_parent];
 
 			double exp_time = plyr.entry;
 
@@ -1847,10 +1853,10 @@ namespace phys
 			game::player_pos = fut_plyr_pos;
 
 			{
+				pln_fut = pln;
+				pln_fut.split();
 				pln_fut.pos = fut_pln_pos;
 				pln_fut.vel = fut_pln_vel;
-				pln_fut.u = pln.u;
-				pln_fut.SOI = pln.SOI;
 			}
 
 			{
@@ -1864,12 +1870,44 @@ namespace phys
 			set_expiry_regular(plyr_fut);
 
 			gen::tails_future.push_back(make_tail(plyr_fut, subdiv));
+
+			gramp = *plyr.parent;
+			gramp.split();
+		}
+		else
+		{
+			plyr_fut = plyr;
+			pln_fut = *plyr.parent;
+			gramp = *pln_fut.parent;
+
+			gramp.split();
+			plyr_fut.split();
+			pln_fut.split();
+		}
+
+		gramp.pos = vec_n();
+		gramp.vel = vec_n();
+
+		if (plyr_fut.exiting)
+		{
+			double exit = plyr_fut.exit;
+
+			do_orbit(plyr_fut,	exit, 10, plyr_fut.pos,	plyr_fut.vel);
+			do_orbit(pln_fut,	exit, 10, pln_fut.pos,	pln_fut.vel);
+
+			plyr_fut.pos += pln_fut.pos;
+			plyr_fut.vel += pln_fut.vel;
+
+			plyr_fut.parent = gramp.self;
+
+			make_orbit(plyr_fut, exit);
+			set_expiry_regular(plyr_fut);
+
+			gen::tails_future.push_back(make_tail(plyr_fut, subdiv*10));
 		}
 
 		delete plyr_fut.self;
 		delete pln_fut.self;
-
-
 	}
 
 	//End graph algorithms
@@ -3138,19 +3176,3 @@ namespace render_debug			//To be removed once the neccesary render_tools functio
 	}
 }
 #endif // RENDER_DEBUG_INSTALLED
-
-namespace basics
-{
-	using namespace sf;
-	using shared::window2;
-
-	void begin()
-	{
-		window2.clear();
-		input::run_input();
-	}
-	void done()
-	{
-		window2.display();
-	}
-}

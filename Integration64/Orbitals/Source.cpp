@@ -14,6 +14,21 @@
 using namespace std;
 
 
+namespace basics
+{
+	using shared::window2;
+
+	void begin()
+	{
+		window2.clear();
+		input::run_input();
+	}
+	void done()
+	{
+		window2.display();
+	}
+}
+
 void main()
 {
 
