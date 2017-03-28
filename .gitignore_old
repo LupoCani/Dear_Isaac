@@ -35,6 +35,11 @@
 *.out
 *.app
 
+### Inactives ###
+!_OLD_FILES
+!_OLD_FOLDERS
+
+
 ### Windows ###
 # Windows thumbnail cache files
 Thumbs.db
