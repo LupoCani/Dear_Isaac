@@ -35,9 +35,11 @@ namespace input					//Declare the input system. In a namespace becuse putting sf
 		std::vector<int>  pressed_last;
 		std::vector<bool> buttons;
 		std::vector<bool> buttons_last;
+
 		struct keys : sf::Keyboard {
 			using Keyboard::Key;
 		};
+
 		struct btns : sf::Mouse {
 			using Mouse::Button;
 		};
@@ -64,6 +66,14 @@ namespace input					//Declare the input system. In a namespace becuse putting sf
 		bool wasPressed(int key)
 		{
 			return isAt(key, pressed) >= 0 && isAt(key, pressed_last) < 0;
+		}
+		bool isPressed_any()
+		{
+			return pressed.size();
+		}
+		bool wasPressed_any()
+		{
+			return pressed.size() && !pressed_last.size();
 		}
 
 		bool msDown(short button)
@@ -105,6 +115,12 @@ namespace input					//Declare the input system. In a namespace becuse putting sf
 				keyboard.scroll = input.mouseWheel.delta;
 		}
 	}
+
+	namespace flush_back
+	{
+		bool play = false;
+	}
+
 }
 
 namespace phys					//Declare various classes and functions
@@ -118,7 +134,7 @@ namespace phys					//Declare various classes and functions
 	const long double M_3PI2 = 3L * M_PI2;		//Equal to .75π
 	const long double M_E = exp(1.0);
 
-	double clamp(double in);
+	double clamp(double in, double max = 1.0, double min = -1.0);
 	double sqr(double in);
 	double sqrt_a(double in);
 	vec_n vec_to_pos(double v, double r);
@@ -228,6 +244,8 @@ namespace shared
 {
 	using phys::vec_n;
 
+	short game_state = 0;
+
 	namespace world_state		//Data for rendering/ui functions to use in rendering
 	{
 		//Physical variables:
@@ -270,6 +288,15 @@ namespace shared
 
 		int target_parent;		//The id of the body around which the target is placed.
 		int target_parent_2;	//If the above is a moon, this is the id of the planet the moon orbits.
+
+		//Score varibles:
+
+		double eng_secs = 0;	//Abstract amount of time engine has been on
+		double goal_count = -1;	//Amount of goals that have been collected
+		double score = 0;		//Amount of points, represented by the score
+
+		double health;			//Current health
+		double health_max;		//Size of health bar
 	};
 }
 
@@ -327,6 +354,11 @@ namespace phys
 		body* parent;		//Pointer to parent body
 		body* self = this;	//Pointer to self
 		std::string name;	//Name of body
+
+		void split()
+		{
+			self = this;
+		}
 
 		double size = 1;
 	};
@@ -437,15 +469,25 @@ namespace phys
 		in.erase(ref + ind);
 	}
 
+	template<class vec_cont>
+	int find_in(vector<vec_cont> &in, vec_cont element)
+	{
+		for (int i = 0; i < in.size(); i++)
+			if (in[i] == element)
+				return i;
+
+		return -1;
+	}
+
 	double rand_part(double scale = 1)
 	{
 		return rand() % 1000 / 1000.0 * scale;
 	}
 
 	//Begin generic vector math functions
-	double clamp(double in)
+	double clamp(double in, double max, double min)
 	{
-		return in > 1 ? 1 : (in < -1 ? -1 : in);
+		return in > max ? max : (in < min ? min : in);
 	}
 
 	double ang_scale(double scale, double ang, double scope)
@@ -549,7 +591,9 @@ namespace phys
 
 	double get_V_r(double r, body sat)
 	{
-		return acos(clamp(sat.ax_a * (1 - sqr(sat.ecc)) / (sat.ecc * r) - 1 / sat.ecc));
+		return acos(clamp(
+			sat.ax_a * (1 - sqr(sat.ecc)) / (sat.ecc * r) - 1 / sat.ecc
+		));
 	}
 
 	double get_sinE(double tV, double ecc)
@@ -735,9 +779,9 @@ namespace phys
 		return point;
 	}
 
-	double get_V_phys(body sat, vec_n pos = vec_n())		//Get the current true anomaly from the physical position
+	double get_V_phys(body sat, vec_n pos = vec_n(NAN, NAN))		//Get the current true anomaly from the physical position
 	{
-		if (vmag(pos) > 0)
+		if (!isnan(pos.x))
 			return atan2(pos) - sat.normal;
 		else
 			return  atan2(sat.pos - (*sat.parent).pos) - sat.normal;
@@ -751,6 +795,7 @@ namespace phys
 	//End orbital equation functions
 
 	//Begin orbital algorithms
+
 	double do_orbit_precise_H(double part, body sat, int precision)
 	{
 		double ceil = V_bound_H(sat.ecc);
@@ -1674,6 +1719,7 @@ namespace phys
 			sat.exit = M_to_time(sat, M_max, sat.epoch);
 			sat.exiting = 1;
 			sat.V_exit = V_max;
+
 		}
 
 		if (sat.inverse)
@@ -1784,35 +1830,38 @@ namespace phys
 
 	void set_tails_future(vector<body*> list, int subdiv = 100)
 	{
-		body &plyr = *list.back();
+		body plyr = *list.back();
 		gen::tails_future.clear();
+
+		body& pln_fut = *new body;
+		body& plyr_fut = *new body;
+		body& gramp = *new body;
 
 		if (plyr.entering)
 		{
-			body &pln = *list[pred::next_parent];
+			body pln = *list[pred::next_parent];
 
 			double exp_time = plyr.entry;
 
 			vec_n fut_plyr_pos, fut_pln_pos, fut_rel_pos;
 			vec_n fut_plyr_vel, fut_pln_vel, fut_rel_vel;
 
-			do_orbit(plyr, exp_time, 15, fut_plyr_pos, fut_plyr_vel);
-			do_orbit(plyr, exp_time, 15, fut_pln_pos, fut_pln_vel);
+			do_orbit(plyr, exp_time, 10, fut_plyr_pos, fut_plyr_vel);
+			do_orbit(pln, exp_time, 10, fut_pln_pos, fut_pln_vel);
 
-			fut_rel_pos = fut_plyr_pos - fut_pln_pos;
-			fut_rel_vel = fut_plyr_vel - fut_pln_vel;
+			game::target_pos = fut_pln_pos;
+			game::player_pos = fut_plyr_pos;
 
-			body& pln_fut = *new body;
 			{
-				pln_fut.pos = vec_n();
-				pln_fut.vel = vec_n();
-				pln_fut.u = pln.u;
+				pln_fut = pln;
+				pln_fut.split();
+				pln_fut.pos = fut_pln_pos;
+				pln_fut.vel = fut_pln_vel;
 			}
 
-			body& plyr_fut = *new body;
 			{
-				plyr_fut.pos = fut_rel_pos;
-				plyr_fut.vel = fut_rel_vel;
+				plyr_fut.pos = fut_plyr_pos;
+				plyr_fut.vel = fut_plyr_vel;
 				plyr_fut.u = 1;
 				plyr_fut.parent = pln_fut.self;
 			}
@@ -1822,53 +1871,58 @@ namespace phys
 
 			gen::tails_future.push_back(make_tail(plyr_fut, subdiv));
 
-			delete plyr_fut.self;
-			delete pln_fut.self;
+			gramp = *plyr.parent;
+			gramp.split();
 		}
+		else
+		{
+			plyr_fut = plyr;
+			pln_fut = *plyr.parent;
+			gramp = *pln_fut.parent;
+
+			gramp.split();
+			plyr_fut.split();
+			pln_fut.split();
+		}
+
+		gramp.pos = vec_n();
+		gramp.vel = vec_n();
+
+		if (plyr_fut.exiting)
+		{
+			double exit = plyr_fut.exit;
+
+			do_orbit(plyr_fut,	exit, 10, plyr_fut.pos,	plyr_fut.vel);
+			do_orbit(pln_fut,	exit, 10, pln_fut.pos,	pln_fut.vel);
+
+			plyr_fut.pos += pln_fut.pos;
+			plyr_fut.vel += pln_fut.vel;
+
+			plyr_fut.parent = gramp.self;
+
+			make_orbit(plyr_fut, exit);
+			set_expiry_regular(plyr_fut);
+
+			gen::tails_future.push_back(make_tail(plyr_fut, subdiv*10));
+		}
+
+		delete plyr_fut.self;
+		delete pln_fut.self;
 	}
 
 	//End graph algorithms
 
-	void generate_goal(double radius, double size, int par_id = 0)
+	void generate_goal(double radius, int par_id = 0)
 	{
 		double sat_r = (*gen::bodies[par_id]).size;
 		vec_r goal_coords;
 
-		//goal_coords.mag = rand_part() * (radius - sat_r) + sat_r;
-		goal_coords.mag = rand_part() * radius;
+		goal_coords.mag = rand_part() * (radius - sat_r) + sat_r;
 		goal_coords.ang = to_rad(rand_part(), 1);
-
-		/*
-		for (;;) {
-
-		goal_coords.x = rand() % int(2 * radius) + coordinates[0].x - radius;
-
-		if (goal_coords.x < coordinates[0].x - sun_r) {
-		break;
-		}
-		else if (goal_coords.x > coordinates[0].x + sun_r) {
-		break;
-		}
-
-		}
-
-		for (;;) {
-
-		goal_coords.y = rand() % int(2 * radius) + coordinates[0].y - radius;
-
-		if (goal_coords.y < coordinates[0].y - sun_r) {
-		break;
-		}
-		else if (goal_coords.y > coordinates[0].y + sun_r) {
-		break;
-		}
-
-		}
-		*/
 
 		game::goal_coords = goal_coords;
 		game::goal_parent = par_id;
-		game::goal_size = size;
+		game::goal_size = goal_coords.mag / 10;
 	}
 
 	bool compare_goal()
@@ -2108,8 +2162,17 @@ namespace phys
 
 		rock::eng_thrust = vec_to_pos(rock::rot, -thrust_actual / (rock::mass + rock::fuel) );
 		rock::eng_mode = vmag(rock::eng_thrust);
+
+
+		shared::world_state::score = pow(10, 9) * sqr(game::goal_count) / game::eng_secs;
+		shared::world_state::goal_count = game::goal_count;
+		shared::world_state::eng_secs = game::eng_secs;
+
+		shared::world_state::health = game::health;
+		shared::world_state::health_max = game::health_max;
 	}
 
+	/*
 	void do_predict_new()
 	{
 		using gen::bodies;
@@ -2254,19 +2317,19 @@ namespace phys
 		{
 			plyr.entering = true;
 
-			/*
-			vec_n true_pos_plyr, true_pos_pln;
+			
+			//vec_n true_pos_plyr, true_pos_pln;
 			body &pln = *bodies[cnv[new_parent]];
 
-			do_orbit(plyr, expire_time, 10, true_pos_plyr);
-			do_orbit(pln,  expire_time, 10, true_pos_pln);
+			//do_orbit(plyr, expire_time, 10, true_pos_plyr);
+			//do_orbit(pln,  expire_time, 10, true_pos_pln);
 
-			vmag(true_pos_plyr - true_pos_pln);
-			*/
+			//vmag(true_pos_plyr - true_pos_pln);
+			
 			
 			plyr.V_ent = data.V_exp;
 
-			std::cout << pairs[new_parent].size() << "\n";
+			std::cout << plyr.expire();
 
 			pred::next_parent = cnv[data.new_parent];
 
@@ -2305,6 +2368,9 @@ namespace phys
 		gen::last_predict = shared::r_time;
 	}
 
+	*/
+
+	/*
 	void do_predict_safe()
 	{
 		using gen::bodies;
@@ -2427,15 +2493,14 @@ namespace phys
 		{
 			plyr.entry = true;
 
-			/*
-			vec_n true_pos_plyr, true_pos_pln;
-			body &pln = *bodies[cnv[new_parent]];
+			
+			//vec_n true_pos_plyr, true_pos_pln;
+			//body &pln = *bodies[cnv[new_parent]];
 
-			do_orbit(plyr, expire_time, 10, true_pos_plyr);
-			do_orbit(pln,  expire_time, 10, true_pos_pln);
+			//do_orbit(plyr, expire_time, 10, true_pos_plyr);
+			//do_orbit(pln,  expire_time, 10, true_pos_pln);
 
-			vmag(true_pos_plyr - true_pos_pln);
-			*/
+			//vmag(true_pos_plyr - true_pos_pln);
 
 			plyr.V_ent = data.V_exp;
 
@@ -2446,8 +2511,8 @@ namespace phys
 		}
 		else
 		{
-			reset_expiry(plyr);
-			set_expiry_regular(plyr);
+			plyr.entering = false;
+			std::cout << "Not expiring!\n";
 		}
 
 		for (int i = 0; i < co_sats.size(); i++)
@@ -2467,6 +2532,7 @@ namespace phys
 		}
 		gen::last_predict = shared::r_time;
 	}
+	*/
 
 	void do_predict()
 	{
@@ -2588,7 +2654,7 @@ namespace phys
 
 		if (expiring)
 		{
-			plyr.entry = true;
+			plyr.entering = true;
 
 			/*
 			vec_n true_pos_plyr, true_pos_pln;
@@ -2602,15 +2668,16 @@ namespace phys
 
 			plyr.V_ent = data.V_exp;
 
-			std::cout << pairs[new_parent].size() << "\n";
+			plyr.entry = expire_time;
 
 			if (plyr.shape ? expire_time <= plyr.expire() : expire_time <= plyr.t_l + 2 * plyr.t_p)
 				plyr.entry = expire_time;
+
+			pred::next_parent = cnv[data.new_parent];
 		}
 		else
 		{
-			reset_expiry(plyr);
-			set_expiry_regular(plyr);
+			plyr.entering = false;
 		}
 
 		for (int i = 0; i < co_sats.size(); i++)
@@ -2636,7 +2703,6 @@ namespace phys
 		if (compare_goal() || game::goal_count < 0)
 		{
 			int par_id = rand() % gen::bodies.size();
-			double size = (*gen::bodies[par_id]).SOI / 10;
 			double radius = (*gen::bodies[par_id]).SOI * 0.8;
 
 			if (par_id == 0)
@@ -2654,7 +2720,10 @@ namespace phys
 				radius *= 0.8;
 			}
 
-			generate_goal(radius, size, par_id);
+			generate_goal(radius, par_id);
+
+			shared::world_state::target_parent = par_id;
+			shared::world_state::target_parent_2 = find_in(gen::bodies, (*gen::bodies[par_id]).parent);
 
 			game::goal_count++;
 		}
@@ -2663,7 +2732,6 @@ namespace phys
 #ifdef RENDER_DEBUG_INSTALLED
 	bool emode = 0;
 	vec_n thrust_debug;
-
 #endif
 
 	void run_engine()
@@ -2675,6 +2743,11 @@ namespace phys
 		else
 			gen::w_time_diff = 0.01;
 		gen::w_time += gen::w_time_diff;
+
+		if (!input::flush_back::play)
+			return;
+		else
+			shared::game_state = 1;
 
 		do_game_tick();
 
@@ -2773,13 +2846,13 @@ namespace phys
 				body *body_p = unsorted[body_i];
 
 				for (int i = 0; i < unsorted.size(); i++)
-					if ((*unsorted[i]).u >(*body_p).u)
+					if ((*unsorted[i]).u > (*body_p).u)
 					{
 						body_p = unsorted[i];
 						body_i = i;
 					}
 				sorted.push_back(body_p);
-				unsorted.erase(unsorted.begin() + body_i);
+				pop_any(unsorted, body_i);
 			}
 
 			//Name the largest body as 'sun';
@@ -2788,6 +2861,12 @@ namespace phys
 			//To begin with, assume all sorted bodies orbit the sun.
 			for (int i = 0; i < sorted.size(); i++)
 				(*sorted[i]).parent = sorted[0];
+
+			for (int i = 0; i < sorted.size(); i++)
+			{
+				(*sorted[i]).pos -= (*sorted[0]).pos;
+				(*sorted[i]).vel -= (*sorted[0]).vel;
+			}
 		}
 
 		return sorted;
@@ -2808,7 +2887,7 @@ namespace phys
 		moon.pos.y = 0;
 		moon.vel.x = 0;
 		moon.vel.y = -46000;
-		moon.u = pow(10, 8);
+		moon.u = pow(10, 9);
 		moon.name = "moon";
 
 		body& planet = *new body;
@@ -2834,6 +2913,14 @@ namespace phys
 		dune.vel.y = -40000;
 		dune.u = pow(10, 10);
 		dune.name = "dune";
+
+		body& laythe = *new body;
+		dune.pos.x = -35000;
+		dune.pos.y = 5000;
+		dune.vel.x = 0;
+		dune.vel.y = -40000;
+		dune.u = pow(10, 10);
+		dune.name = "layhte";
 
 		body& yavin = *new body;
 		yavin.pos.x = -40000;
@@ -2873,7 +2960,10 @@ namespace phys
 
 		for (int i = 0; i < gen::bodies.size(); i++)
 		{
-			(*gen::bodies[i]).size = cbrt( (*gen::bodies[i]).u );
+			body &sat = *gen::bodies[i];
+
+			sat.size = cbrt(sat.u) / 40;
+			shared::world_state::sizes.push_back(sat.size);
 		}
 
 
@@ -2907,6 +2997,8 @@ namespace render_debug			//To be removed once the neccesary render_tools functio
 	bool nonsense = debug_font.loadFromFile("courier.ttf");
 
 	bool window_is_clear = false;
+
+	short count = 0;
 
 
 	vec_n scale_single(vec_n pos, vec_n origo, double scale = 1, double mid_x = 500, double mid_y = 500)
@@ -2990,8 +3082,8 @@ namespace render_debug			//To be removed once the neccesary render_tools functio
 			kess.setFillColor(sf::Color::Red);
 			kess.setOrigin(1, 1);
 			kess.setPosition(list[i]);
-
-
+			
+			
 			window2.draw(kess);
 		}
 	}
@@ -3012,11 +3104,52 @@ namespace render_debug			//To be removed once the neccesary render_tools functio
 		window2.draw(kess);
 	}
 
+	void render_coll(vec_n origo, double zoom)
+	{
+		
+		{
+			double size = 6;
+			shared::vec_n pos = phys::game::target_pos;
+
+			pos = scale_single(pos, origo, zoom);
+
+			CircleShape kess(size);
+			kess.setFillColor(sf::Color::Blue);
+			kess.setOrigin(size / 2, size / 2);
+			kess.setPosition(pos);
+
+			window2.draw(kess);
+		}
+		{
+			double size = 3;
+			shared::vec_n pos = phys::game::player_pos;
+
+			pos = scale_single(pos, origo, zoom);
+
+			CircleShape kess(size);
+			kess.setFillColor(sf::Color::Red);
+			kess.setOrigin(size / 2, size / 2);
+			kess.setPosition(pos);
+
+			window2.draw(kess);
+		}
+	}
+
 	void render_all()
 	{
+		if (!input::flush_back::play)
+		{
+			return;
+		}
+		else if (count < 10)
+		{
+			count++;
+			return;
+		}
+
+
 		namespace in = shared::world_state;
 
-		window2.clear();
 		window_is_clear = true;
 		render_lines(in::paths, in::bodies[in::focus], in::zoom);
 
@@ -3037,6 +3170,7 @@ namespace render_debug			//To be removed once the neccesary render_tools functio
 		render_player(in::player_rotation, in::bodies.back(), in::bodies[in::focus], in::zoom);
 
 		render_goal(phys::game::goal_coords, in::bodies[in::focus], in::zoom);
+		render_coll(in::bodies[in::focus], in::zoom);
 
 		//window2.display();
 	}

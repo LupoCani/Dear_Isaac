@@ -144,6 +144,7 @@ ipch/
 *.ncb
 *.opendb
 *.opensdf
+<<<<<<< HEAD
 *.sdf
 *.cachefile
 *.VC.db
@@ -340,3 +341,7 @@ __pycache__/
 # !tools/packages.config
 
 # End of https://www.gitignore.io/api/visualstudio,c++,windows
+=======
+*.opendb
+*.db
+>>>>>>> c5d6375fd9e105775736c5946f94f0eaf0c0e481
