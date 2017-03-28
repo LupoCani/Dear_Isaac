@@ -134,7 +134,7 @@ namespace phys					//Declare various classes and functions
 	const long double M_3PI2 = 3L * M_PI2;		//Equal to .75π
 	const long double M_E = exp(1.0);
 
-	double clamp(double in);
+	double clamp(double in, double max = 1.0, double min = -1.0);
 	double sqr(double in);
 	double sqrt_a(double in);
 	vec_n vec_to_pos(double v, double r);
@@ -480,9 +480,9 @@ namespace phys
 	}
 
 	//Begin generic vector math functions
-	double clamp(double in)
+	double clamp(double in, double max, double min)
 	{
-		return in > 1 ? 1 : (in < -1 ? -1 : in);
+		return in > max ? max : (in < min ? min : in);
 	}
 
 	double ang_scale(double scale, double ang, double scope)
@@ -586,7 +586,9 @@ namespace phys
 
 	double get_V_r(double r, body sat)
 	{
-		return acos(clamp(sat.ax_a * (1 - sqr(sat.ecc)) / (sat.ecc * r) - 1 / sat.ecc));
+		return acos(clamp(
+			sat.ax_a * (1 - sqr(sat.ecc)) / (sat.ecc * r) - 1 / sat.ecc
+		));
 	}
 
 	double get_sinE(double tV, double ecc)
@@ -772,9 +774,9 @@ namespace phys
 		return point;
 	}
 
-	double get_V_phys(body sat, vec_n pos = vec_n())		//Get the current true anomaly from the physical position
+	double get_V_phys(body sat, vec_n pos = vec_n(NAN, NAN))		//Get the current true anomaly from the physical position
 	{
-		if (vmag(pos) > 0)
+		if (!isnan(pos.x))
 			return atan2(pos) - sat.normal;
 		else
 			return  atan2(sat.pos - (*sat.parent).pos) - sat.normal;
@@ -1712,6 +1714,7 @@ namespace phys
 			sat.exit = M_to_time(sat, M_max, sat.epoch);
 			sat.exiting = 1;
 			sat.V_exit = V_max;
+
 		}
 
 		if (sat.inverse)
@@ -1825,6 +1828,9 @@ namespace phys
 		body &plyr = *list.back();
 		gen::tails_future.clear();
 
+		body& pln_fut = *new body;
+		body& plyr_fut = *new body;
+
 		if (plyr.entering)
 		{
 			body &pln = *list[pred::next_parent];
@@ -1837,20 +1843,16 @@ namespace phys
 			do_orbit(plyr, exp_time, 10, fut_plyr_pos, fut_plyr_vel);
 			do_orbit(pln, exp_time, 10, fut_pln_pos, fut_pln_vel);
 
-			//fut_rel_pos = fut_plyr_pos - fut_pln_pos;
-			//fut_rel_vel = fut_plyr_vel - fut_pln_vel;
-
 			game::target_pos = fut_pln_pos;
 			game::player_pos = fut_plyr_pos;
 
-			body& pln_fut = *new body;
 			{
 				pln_fut.pos = fut_pln_pos;
 				pln_fut.vel = fut_pln_vel;
 				pln_fut.u = pln.u;
+				pln_fut.SOI = pln.SOI;
 			}
 
-			body& plyr_fut = *new body;
 			{
 				plyr_fut.pos = fut_plyr_pos;
 				plyr_fut.vel = fut_plyr_vel;
@@ -1862,26 +1864,27 @@ namespace phys
 			set_expiry_regular(plyr_fut);
 
 			gen::tails_future.push_back(make_tail(plyr_fut, subdiv));
-
-			delete plyr_fut.self;
-			delete pln_fut.self;
 		}
+
+		delete plyr_fut.self;
+		delete pln_fut.self;
+
+
 	}
 
 	//End graph algorithms
 
-	void generate_goal(double radius, double size, int par_id = 0)
+	void generate_goal(double radius, int par_id = 0)
 	{
 		double sat_r = (*gen::bodies[par_id]).size;
 		vec_r goal_coords;
 
-		//goal_coords.mag = rand_part() * (radius - sat_r) + sat_r;
-		goal_coords.mag = rand_part() * radius;
+		goal_coords.mag = rand_part() * (radius - sat_r) + sat_r;
 		goal_coords.ang = to_rad(rand_part(), 1);
 
 		game::goal_coords = goal_coords;
 		game::goal_parent = par_id;
-		game::goal_size = size;
+		game::goal_size = goal_coords.mag / 10;
 	}
 
 	bool compare_goal()
@@ -2130,7 +2133,6 @@ namespace phys
 		shared::world_state::health = game::health;
 		shared::world_state::health_max = game::health_max;
 	}
-
 
 	/*
 	void do_predict_new()
@@ -2663,7 +2665,6 @@ namespace phys
 		if (compare_goal() || game::goal_count < 0)
 		{
 			int par_id = rand() % gen::bodies.size();
-			double size = (*gen::bodies[par_id]).SOI / 10;
 			double radius = (*gen::bodies[par_id]).SOI * 0.8;
 
 			if (par_id == 0)
@@ -2681,7 +2682,7 @@ namespace phys
 				radius *= 0.8;
 			}
 
-			generate_goal(radius, size, par_id);
+			generate_goal(radius, par_id);
 
 			shared::world_state::target_parent = par_id;
 			shared::world_state::target_parent_2 = find_in(gen::bodies, (*gen::bodies[par_id]).parent);
@@ -2807,13 +2808,13 @@ namespace phys
 				body *body_p = unsorted[body_i];
 
 				for (int i = 0; i < unsorted.size(); i++)
-					if ((*unsorted[i]).u >(*body_p).u)
+					if ((*unsorted[i]).u > (*body_p).u)
 					{
 						body_p = unsorted[i];
 						body_i = i;
 					}
 				sorted.push_back(body_p);
-				unsorted.erase(unsorted.begin() + body_i);
+				pop_any(unsorted, body_i);
 			}
 
 			//Name the largest body as 'sun';
@@ -2822,6 +2823,12 @@ namespace phys
 			//To begin with, assume all sorted bodies orbit the sun.
 			for (int i = 0; i < sorted.size(); i++)
 				(*sorted[i]).parent = sorted[0];
+
+			for (int i = 0; i < sorted.size(); i++)
+			{
+				(*sorted[i]).pos -= (*sorted[0]).pos;
+				(*sorted[i]).vel -= (*sorted[0]).vel;
+			}
 		}
 
 		return sorted;
@@ -2842,7 +2849,7 @@ namespace phys
 		moon.pos.y = 0;
 		moon.vel.x = 0;
 		moon.vel.y = -46000;
-		moon.u = pow(10, 8);
+		moon.u = pow(10, 9);
 		moon.name = "moon";
 
 		body& planet = *new body;
@@ -2868,6 +2875,14 @@ namespace phys
 		dune.vel.y = -40000;
 		dune.u = pow(10, 10);
 		dune.name = "dune";
+
+		body& laythe = *new body;
+		dune.pos.x = -35000;
+		dune.pos.y = 5000;
+		dune.vel.x = 0;
+		dune.vel.y = -40000;
+		dune.u = pow(10, 10);
+		dune.name = "layhte";
 
 		body& yavin = *new body;
 		yavin.pos.x = -40000;
