@@ -1,5 +1,0 @@
-﻿  main.cpp
-c:\users\alex modee\documents\visual studio 2015\projects\game1\game1\main.cpp(34): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-c:\users\alex modee\documents\visual studio 2015\projects\game1\game1\main.cpp(92): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-  game1.vcxproj -> C:\Users\Alex Modee\Documents\Visual Studio 2015\Projects\game1\x64\Debug\game1.exe
-  game1.vcxproj -> C:\Users\Alex Modee\Documents\Visual Studio 2015\Projects\game1\x64\Debug\game1.pdb (Full PDB)
