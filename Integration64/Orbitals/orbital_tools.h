@@ -533,7 +533,7 @@ namespace phys
 		return out;
 	}
 
-	double ang_wrap(double in, int quad)
+	double ang_wrap_old(double in, int quad)
 	{
 		double ceil = double(quad) * M_PI2;
 		double floor = ceil - M_2PI;
@@ -546,6 +546,24 @@ namespace phys
 		{
 			in += M_2PI;
 		} while (in < floor);
+		return in;
+	}
+	double ang_wrap(double in, int quad)
+	{
+		double interval = M_2PI;
+		double max = double(quad) * M_PI2;
+		double min = max - interval;
+
+		if (in > max)
+		{
+			in -= ceil((in - max) / interval) * interval;
+		}
+		if (in < min)
+		{
+			in += ceil((min - in) / interval) * interval;
+		}
+
+
 		return in;
 	}
 
@@ -1795,7 +1813,7 @@ namespace phys
 
 	//Begin graph algorithms
 
-	vector<vec_n> make_tail(body sat, int subdiv)
+	vector<vec_n> make_tail(body sat, int subdiv, bool debug = false)
 	{
 		vector<vec_n> out;
 
@@ -2079,7 +2097,7 @@ namespace phys
 				plyr.entering = false;
 				set_expiry_regular(plyr);
 
-				std::cout << "Just in case 2\n";
+				
 			}
 				
 		}
@@ -2749,15 +2767,25 @@ namespace phys
 		else
 			shared::game_state = 1;
 
+		
+
 		do_game_tick();
+
+		
 
 		do_phys_tick(gen::bodies, gen::w_time, rock::eng_mode, rock::eng_thrust);
 		do_kess_tick(gen::kesses, gen::bodies, gen::w_time);
 
+		
+
 		shared::world_state::bodies = gen::bodies_pos;
+
+		
 
 		body &plyr = *gen::bodies.back();
 		gen::tails[gen::tails.size() - 1] = make_tail(plyr, 1000);
+
+		
 
 		do_predict();
 
@@ -3048,7 +3076,8 @@ namespace render_debug			//To be removed once the neccesary render_tools functio
 		FPS2.setFont(debug_font);
 		FPS2.setPosition(coords);
 		FPS2.setCharacterSize(25);
-		FPS2.setString(text);
+		if (nonsense)
+			FPS2.setString(text);
 		window2.draw(FPS2);
 	}
 

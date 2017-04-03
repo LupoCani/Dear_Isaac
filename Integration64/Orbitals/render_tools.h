@@ -179,7 +179,18 @@ namespace graph{
 		int radius[9] = { ws::sizes[0]*zoom,ws::sizes[1] * zoom, ws::sizes[2] * zoom, ws::sizes[3] * zoom,ws::sizes[4] * zoom, ws::sizes[5] * zoom, ws::sizes[6] }; //radius for the planets 
 
 		//player.setScale(10*zoom, 10* zoom);
-		player.setPosition(Vector2f(coordinates[coordinates.size() ].x, coordinates[coordinates.size() ].x));
+
+		/*
+		player.setPosition(Vector2f(coordinates[coordinates.size()].x, coordinates[coordinates.size() ].x));
+
+		Note from gunnar:
+		Using .size() like that will *always* crash the program, since the largest vector index is always one smaller than the size, since c++ counts from 0.
+		To avoid this, use "coordinates[coordinates.size() - 1].x". Alternatively, just use .back(), as I did in the fix I implemented below.
+
+		Oh, and, I assume you meant to say .y in the second argument.
+		*/
+		player.setPosition(Vector2f(coordinates.back().x, coordinates.back().y));
+
 
 		for (int i = 0; i < 6; i++) {
 			planets[i].setOrigin(planets[i].getRadius() / 1, planets[i].getRadius() / 1);
@@ -240,10 +251,12 @@ namespace graph{
 		Sprite player; //pass to render and  collision function
 
 		//int radius[9] = { 220, 68, 116, 70, 60, 72, 110, 86, 150 }; //radius for the planets 
-		int radius[9] = { 20, 20, 20, 20, 20, 20, 20, 20, 20 }; //radius for the planets 
+		const int radius_size = 9;
+		int radius[radius_size] = { 20, 20, 20, 20, 20, 20, 20, 20, 20 }; //radius for the planets 
 
-		vector<Texture> tx_out(9);
-		textures = tx_out;
+		
+
+		textures = vector<Texture> (9);
 
 		if (!textures[0].loadFromFile("sun_texture.png")) {
 
@@ -277,25 +290,49 @@ namespace graph{
 			//handle exception
 		}
 
+		
+
 		player.setTexture(player_texture);
 		player.setOrigin(32, 32); //center the origin of the player (half the with, half the height)
 		float player_radius = player.getLocalBounds().width / 2.5; // radius of circle containing sprite; pass to collision function
 
+		
 
 		for (int i = 1; i < planets.size(); i++) { //set planet values
-			planets[i].setRadius(radius[i]);
-			planets[i].setTexture(&textures[i + 1]);
-			planets[i].setOrigin(radius[i], radius[i]);
+
+			if (i < radius_size)
+			{
+				planets[i].setRadius(radius[i]);
+				planets[i].setOrigin(radius[i], radius[i]);
+			}
+			else
+			{
+				planets[i].setRadius(10);
+				planets[i].setOrigin(5, 5);
+			}
+			if (i + 1 < textures.size())
+				planets[i].setTexture(&textures[i + 1]);
+			
+			/*
+			Note from gunnar:
+
+			Planets may be added and removed. In this case, the radius and texture lists may be too small, so I added checks to not crach the program in that case.
+			*/
 		}
+
+		
 
 		std::vector<vec_n> coordinates(10);
 
-		planets[0].setTexture(&textures[0]);
-		planets[0].setPosition(Vector2f(window2.getSize().x / 2, window2.getSize().y / 2));
-		coordinates[0].x = planets[0].getPosition().x;
-		coordinates[0].y = planets[0].getPosition().y;
-		planets[0].setRadius(radius[0]);
-		planets[0].setOrigin(radius[0], radius[0]);
+		if (planets.size())
+		{
+			planets[0].setTexture(&textures[0]);
+			planets[0].setPosition(Vector2f(window2.getSize().x / 2, window2.getSize().y / 2));
+			coordinates[0].x = planets[0].getPosition().x;
+			coordinates[0].y = planets[0].getPosition().y;
+			planets[0].setRadius(radius[0]);
+			planets[0].setOrigin(radius[0], radius[0]);
+		}
 	}
 	//*/
 
