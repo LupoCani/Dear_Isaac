@@ -561,3 +561,365 @@
 		mins_out.push_back(min_dists);
 		mins_out.push_back(min_times);
 	}
+
+	/*
+	void do_predict_new()
+	{
+		using gen::bodies;
+		using namespace pred;
+
+		bool invalid = pred::invalid;
+		pred::invalid = false;
+
+		body &plyr = *bodies.back();
+		int digits = 6;
+
+		if (shared::r_time < gen::last_predict + shared::cps * 0.1) return;
+		if (plyr.inverse) return;
+
+		get_expiry data(plyr, gen::bodies);
+
+		vector<body*> co_sats = data.list_out;
+
+		vector<vector<pred_p>> pairs = data.mins_out;
+
+		vector<int> cnv;	//Table for translating the prediction function's indexes to regular bodies indexes.
+
+		for (int i = 0; i < pairs.size(); i++)
+			for (int i2 = 0; i2 < bodies.size(); i2++)
+				if (bodies[i2] == co_sats[i])
+					cnv.push_back(i2);
+
+		bool expiring = data.will_expire;
+		int new_parent = data.new_parent;
+		double expire_time = data.expire_time;
+
+		if (expiring)
+			std::cout << "New parent: " << (*co_sats[new_parent]).name <<"\n";
+
+		for (int i = 0; i < pairs.size(); i++)
+		{
+			int ip = cnv[i];
+			body &pln = *bodies[ip];
+
+			if (expiring && i == new_parent) continue;
+
+			for (int i2 = 0; i2 < pairs[i].size(); i2++)
+			{
+				vector<double> dists(3);
+
+				double t_part = (pln.t_p / 1000);
+
+				for (int i3 = 0; i3 < dists.size(); i3++)
+				{
+					vec_n true_pos_plyr, true_pos_pln;
+
+					double tdiff = t_part * (i3 - 1);
+
+					do_orbit(plyr, pairs[i][i2].time + tdiff, digits, true_pos_plyr);
+					do_orbit(pln,  pairs[i][i2].time + tdiff, digits, true_pos_pln);
+
+					dists[i3] = vmag(true_pos_plyr - true_pos_pln);
+				}
+
+				if (dists[0] < dists[1] && dists[1] > dists[2])	//If the point is literally a local maximum, be rid of it.
+				{
+					pop_any(pairs[i], i2);
+					i2--;
+					continue;
+				}
+
+				int orbits_done = 0;
+				int budget = 100;
+
+				for (int i3 = 2; dists[1] > dists[2]; i3++)
+				{
+					vec_n true_pos_plyr, true_pos_pln;
+
+					double tdiff = t_part * i3;
+
+					do_orbit(plyr, pairs[i][i2].time + tdiff, digits, true_pos_plyr);
+					do_orbit(pln, pairs[i][i2].time + tdiff, digits, true_pos_pln);
+
+					double true_dist = vmag(true_pos_plyr - true_pos_pln);
+
+					pop_any(dists, 0);
+					dists.push_back(true_dist);
+
+					orbits_done++;
+
+					if (orbits_done > budget)
+					{
+						std::cout << "Budget break forwards! \n";
+						break;
+					}
+				}
+
+				for (int i3 = 2; dists[1] > dists[0]; i3++)
+				{
+					vec_n true_pos_plyr, true_pos_pln;
+
+					double tdiff = t_part * -i3;
+
+					do_orbit(plyr, pairs[i][i2].time + tdiff, digits, true_pos_plyr);
+					do_orbit(pln,  pairs[i][i2].time + tdiff, digits, true_pos_pln );
+
+					double true_dist = vmag(true_pos_plyr - true_pos_pln);
+
+					push_any(dists, 0, true_dist);
+					dists.pop_back();
+
+					orbits_done++;
+
+					if (orbits_done > budget)
+					{
+						std::cout << "Budget break forwards! \n";
+						break;
+					}
+				}
+
+				pairs[i][i2].dist = dists[1];
+
+				if (dists[0] < dists[1] || dists[1] > dists[2])	//If the point is still not a local minimum, be rid of it.
+				{
+					pop_any(pairs[i], i2);
+					i2--;
+					continue;
+				}
+			}
+		}
+
+		plyr.safe = plyr.t_l;
+
+
+		vector<bool> complete;
+		int cur_id = -1;
+
+		for (int i = 0; i < bodies.size(); i++)
+			complete.push_back(1);
+
+		for (int i = 0; i < pairs.size(); i++)
+		{
+			complete[cnv[i]] = pairs[i].size();
+		}
+		
+		if (expiring)
+		{
+			plyr.entering = true;
+
+			
+			//vec_n true_pos_plyr, true_pos_pln;
+			body &pln = *bodies[cnv[new_parent]];
+
+			//do_orbit(plyr, expire_time, 10, true_pos_plyr);
+			//do_orbit(pln,  expire_time, 10, true_pos_pln);
+
+			//vmag(true_pos_plyr - true_pos_pln);
+			
+			
+			plyr.V_ent = data.V_exp;
+
+			std::cout << plyr.expire();
+
+			pred::next_parent = cnv[data.new_parent];
+
+			if (plyr.exiting ? expire_time <= plyr.exit : expire_time <= plyr.t_l + 2 * plyr.t_p)
+				plyr.entry = expire_time;
+		}
+		else if (complete[pred::next_parent])
+		{
+			reset_expiry(plyr);
+			set_expiry_regular(plyr);
+			plyr.entering = false;
+
+			std::cout << "Not expiring!\n";
+			for (int i = 0; i < cnv.size(); i++)
+			{
+				if (cnv[i] == 4 && pairs[i].size())
+					std::cout << pairs[i][0].dist << "\n";
+			}
+		}
+
+		for (int i = 0; i < co_sats.size(); i++)
+		{
+			if (co_sats[i] == gen::bodies[game::target])
+			{
+
+				if (!pairs[i].size()) break;
+
+				if (pairs[i][0].dist == DBL_MAX) break;
+
+				game::min_dist = pairs[i][0].dist;
+				game::min_time = pairs[i][0].time;
+
+				break;
+			}
+		}
+		gen::last_predict = shared::r_time;
+	}
+
+	*/
+
+	/*
+	void do_predict_safe()
+	{
+		using gen::bodies;
+		using namespace pred;
+
+		body &plyr = *bodies.back();
+
+		if (shared::r_time < gen::last_predict + shared::cps * 0.1) return;
+		if (plyr.inverse) return;
+
+		get_expiry data(plyr, gen::bodies);
+
+		vector<body*> co_sats = data.list_out;
+
+		vector<vector<pred_p>> pairs = data.mins_out;
+
+		vector<int> cnv;	//Table for translating the prediction function's indexes to regular bodies indexes.
+
+		for (int i = 0; i < pairs.size(); i++)
+			for (int i2 = 0; i2 < bodies.size(); i2++)
+				if (bodies[i2] == co_sats[i])
+					cnv.push_back(i2);
+
+		bool expiring = data.will_expire;
+		int new_parent = data.new_parent;
+		double expire_time = data.expire_time;
+
+		if (expiring)
+			std::cout << "New parent: " << (*co_sats[new_parent]).name << "\n";
+
+		for (int i = 0; i < pairs.size(); i++)
+		{
+			int ip = cnv[i];
+			body &pln = *bodies[ip];
+
+			if (expiring && i == new_parent) continue;
+
+			for (int i2 = 0; i2 < pairs[i].size(); i2++)
+			{
+				vector<double> dists(3);
+
+				double t_part = (pln.t_p / 1000);
+
+				for (int i3 = 0; i3 < dists.size(); i3++)
+				{
+					vec_n true_pos_plyr, true_pos_pln;
+
+					double tdiff = t_part * (i3 - 1);
+
+					do_orbit(plyr, pairs[i][i2].time + tdiff, 10, true_pos_plyr);
+					do_orbit(pln, pairs[i][i2].time + tdiff, 10, true_pos_pln);
+
+					dists[i3] = vmag(true_pos_plyr - true_pos_pln);
+				}
+
+				if (dists[1] > dists[0] && dists[1] > dists[2])	//If the point is literally a local maximum, be rid of it.
+				{
+					pop_any(pairs[i], i2);
+					i2--;
+					continue;
+				}
+
+				int orbits_done = 0;
+				int budget = 100;
+
+				for (int i3 = 2; dists[1] > dists[2]; i3++)
+				{
+					vec_n true_pos_plyr, true_pos_pln;
+
+					double tdiff = t_part * i3;
+
+					do_orbit(plyr, pairs[i][i2].time + tdiff, 15, true_pos_plyr);
+					do_orbit(pln, pairs[i][i2].time + tdiff, 15, true_pos_pln);
+
+					double true_dist = vmag(true_pos_plyr - true_pos_pln);
+
+					pop_any(dists, 0);
+					dists.push_back(true_dist);
+
+					orbits_done++;
+
+					if (orbits_done > budget)
+						break;
+				}
+
+				for (int i3 = 2; dists[1] > dists[0]; i3++)
+				{
+					vec_n true_pos_plyr, true_pos_pln;
+
+					double tdiff = t_part * -i3;
+
+					do_orbit(plyr, pairs[i][i2].time + tdiff, 15, true_pos_plyr);
+					do_orbit(pln, pairs[i][i2].time + tdiff, 15, true_pos_pln);
+
+					double true_dist = vmag(true_pos_plyr - true_pos_pln);
+
+					push_any(dists, 0, true_dist);
+					dists.pop_back();
+
+					orbits_done++;
+
+					if (orbits_done > budget)
+						break;
+				}
+
+				pairs[i][i2].dist = dists[1];
+
+				if (dists[1] > dists[0] || dists[1] > dists[2])	//If the point is still not a local minimum, be rid of it.
+				{
+					pop_any(pairs[i], i2);
+					i2--;
+				}
+
+			}
+		}
+
+		plyr.safe = plyr.t_l;
+
+		if (expiring)
+		{
+			plyr.entry = true;
+
+			
+			//vec_n true_pos_plyr, true_pos_pln;
+			//body &pln = *bodies[cnv[new_parent]];
+
+			//do_orbit(plyr, expire_time, 10, true_pos_plyr);
+			//do_orbit(pln,  expire_time, 10, true_pos_pln);
+
+			//vmag(true_pos_plyr - true_pos_pln);
+
+			plyr.V_ent = data.V_exp;
+
+			std::cout << pairs[new_parent].size() << "\n";
+
+			if (plyr.shape ? expire_time <= plyr.expire() : expire_time <= plyr.t_l + 2 * plyr.t_p)
+				plyr.entry = expire_time;
+		}
+		else
+		{
+			plyr.entering = false;
+			std::cout << "Not expiring!\n";
+		}
+
+		for (int i = 0; i < co_sats.size(); i++)
+		{
+			if (co_sats[i] == gen::bodies[game::target])
+			{
+
+				if (!pairs[i].size()) break;
+
+				if (pairs[i][0].dist == DBL_MAX) break;
+
+				game::min_dist = pairs[i][0].dist;
+				game::min_time = pairs[i][0].time;
+
+				break;
+			}
+		}
+		gen::last_predict = shared::r_time;
+	}
+	*/
