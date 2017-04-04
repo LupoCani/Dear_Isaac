@@ -6,7 +6,6 @@
 #include <vector>
 #include <string>
 #include <windows.h>
-#include <thread>
 #define skip if (false)
 #define ORBITAL_TOOLS_LOADED true
 #define RENDER_DEBUG_INSTALLED true
@@ -148,7 +147,6 @@ namespace phys					//Declare various classes and functions
 	vec_n rot_vec(vec_n in, double rot);
 	double to_rad(double ang, double scale);
 	using std::atan2;
-	struct get_expiry;
 
 	struct vec_r
 	{
@@ -305,7 +303,6 @@ namespace shared
 namespace phys
 {
 	using std::vector;
-	using std::thread;
 
 	struct body
 	{
@@ -450,11 +447,6 @@ namespace phys
 		bool invalid = false;
 
 		int next_parent;	//The id of the predicted parent
-
-		vector<get_expiry> data_queue;
-		double thread_begin = 0;
-		bool thread_done = false;
-		bool thread_first = true;
 	}
 
 	template<class vec_cont>
@@ -496,13 +488,6 @@ namespace phys
 	double clamp(double in, double max, double min)
 	{
 		return in > max ? max : (in < min ? min : in);
-	}
-
-	signed char sign(double in)
-	{
-		if (in)
-			return abs(in) / in;
-		return 1;
 	}
 
 	double ang_scale(double scale, double ang, double scope)
@@ -610,10 +595,9 @@ namespace phys
 		return M_2PI * ang / scale;
 	}
 
-	double switch_co(double in) //Changes cos x to sin x and vice versa.
+	double switch_co(double in) //Changes cos x to sin x and vice versa. No guarantees as to the sign of the output.
 	{
-		in = ang_wrap(in, 2);
-		return sign(in) * sqrt(1 - pow(in, 2));
+		return sqrt(1 - pow(in, 2));
 	}
 	//End generic vector math functions
 
@@ -679,12 +663,15 @@ namespace phys
 	{
 		if (ecc > 1) return get_M_H(tV, ecc);
 
-		tV = ang_wrap(tV, 2);
+		tV = ang_wrap(tV);
 
 		double cosE = get_cosE(tV, ecc);
 		double sinE = switch_co(cosE);
 
-		return ang_wrap( sign(tV) * acos(cosE) - ecc * sinE);
+		if (tV < M_PI)
+			return acos(cosE) - ecc * sinE;
+		else
+			return M_2PI - acos(cosE) - ecc * -sinE;
 	}
 
 	double get_M_E(double E, double ecc)
@@ -868,6 +855,7 @@ namespace phys
 
 			mid = (ceil + floor) / 2;
 		}
+
 		return get_V(mid, sat.ecc);
 	}
 
@@ -1362,16 +1350,6 @@ namespace phys
 
 			mins_out = mins;
 		}
-
-		get_expiry()
-		{
-			int i = 0;
-		}
-	};
-
-	struct get_expiry_safe
-	{
-
 	};
 
 	struct get_expiry_slow
@@ -1833,30 +1811,7 @@ namespace phys
 
 	//End orbital algorithms
 
-	//Begin game algorithms
-
-	void expiry_wrapper(body &plyr, vector<body*> list)
-	{
-		get_expiry data(plyr, list);
-
-		pred::data_queue.push_back(data);
-		pred::thread_done = true;
-	}
-
-	double damage_func(double dist, double bound, double mult)
-	{
-		if (dist >= bound)
-			return 0;
-
-		double part = dist / bound;
-		double scale = 100;
-		double val = part * scale;
-		double out;
-
-		out = mult / sqr(val);
-
-		return out;
-	}
+	//Begin graph algorithms
 
 	vector<vec_n> make_tail(body sat, int subdiv, bool debug = false)
 	{
@@ -1973,37 +1928,7 @@ namespace phys
 		delete pln_fut.self;
 	}
 
-	bool compare_goal(vec_n goal_pos, double goal_size, int par_id, vector<body*> list)
-	{
-		goal_pos += (*list[par_id]).pos;
-		body plyr = *list.back();
-
-		double goal_dist = vmag(goal_pos - plyr.pos);
-
-		if (goal_dist < goal_size)
-			return true;
-
-		return false;
-	}
-
-	double health_diff(body &plyr, double intensity, vector<body*> kesslers, double d_time)
-	{
-		double diff = 0;
-
-		for (int i = 0; i < kesslers.size(); i++)
-		{
-			double dist = vmag(plyr.pos - (*kesslers[i]).pos);
-
-			double damage = damage_func(dist, 1000, 1);
-
-			diff += damage * d_time;
-		}
-		return diff;
-	}
-
-	//End game algorithms
-
-	//Begin engine parts
+	//End graph algorithms
 
 	void generate_goal(double radius, int par_id = 0)
 	{
@@ -2016,6 +1941,20 @@ namespace phys
 		game::goal_coords = goal_coords;
 		game::goal_parent = par_id;
 		game::goal_size = goal_coords.mag / 10;
+	}
+
+	bool compare_goal()
+	{
+		vec_n goal_pos = game::goal_coords + (*gen::bodies[game::goal_parent]).pos;
+
+		body &plyr = *gen::bodies.back();
+
+		double goal_dist = vmag(goal_pos - plyr.pos);
+
+		if (goal_dist < game::goal_size)
+			return true;
+
+		return false;
 	}
 
 	void add_kesslers()
@@ -2233,8 +2172,6 @@ namespace phys
 
 		accel.mag = thrust_actual / (rock::mass + rock::fuel);
 		accel.ang = rock::rot;
-
-		game::health -= health_diff(*gen::bodies.back(), 1, gen::kesses, gen::w_time_diff);
 
 		using namespace shared::world_state;
 		focus = 6;
@@ -2622,32 +2559,10 @@ namespace phys
 
 		body &plyr = *bodies.back();
 
-		//if (shared::r_time < gen::last_predict + shared::cps * 0.1) return;
+		if (shared::r_time < gen::last_predict + shared::cps * 0.1) return;
 		if (plyr.inverse) return;
 
-		//get_expiry data(plyr, gen::bodies);
-		get_expiry data;
-
-		if (pred::thread_first)
-		{
-			pred::thread_first = false;
-			pred::thread_begin = shared::r_time;
-			thread queue_thread(expiry_wrapper, plyr, gen::bodies);
-			queue_thread.detach();
-		}
-		
-		if (pred::thread_done)
-		{
-			data = pred::data_queue.front();
-			pred::data_queue.clear();
-			pred::thread_done = false;
-
-			pred::thread_begin = shared::r_time;
-			thread queue_thread(expiry_wrapper, plyr, gen::bodies);
-			queue_thread.detach();
-		}
-		else
-			return;
+		get_expiry data(plyr, gen::bodies);
 
 		vector<body*> co_sats = data.list_out;
 
@@ -2803,7 +2718,7 @@ namespace phys
 
 	void run_goal()
 	{
-		if (compare_goal(game::goal_coords, game::goal_size, game::goal_parent, gen::bodies) || game::goal_count < 0)
+		if (compare_goal() || game::goal_count < 0)
 		{
 			int par_id = rand() % gen::bodies.size();
 			double radius = (*gen::bodies[par_id]).SOI * 0.8;
@@ -2819,6 +2734,7 @@ namespace phys
 					if (r_max > radius)
 						radius = r_max;
 				}
+
 				radius *= 0.8;
 			}
 
@@ -2844,16 +2760,18 @@ namespace phys
 			gen::w_time_diff = diff_time;
 		else
 			gen::w_time_diff = 0.01;
+		gen::w_time += gen::w_time_diff;
 
-		if (input::flush_back::play)
-		{
-			shared::game_state = 1;
-			gen::w_time += gen::w_time_diff;
-		}
-		else
+		if (!input::flush_back::play)
 			return;
+		else
+			shared::game_state = 1;
+
+		
 
 		do_game_tick();
+
+		
 
 		do_phys_tick(gen::bodies, gen::w_time, rock::eng_mode, rock::eng_thrust);
 		do_kess_tick(gen::kesses, gen::bodies, gen::w_time);
@@ -3258,6 +3176,7 @@ namespace render_debug			//To be removed once the neccesary render_tools functio
 			return;
 		}
 
+
 		namespace in = shared::world_state;
 
 		window_is_clear = true;
@@ -3274,7 +3193,6 @@ namespace render_debug			//To be removed once the neccesary render_tools functio
 		texts.push_back("PrTime: " + std::to_string(phys::game::min_time - phys::gen::w_time));
 		texts.push_back("AcDist: " + std::to_string(phys::game::cur_dist));
 		texts.push_back("Expire: " + std::to_string((*phys::gen::bodies.back()).expire()));
-		texts.push_back("Health: " + std::to_string(phys::game::health));
 
 		render_texts(texts);
 		render_kesslers(shared::world_state::kesses, in::bodies[in::focus], in::zoom);
