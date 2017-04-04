@@ -1,0 +1,563 @@
+/*struct get_expiry
+	{
+		//With this many return variables, it's easier to make it a single-function class
+		vector<body*> list_out;
+		vector<vector<pred_p>> mins_out;
+		bool will_expire;
+		double V_exp;
+		double expire_time;
+		int new_parent;
+
+		get_expiry(body &sat, vector<body*> list)
+			//This one's gonna be tough.
+		{
+			vector<body*> list_in = list;
+			vector<double> starts;			//Current V-values for bodies
+			vector<double> ends;			//V-values for bodies at the end of the relevant time span
+			vector<double> diffs;
+			list.clear();
+			int precision;
+			int precision_base = 1000;
+
+			
+			//We'll try to find if there's any body, orbiting the same parent as the player, into whose SOI the player will enter, and when.
+			//We could just check a lot of moments in time with do_orbit(), but that function is expensive as hell.
+
+			//Instead, we use the inverse process. We check an interval of values of V for the player
+
+			//Cont' TBA
+			
+
+			double start, end, diff, start_t, end_t;
+
+			start_t = sat.safe;
+			end_t = sat.expiry();
+
+			double fidelty = 20;
+			int t_fid = 15;
+
+			vec_n sat_pos, sat_pos_old;
+			double sat_tim, sat_tim_old;
+			{
+				vec_n cur_pos, end_pos;
+
+				do_orbit(sat, start_t, fidelty, cur_pos);
+				do_orbit(sat, end_t, fidelty, end_pos);
+
+				start = get_V_phys(sat, cur_pos);
+				end = get_V_phys(sat, end_pos);
+
+				start = ang_wrap(start);
+
+				double laps = 0;
+				if (sat.ecc < 0.9999999999)
+					laps = floor((end_t - start_t) / sat.t_p) * sat.t_p;
+
+				int ilog = 0;
+				while (end <= start + laps)
+				{
+					end += M_2PI;
+
+					ilog++;
+				}
+
+				//end += M_2PI;
+
+				diff = end - start;
+				sat_pos = cur_pos;
+				sat_tim = start_t;
+			}
+
+
+			for (int i = 0; i < list_in.size(); i++)
+			{
+				body &pln = *list_in[i];
+				if (pln.parent == sat.parent && !(pln.isPlayer || pln.isSun))
+				{
+					vec_n cur_pos, end_pos;
+					do_orbit(pln, start_t, fidelty, cur_pos);
+					do_orbit(pln, end_t, fidelty, end_pos);
+
+					double pln_start = get_V_phys(pln, cur_pos);
+					double pln_end = get_V_phys(pln, end_pos);
+
+					pln_start = ang_wrap(pln_start);
+
+					double laps = floor((end_t - start_t) / pln.t_p);
+					while (pln_end < pln_start + laps * M_2PI)
+						pln_end += M_2PI;
+
+					starts.push_back(pln_start);			//Get the current true anomaly of the body. 
+					ends.push_back(pln_end);
+
+					list.push_back(pln.self);
+					diffs.push_back(pln_end - pln_start);
+				}
+			}
+
+			vector<vector<pred_p>> mins(list.size());
+
+			vector<double> last_times(list.size(), start_t - pow(10.0, -10.0));
+			vector<int>	its(list.size(), 0);
+			vector<short> dlts(list.size(), 1);
+			vector<unsigned char> past_peak(list.size(), false);
+
+			pred_p basic_queue_point(0, 0);
+			vector<pred_p> basic_queue(10, basic_queue_point);
+
+			vector<vector<pred_p>> logs_td(list.size(), basic_queue);
+			basic_queue.clear();
+			vector<vector<pred_p>> pred_lists(list.size(), basic_queue);
+
+			int end_body = -1;
+			double end_time = DBL_MAX;
+			double end_V = NAN;
+			bool ending = false;
+
+			if (list.size())
+			{
+				precision = precision_base * ((end)-start) / M_2PI;
+				if (precision < precision_base / 20)
+					precision = precision_base / 20;
+
+
+				for (int i2 = 0; i2 < precision; i2++)
+				{
+					double Vs = start + ang_scale(diff, i2, precision);
+
+					sat_pos_old = sat_pos;
+					sat_tim_old = sat_tim;
+
+					sat_pos = get_pos_ang(Vs, sat);
+					sat_tim = M_to_time(sat, get_M(Vs, sat.ecc), sat_tim_old, t_fid);
+
+					vec_n sat_pos_diff = sat_pos - sat_pos_old;
+					double sat_tim_diff = sat_tim - sat_tim_old;
+
+
+					for (int i = 0; i < list.size(); i++)
+					{
+						body &pln = *list[i];
+						double Vp = starts[i] + ang_scale(diffs[i], its[i], precision);
+						double pln_tim = M_to_time(pln, get_M(Vp, pln.ecc), last_times[i], t_fid);
+						last_times[i] = pln_tim;
+						vec_n pln_pos = get_pos_ang(Vp, pln);
+
+						while (pln_tim < sat_tim_old)
+						{
+							its[i]++;
+							Vp = starts[i] + ang_scale(diffs[i], its[i], precision);
+							pln_tim = M_to_time(pln, get_M(Vp, pln.ecc), last_times[i], t_fid);
+							last_times[i] = pln_tim;
+						}
+
+						while (pln_tim < sat_tim)
+						{
+							double diff_part = (pln_tim - sat_tim_old) / sat_tim_diff;	//What percentage of the current time interval has passed in the moment we're observing.
+							vec_n sat_pos_est = sat_pos_old + sat_pos_diff * diff_part;
+							vec_n pln_pos = get_pos_ang(Vp, pln);
+							double dist_est = vmag(sat_pos_est - pln_pos);
+							short dlt_new;
+
+							pred_p pln_td(dist_est, pln_tim);
+
+							logs_td[i].push_back(pln_td);
+							logs_td[i].erase(logs_td[i].begin());
+
+							if (logs_td[i][0].dist > logs_td[i].back().dist)
+								dlt_new = -1;
+							else
+								dlt_new = 1;
+
+							if (dlts[i] != dlt_new)
+							{
+								pred_p queue_ext = logs_td[i][0];
+								for (int i3 = 0; i3 < logs_td[i].size(); i3++)
+									if (queue_ext.dist < logs_td[i][i3].dist == dlt_new > 0)
+										queue_ext = logs_td[i][i3];
+
+								queue_ext.dlt = dlt_new;
+
+								pred_lists[i].push_back(queue_ext);
+
+								dlts[i] = dlt_new;
+							}
+							if (pln_td.dist < pln.SOI && (pln_tim < end_time || !ending))
+							{
+								ending = true;
+								end_body = i;
+								end_time = pln_tim;
+								end_V = Vs;
+								break;
+							}
+
+							if (pln_td.dist < logs_td[i][0].dist)
+								past_peak[i] = true;
+							
+							its[i]++;
+							Vp = starts[i] + ang_scale(diffs[i], its[i], precision);
+							pln_tim = M_to_time(pln, get_M(Vp, pln.ecc), last_times[i], t_fid);
+							last_times[i] = pln_tim;
+						}
+					}
+				}
+			}
+
+			for (int i = 0; i < list.size(); i++)
+				for (int i2 = 0; i2 < pred_lists[i].size(); i2++)
+					if (pred_lists[i][i2].dlt > 0)
+						mins[i].push_back(pred_lists[i][i2]);
+				
+			list_out = list;
+			will_expire = ending;
+			new_parent = end_body;
+			expire_time = end_time;
+			V_exp = end_V;
+
+			mins_out = mins;
+		}
+	};
+	*/
+	
+	struct get_expiry_slow
+	{
+		//With this many return variables, it's easier to make it a single-function class
+		vector<body*> list_out;
+		vector<vector<pred_p>> mins_out;
+		bool will_expire;
+		double V_exp;
+		double expire_time;
+		int new_parent;
+
+		get_expiry_slow(body &sat, vector<body*> list)
+			//This one's gonna be tough.
+		{
+			vector<body*> list_in = list;
+			vector<double> starts;			//Current V-values for bodies
+			vector<double> ends;			//V-values for bodies at the end of the relevant time span
+			vector<double> diffs;
+			list.clear();
+			int precision;
+			int precision_base = 1000;
+
+			/*
+			We'll try to find if there's any body, orbiting the same parent as the player, into whose SOI the player will enter, and when.
+			We could just check a lot of moments in time with do_orbit(), but that function is expensive as hell.
+
+			Instead, we use the inverse process. We check an interval of values of V for the player
+
+			Cont' TBA
+			*/
+
+			double start, end, diff, start_t, end_t;
+
+			start_t = sat.safe;
+			end_t = sat.expiry();
+
+			double fidelty = 20;
+			int t_fid = 15;
+
+			vec_n sat_pos, sat_pos_old;
+			double sat_tim, sat_tim_old;
+			{
+				vec_n cur_pos, end_pos;
+
+				do_orbit(sat, start_t, fidelty, cur_pos);
+				do_orbit(sat, end_t, fidelty, end_pos);
+
+				start = get_V_phys(sat, cur_pos);
+				end = get_V_phys(sat, end_pos);
+
+				start = ang_wrap(start);
+
+				double laps = 0;
+				if (sat.ecc < 0.9999999999)
+					laps = floor((end_t - start_t) / sat.t_p) * sat.t_p;
+
+				int ilog = 0;
+				while (end <= start + laps)
+				{
+					end += M_2PI;
+
+					ilog++;
+				}
+
+				diff = end - start;
+				sat_pos = cur_pos;
+				sat_tim = start_t;
+			}
+
+
+			for (int i = 0; i < list_in.size(); i++)
+			{
+				body &pln = *list_in[i];
+				if (pln.parent == sat.parent && !(pln.isPlayer || pln.isSun))
+				{
+					vec_n cur_pos, end_pos;
+					do_orbit(pln, start_t, fidelty, cur_pos);
+					do_orbit(pln, end_t, fidelty, end_pos);
+
+					double pln_start = get_V_phys(pln, cur_pos);
+					double pln_end = get_V_phys(pln, end_pos);
+
+					pln_start = ang_wrap(pln_start);
+
+					double laps = floor((end_t - start_t) / pln.t_p);
+					while (pln_end < pln_start + laps * M_2PI)
+						pln_end += M_2PI;
+
+					starts.push_back(pln_start);			//Get the current true anomaly of the body. 
+					ends.push_back(pln_end);
+
+					list.push_back(pln.self);
+					diffs.push_back(pln_end - pln_start);
+				}
+			}
+
+			vector<vector<pred_p>> mins(list.size());
+
+			vector<double> last_times(list.size(), start_t - pow(10.0, -10.0));
+			vector<int>	its(list.size(), 0);
+			vector<short> dlts(list.size(), 1);
+			vector<unsigned char> past_peak(list.size(), false);
+
+			pred_p basic_queue_point(0, 0);
+			vector<pred_p> basic_queue(10, basic_queue_point);
+
+			vector<vector<pred_p>> logs_td(list.size(), basic_queue);
+			basic_queue.clear();
+			vector<vector<pred_p>> pred_lists(list.size(), basic_queue);
+
+			int end_body = -1;
+			double end_time = DBL_MAX;
+			double end_V = NAN;
+			bool ending = false;
+
+			if (list.size())
+			{
+				precision = precision_base * ((end)-start) / M_2PI;
+				if (precision < precision_base / 20)
+					precision = precision_base / 20;
+
+
+				for (int i2 = 0; i2 < precision; i2++)
+				{
+					double Vs = start + ang_scale(diff, i2, precision);
+
+					sat_pos_old = sat_pos;
+					sat_tim_old = sat_tim;
+
+					sat_pos = get_pos_ang(Vs, sat);
+					sat_tim = M_to_time(sat, get_M(Vs, sat.ecc), sat_tim_old, t_fid);
+
+					vec_n sat_pos_diff = sat_pos - sat_pos_old;
+					double sat_tim_diff = sat_tim - sat_tim_old;
+
+
+					for (int i = 0; i < list.size(); i++)
+					{
+						body &pln = *list[i];
+						double Vp = starts[i] + ang_scale(diffs[i], its[i], precision);
+						double pln_tim = M_to_time(pln, get_M(Vp, pln.ecc), last_times[i], t_fid);
+						last_times[i] = pln_tim;
+						vec_n pln_pos = get_pos_ang(Vp, pln);
+
+
+						{
+							double diff_part = (pln_tim - sat_tim_old) / sat_tim_diff;	//What percentage of the current time interval has passed in the moment we're observing.
+							vec_n sat_pos_est = sat_pos_old + sat_pos_diff * diff_part;
+							vec_n pln_pos = get_pos_ang(Vp, pln);
+							double dist_est = vmag(sat_pos_est - pln_pos);
+							short dlt_new;
+
+							pred_p pln_td(dist_est, pln_tim);
+
+							logs_td[i].push_back(pln_td);
+							logs_td[i].erase(logs_td[i].begin());
+
+							if (logs_td[i][0].dist > logs_td[i].back().dist)
+								dlt_new = -1;
+							else
+								dlt_new = 1;
+
+							if (dlts[i] != dlt_new)
+							{
+								pred_p queue_ext = logs_td[i][0];
+								for (int i3 = 0; i3 < logs_td[i].size(); i3++)
+									if (queue_ext.dist < logs_td[i][i3].dist == dlt_new > 0)
+										queue_ext = logs_td[i][i3];
+
+								queue_ext.dlt = dlt_new;
+
+								pred_lists[i].push_back(queue_ext);
+
+								dlts[i] = dlt_new;
+							}
+							if (pln_td.dist < pln.SOI && (pln_tim < end_time || !ending))
+							{
+								ending = true;
+								end_body = i;
+								end_time = pln_tim;
+								end_V = Vs;
+								break;
+							}
+
+							if (pln_td.dist < logs_td[i][0].dist)
+								past_peak[i] = true;
+
+							its[i]++;
+							Vp = starts[i] + ang_scale(diffs[i], its[i], precision);
+							pln_tim = M_to_time(pln, get_M(Vp, pln.ecc), last_times[i], t_fid);
+							last_times[i] = pln_tim;
+						}
+					}
+				}
+			}
+
+			for (int i = 0; i < list.size(); i++)
+				for (int i2 = 0; i2 < pred_lists[i].size(); i2++)
+					if (pred_lists[i][i2].dlt > 0)
+						mins[i].push_back(pred_lists[i][i2]);
+
+			list_out = list;
+			will_expire = ending;
+			new_parent = end_body;
+			expire_time = end_time;
+			V_exp = end_V;
+
+			mins_out = mins;
+		}
+	};
+
+	void get_expiry_phys(body &sat, vector<body*> list, vector<body*> &list_out, vector<vector<double>> &mins_out, bool &will_expire, int &new_parent)
+	{
+		vector<body*> list_in = list;
+		list.clear();
+		int precision;
+		int precision_base = 1000;
+
+		vector<double> min_dists;
+		vector<double> min_times;
+
+		int fidelty = 10;
+		double start_t = sat.safe;
+		double end_t = sat.expiry();
+
+		for (int i = 0; i < list_in.size(); i++)
+		{
+			body &pln = *list_in[i];
+			if (pln.parent == sat.parent && !(pln.isPlayer || pln.isSun))
+			{
+				vec_n cur_pos, end_pos;
+				do_orbit(pln, start_t, fidelty, cur_pos);
+				do_orbit(pln, end_t, fidelty, end_pos);
+
+				double pln_start = get_V_phys(pln, cur_pos);
+				double pln_end = get_V_phys(pln, end_pos);
+
+				pln_start = ang_wrap(pln_start);
+
+				double laps = floor((end_t - start_t) / pln.t_p);
+				while (pln_end < pln_start + laps * M_2PI)
+					pln_end += M_2PI;
+
+
+				list.push_back(pln.self);
+
+				min_times.push_back(DBL_MAX);
+				min_dists.push_back(DBL_MAX);
+			}
+		}
+
+
+		vector<body*> list_original = list;
+		body parent = *(*list[0]).parent;
+		parent.self = &parent;
+		body sat_cp = sat;
+
+
+		int end_body = -1;
+		double end_time = DBL_MAX;
+		bool ending = false;
+
+
+		if (list.size())
+		{
+			//precision = precision_base * ang_wrap(end - start) / M_2PI;
+			precision = precision_base;
+			if (precision < precision_base / 20)
+				precision = precision_base / 20;
+
+			list.push_back(&sat_cp);
+
+			for (int i = 0; i < list.size(); i++)
+			{
+				body new_bod = *list[i];
+				list[i] = &new_bod;
+				new_bod.parent = &parent;
+				new_bod.self = list[i];
+
+				new_bod.vel -= parent.vel;
+				new_bod.pos -= parent.pos;
+				new_bod.t_l = 0;
+			}
+			parent.pos = 0;
+			parent.vel = 0;
+
+			vec_n sat_pos_old;
+			double sat_tim_old = 0;
+			double span = sat.expiry() - sat.safe;
+
+
+			for (int i2 = 0; i2 < precision; i2++)
+			{
+
+				double s_time = span * ((i2 + 1) / precision);
+
+				for (int i = 0; i < list.size(); i++)
+				{
+					body &pln = *list[i];
+
+					vec_n new_pos, new_vel;
+					do_orbit_phys(pln, sat.safe, vec_n(), new_pos, new_vel);
+
+					pln.pos = new_pos;
+					pln.vel = new_vel;
+
+				}
+				for (int i = 0; i < list.size()-1; i++)
+				{
+					body &pln = *list[i];
+					double dist = vmag(sat_cp.pos - pln.pos);
+
+					if (dist < min_dists[i])
+					{
+						min_dists[i] = dist;
+						min_times[i] = s_time;
+
+						if (dist < pln.SOI && (s_time < end_time || !ending))
+						{
+							ending = true;
+							end_body = i;
+							end_time = s_time;
+						}
+					}
+					else if (dist < pln.SOI)
+					{
+						if (end_body == i)
+							break;
+					}
+				}
+			}
+		}
+
+
+		list.pop_back();
+
+		list_out = list_original;
+		will_expire = ending;
+		new_parent = end_body;
+
+		mins_out.push_back(min_dists);
+		mins_out.push_back(min_times);
+	}
