@@ -561,7 +561,9 @@ namespace graph{
 	}
 
 
-	bool selected_start[3] = { 0, 0, 0 };
+	vector<bool> selected_start(3);
+	bool selected_first = true;
+	RectangleShape underline_start;
 	int start_menue() {
 		using shared::window2;
 		Text title;
@@ -585,10 +587,14 @@ namespace graph{
 			option_header[i].setPosition(Vector2f(window2.getSize().x / 2 - option_header[i].getLocalBounds().width*0.5, header_pos_y[i]));
 		}
 
+		//(Vector2f(option_header[0].getLocalBounds().width * 1.5, 2))
 
-		RectangleShape underline(Vector2f(option_header[0].getLocalBounds().width * 1.5, 2));
-		underline.setFillColor(white);
-		underline.setPosition(Vector2f(window2.getSize().x / 2 - underline.getSize().x*0.5, option_header[0].getPosition().y + option_header[0].getLocalBounds().height*1.3));
+		underline_start.setFillColor(white);
+		if (selected_first)
+		{
+			underline_start.setPosition(Vector2f(window2.getSize().x / 2 - underline_start.getSize().x*0.5, option_header[0].getPosition().y + option_header[0].getLocalBounds().height*1.3));
+			underline_start.setSize(Vector2f(option_header[0].getLocalBounds().width * 1.5, 2));
+		}
 
 		bool play = 0;
 
@@ -598,10 +604,10 @@ namespace graph{
 
 			for (int i = 0; i <= 2; i++) {
 				float activ_header_poss = option_header[i].getPosition().y + option_header[i].getLocalBounds().height*1.3;
-				if (underline.getPosition().y == activ_header_poss) {
+				if (underline_start.getPosition().y == activ_header_poss) {
 					selected_start[i] = 1;
 				}
-				if (underline.getPosition().y != activ_header_poss) {
+				if (underline_start.getPosition().y != activ_header_poss) {
 					selected_start[i] = 0;
 
 				}
@@ -610,7 +616,7 @@ namespace graph{
 			{
 
 				//if ((input.type == Event::KeyPressed) && (input.key.code == Keyboard::Down)) 
-				if (input::keyboard.isPressed(input::key_state::keys::Down))
+				if (input::keyboard.wasPressed(input::key_state::keys::Down))
 				{
 					for (int i = 0; i <= 2; i++)
 					{
@@ -618,14 +624,14 @@ namespace graph{
 						{
 							if (i <= 1)
 							{
-								underline.setSize(Vector2f(option_header[i + 1].getLocalBounds().width * 1.5, 2));
-								underline.setPosition(Vector2f(window2.getSize().x / 2 - underline.getSize().x*0.5, option_header[i + 1].getPosition().y + option_header[i + 1].getLocalBounds().height*1.3));
+								underline_start.setSize(Vector2f(option_header[i + 1].getLocalBounds().width * 1.5, 2));
+								underline_start.setPosition(Vector2f(window2.getSize().x / 2 - underline_start.getSize().x*0.5, option_header[i + 1].getPosition().y + option_header[i + 1].getLocalBounds().height*1.3));
 								break;
 							}
 							else 
 							{
-								underline.setSize(Vector2f(option_header[0].getLocalBounds().width * 1.5, 2));
-								underline.setPosition(Vector2f(window2.getSize().x / 2 - underline.getSize().x*0.5, option_header[0].getPosition().y + option_header[0].getLocalBounds().height*1.3));
+								underline_start.setSize(Vector2f(option_header[0].getLocalBounds().width * 1.5, 2));
+								underline_start.setPosition(Vector2f(window2.getSize().x / 2 - underline_start.getSize().x*0.5, option_header[0].getPosition().y + option_header[0].getLocalBounds().height*1.3));
 								break;
 							}
 						}
@@ -633,18 +639,18 @@ namespace graph{
 				}
 
 				//if ((input.type == Event::KeyPressed) && (input.key.code == Keyboard::Up)) 
-				if (input::keyboard.isPressed(input::key_state::keys::Up))
+				if (input::keyboard.wasPressed(input::key_state::keys::Up))
 				{
 					for (int i = 0; i <= 2; i++) {
 						if (selected_start[i] == 1) {
 							if (i >= 1) {
-								underline.setSize(Vector2f(option_header[i - 1].getLocalBounds().width * 1.5, 2));
-								underline.setPosition(Vector2f(window2.getSize().x / 2 - underline.getSize().x*0.5, header_pos_y[i - 1] + option_header[i - 1].getLocalBounds().height*1.3));
+								underline_start.setSize(Vector2f(option_header[i - 1].getLocalBounds().width * 1.5, 2));
+								underline_start.setPosition(Vector2f(window2.getSize().x / 2 - underline_start.getSize().x*0.5, header_pos_y[i - 1] + option_header[i - 1].getLocalBounds().height*1.3));
 								break;
 							}
 							else {
-								underline.setSize(Vector2f(option_header[2].getLocalBounds().width * 1.5, 2));
-								underline.setPosition(Vector2f(window2.getSize().x / 2 - underline.getSize().x*0.5, header_pos_y[2] + option_header[2].getLocalBounds().height*1.3));
+								underline_start.setSize(Vector2f(option_header[2].getLocalBounds().width * 1.5, 2));
+								underline_start.setPosition(Vector2f(window2.getSize().x / 2 - underline_start.getSize().x*0.5, header_pos_y[2] + option_header[2].getLocalBounds().height*1.3));
 								break;
 							}
 						}
@@ -652,8 +658,9 @@ namespace graph{
 				}
 
 				//if ((input.type == Event::KeyPressed) && (input.key.code != Keyboard::Up) && (input.key.code != Keyboard::Down))
-				if (keyboard.isPressed_any() && ! (input::keyboard.isPressed(input::key_state::keys::Down) || input::keyboard.isPressed(input::key_state::keys::Up)))
+				if (keyboard.wasPressed_any() && ! (input::keyboard.wasPressed(input::key_state::keys::Down) || input::keyboard.wasPressed(input::key_state::keys::Up)))
 				{
+					selected_first = true;
 					if (selected_start[0] == 1) {
 						input::flush_back::play = true;
 					}
@@ -661,9 +668,11 @@ namespace graph{
 						window2.close();
 						return 0;
 					}
+					/*
 					if (selected_start[1] == 1) {
 						option_menue();
 					}
+					*/
 				}
 			}
 			//window2.clear();
@@ -671,10 +680,10 @@ namespace graph{
 				window2.draw(option_header[i]);
 			}
 			window2.draw(title);
-			window2.draw(underline);
+			window2.draw(underline_start);
 			//window2.display();
 		}
-
+		selected_first = false;
 	}
 
 	void do_render()
