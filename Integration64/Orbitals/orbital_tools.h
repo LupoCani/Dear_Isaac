@@ -8,7 +8,7 @@
 #include <windows.h>
 #define skip if (false)
 #define ORBITAL_TOOLS_LOADED true
-#define RENDER_DEBUG_INSTALLED true
+//#define RENDER_DEBUG_INSTALLED true
 
 
 namespace shared 					//Declare basic shared parameters
@@ -119,6 +119,7 @@ namespace input					//Declare the input system. In a namespace becuse putting sf
 	namespace flush_back
 	{
 		bool play = false;
+		int men_cmd = 0;
 	}
 
 }
@@ -1833,6 +1834,21 @@ namespace phys
 		}
 	}
 
+	void handle_flushback(int flushback)
+	{
+		if (shared::game_state == 0)
+		{
+			if (flushback == 1)			//Play game
+				shared::game_state = 1;
+			if (flushback == 2)			//View options
+				shared::game_state = 3;
+			if (flushback == 3)			//View credits
+				shared::game_state = 5;
+			if (flushback == 4)			//End game
+				shared::game_state = -1;
+		}
+	}
+
 #ifdef RENDER_DEBUG_INSTALLED
 	bool emode = 0;
 	vec_n thrust_debug;
@@ -1840,38 +1856,30 @@ namespace phys
 
 	void run_engine()
 	{
+		if (input::flush_back::play)
+			shared::game_state = 1;
+
 		gen::w_time_last = gen::w_time;
 		double diff_time = (shared::r_time - shared::l_time) / 100.0 / shared::cps / gen::d_time_fact;
 		if (diff_time < 0.01)
 			gen::w_time_diff = diff_time;
 		else
 			gen::w_time_diff = 0.01;
-		gen::w_time += gen::w_time_diff;
 
-		if (!input::flush_back::play)
-			return;
+		if (shared::game_state == 1)
+			gen::w_time += gen::w_time_diff;	
 		else
-			shared::game_state = 1;
-
-		
+			return;
 
 		do_game_tick();
-
-		
 
 		do_phys_tick(gen::bodies, gen::w_time, rock::eng_mode, rock::eng_thrust);
 		do_kess_tick(gen::kesses, gen::bodies, gen::w_time);
 
-		
-
 		shared::world_state::bodies = gen::bodies_pos;
-
-		
 
 		body &plyr = *gen::bodies.back();
 		gen::tails[gen::tails.size() - 1] = make_tail(plyr, 1000);
-
-		
 
 		do_predict();
 
@@ -2079,7 +2087,6 @@ namespace phys
 			sat.size = cbrt(sat.u) / 40;
 			shared::world_state::sizes.push_back(sat.size);
 		}
-
 
 		gen::tails = get_tails_basic(gen::bodies, 1000);
 

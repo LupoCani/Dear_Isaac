@@ -205,13 +205,13 @@ namespace graph{
 			
 		}
 	
-//#ifdef RENDER_DEBUG_INSTALLED
+#ifdef RENDER_DEBUG_INSTALLED
 		if (!render_debug::window_is_clear)
 			window2.clear();
 		render_debug::window_is_clear = false;
-//#else
+#else
 		window2.clear();
-//#endif // RENDER_DEBUG_INSTALLED
+#endif // RENDER_DEBUG_INSTALLED
 
 		namespace ws = shared::world_state;
 
