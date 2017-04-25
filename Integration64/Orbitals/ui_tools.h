@@ -32,6 +32,7 @@ namespace ui
 	short men_sel = 0;
 	short men_l;
 
+	vector<string> crep_items;
 	float crep_char;
 	float crep_x;
 	float crep_col_x;
@@ -86,13 +87,19 @@ namespace ui
 				men_sel--;
 			if (input::keyboard.wasPressed(input::key_state::keys::Down))
 				men_sel++;
-			if (men_sel > men_l)
+
+			if (men_sel >= men_l)
 				men_sel = 0;
+			if (men_sel < 0)
+				men_sel = men_l - 1;
 			
 			sf::FloatRect back_size = lines[1 + men_sel].getLocalBounds();
-			RectangleShape back_rec(vec_n(back_size.width, back_size.height));
+			RectangleShape back_rec;
+			back_rec.setSize(vec_n(back_size.left + back_size.width, back_size.top + back_size.height));
+
 			back_rec.setFillColor(Color::White);
 			back_rec.setPosition(lines[1 + men_sel].getPosition());
+			lines[1 + men_sel].setFillColor(Color::Black);
 
 			if (input::keyboard.wasPressed(input::key_state::keys::Return))
 				input::flush_back::men_cmd = men_sel + 1;
@@ -115,21 +122,26 @@ namespace ui
 				float x_end = x_col + crep_end_x;
 				float y = crep_x + crep_y * i;
 
-				box.setPosition (vec_n(x, y));
-				line.setPosition(vec_n(x_col, y + crep_y * 0.4 ));
-				end.setPosition (vec_n(x_end, y));
+				title.setFont(font);
+				title.setCharacterSize(crep_char);
+				title.setString(crep_items[i]);
 
-				box.setSize(vec_n(crep_end_x, crep_y * 0.9));
+				box.setSize(vec_n(crep_end_x * phys::rand_part(), crep_y * 0.9));
 				line.setSize(vec_n(crep_end_x, crep_y * 0.2));
 				end.setSize(vec_n(2, crep_y * 0.9));
 
-				string os = "";
-				for (int i = 0; i < 10; i++)
-				{
-					os += char(phys::rand_part() * 200);
-				}
-				title.setFont(font);
-				title.setString(os);
+				sf::FloatRect text_size = title.getLocalBounds();
+				RectangleShape back_rec;
+				title.setOrigin(vec_n(0, (text_size.top + text_size.height)/2));
+
+				box.setOrigin (vec_n(0, box.getSize().y  / 2.0));
+				line.setOrigin(vec_n(0, line.getSize().y / 2.0));
+				end.setOrigin (vec_n(0, end.getSize().y  / 2.0));
+
+				title.setPosition(vec_n(x, y + crep_y / 2));
+				box.setPosition(vec_n(x_col, y + crep_y / 2));
+				line.setPosition(vec_n(x_col, y + crep_y / 2));
+				end.setPosition(vec_n(x_end, y + crep_y / 2));
 				
 				window2.draw(title);
 				window2.draw(box);
@@ -149,12 +161,16 @@ namespace ui
 		men_items.push_back("quit.");
 		men_l = men_items.size();
 
-		font.loadFromFile("courier.ttf");
-		crep_char = 50;
-		crep_x = 50;
-		crep_y = 50;
+		crep_items.push_back("Time:......");
+		crep_items.push_back("Health:....");
+		crep_items.push_back("Thrust:....");
 
-		crep_col_x = 500;
-		crep_end_x = 500;
+		font.loadFromFile("courier.ttf");
+		crep_char = 15;
+		crep_x = 5;
+		crep_y = 20;
+
+		crep_col_x = 100;
+		crep_end_x = 200;
 	}
 }

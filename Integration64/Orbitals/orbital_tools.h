@@ -8,7 +8,7 @@
 #include <windows.h>
 #define skip if (false)
 #define ORBITAL_TOOLS_LOADED true
-//#define RENDER_DEBUG_INSTALLED true
+#define RENDER_DEBUG_INSTALLED true
 
 
 namespace shared 					//Declare basic shared parameters
