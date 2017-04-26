@@ -90,7 +90,7 @@ namespace ui
 
 	void draw_plnbox(RenderWindow &window, short kind, vec_n pos, string name, double vel, double dist = 0, double pr_dist = 0, double countdown = 0)
 	{
-		vec_n box_size(100, 200);
+		vec_n box_size(200, 300);
 		vec_n box_pos;
 		vec_n box_orig = box_size * -1;
 		box_orig.y = 0;
@@ -132,34 +132,38 @@ namespace ui
 		{
 			Text item;
 			item.setString(items[i]);
+			item.setFont(font);
+			std::cout << items[i] << std::endl;
 			item.setPosition(box_pos);
 			item.move(vec_n(5, l_y));
 			item.setCharacterSize(15);
 
 			if (i < hl_count)
 			{
+				item.setCharacterSize(30);
+				item.setFillColor(Color(255, 255, 255));
+				if (i >= 1)
+				{
+					item.setCharacterSize(20);
+					item.setFillColor(Color(255, 127, 0));
+				}
 				vec_n center(true_size(item.getLocalBounds()));
 				center *= 0.5;
 				center.y = 0;
 				item.setOrigin(center);
-				item.setCharacterSize(40);
-
-				if (i >= hl_count - 1)
-				{
-					item.setCharacterSize(30);
-					item.setFillColor(Color(255, 127, 0));
-				}
+				item.move(box_orig * -0.5);
 			}
+			l_y += true_size(item.getLocalBounds()).y + 3;
 			window.draw(item);
-			l_y += true_size(item.getLocalBounds()).y;
+
 			if (! (i < hl_count))
 			{
 				VertexArray lines(sf::LinesStrip, 2);
 				lines[0].position = vec_n(box_pos.x,              box_pos.y + l_y);
 				lines[1].position = vec_n(box_pos.x + box_size.x, box_pos.y + l_y);
 
-				lines[0].color = Color::Blue;//(50, 50, 50);
-				lines[1].color = Color::Blue;//(50, 50, 50);
+				lines[0].color = Color(50, 50, 50);
+				lines[1].color = Color(50, 50, 50);
 
 				window.draw(lines);
 			}
@@ -250,10 +254,15 @@ namespace ui
 			if (target >= 0 && target < ws::names.size())
 			{
 				string name = ws::names[target];
-				//std::cout << name << ":\n";
 				double vel = 0;
 				double dist = 0;
-				draw_plnbox(window2, 0, vec_n(-5, 5), name, vel, dist);
+				double min_dist = 0;
+				double min_time = 0;
+				if (ws::target_close.size())
+					min_dist = phys::vmag(ws::target_close[0] - ws::player_close[0]);
+				if (ws::target_time.size())
+					min_time = ws::target_time[0];
+				draw_plnbox(window2, 1, vec_n(-5, 5), name, vel, dist, min_dist, min_time);
 			}
 		}
 	}
