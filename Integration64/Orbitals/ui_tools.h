@@ -133,7 +133,6 @@ namespace ui
 			Text item;
 			item.setString(items[i]);
 			item.setFont(font);
-			std::cout << items[i] << std::endl;
 			item.setPosition(box_pos);
 			item.move(vec_n(5, l_y));
 			item.setCharacterSize(15);
