@@ -90,7 +90,7 @@ namespace ui
 
 	void draw_plnbox(RenderWindow &window, short kind, vec_n pos, string name, double vel, double dist = 0, double pr_dist = 0, double countdown = 0)
 	{
-		vec_n box_size(50, 100);
+		vec_n box_size(100, 200);
 		vec_n box_pos;
 		vec_n box_orig = box_size * -1;
 		box_orig.y = 0;
@@ -103,34 +103,36 @@ namespace ui
 		if (pos.y < 0)
 			pos.y += window.getSize().y;
 
+		box_pos = pos;
+
 		RectangleShape box(box_size);
-		box.move(box_orig);
-		box_pos.x = box.getPosition().x;
-		box_pos.y = box.getPosition().y;
+		box.setFillColor(Color(100, 100, 100));
+		box_pos += box_orig;
+		box.setPosition(box_pos);
+		window.draw(box);
 
 		vector<string> items;
 		if (kind == 0 || kind == 1)
 			items.push_back("Target");
 		if (kind == 1 || kind == 3)
 			items.push_back("Intercept Detected");
-
 		{
 			items.push_back("Name:     " + name);
 			items.push_back("Distance: " + std::to_string(dist));
 			items.push_back("Velocity: " + std::to_string(vel));
 		}
 		if (kind == 0 || kind == 1)
+		{
 			items.push_back("Closest:  " + std::to_string(pr_dist));
-
-		if (kind == 0 || kind == 1)
 			items.push_back("ETA:      " + std::to_string(countdown));
+		}
 
 		double l_y = 0;
 		for (int i = 0; i < items.size(); i++)
 		{
 			Text item;
 			item.setString(items[i]);
-			item.setPosition(box.getPosition());
+			item.setPosition(box_pos);
 			item.move(vec_n(5, l_y));
 			item.setCharacterSize(15);
 
@@ -156,8 +158,8 @@ namespace ui
 				lines[0].position = vec_n(box_pos.x,              box_pos.y + l_y);
 				lines[1].position = vec_n(box_pos.x + box_size.x, box_pos.y + l_y);
 
-				lines[0].color = Color(50, 50, 50);
-				lines[1].color = Color(50, 50, 50);
+				lines[0].color = Color::Blue;//(50, 50, 50);
+				lines[1].color = Color::Blue;//(50, 50, 50);
 
 				window.draw(lines);
 			}
@@ -170,6 +172,12 @@ namespace ui
 		Vector2u w_size_sfu = window2.getSize();
 		vec_n w_size(w_size_sfu.x, w_size_sfu.y);
 		input::flush_back::men_cmd = 0;
+
+		if (input::win_inf::update)
+		{
+			shared::window2.setView(View(FloatRect(vec_n(), Vector2f(window2.getSize()))));
+			input::win_inf::update = false;
+		}
 
 		if (game_state == 0)
 		{
@@ -239,11 +247,14 @@ namespace ui
 			draw_crep(window2, crep_dists, crep_items, { time_prc, health_prc, thrust_prc });
 
 			int target = ws::target;
-			string name = ws::names[target];
-			double vel = 0;
-			double dist = 0;
-
-			draw_plnbox(window2, 0, vec_n(-5, -5), name, vel, dist);
+			if (target >= 0 && target < ws::names.size())
+			{
+				string name = ws::names[target];
+				//std::cout << name << ":\n";
+				double vel = 0;
+				double dist = 0;
+				draw_plnbox(window2, 0, vec_n(-5, 5), name, vel, dist);
+			}
 		}
 	}
 

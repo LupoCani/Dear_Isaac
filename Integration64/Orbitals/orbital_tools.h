@@ -88,6 +88,12 @@ namespace input					//Declare the input system. In a namespace becuse putting sf
 
 	key_state keyboard;
 
+	namespace win_inf
+	{
+		bool update = 0;
+		bool close_h = 1;
+	}
+
 	void run_input()
 	{
 		Event input;
@@ -96,23 +102,30 @@ namespace input					//Declare the input system. In a namespace becuse putting sf
 		keyboard.buttons_last = keyboard.buttons;
 		keyboard.buttons = std::vector<bool>(Mouse::Button::ButtonCount);
 
+		keyboard.buttons[Mouse::Button::Left] = Mouse::isButtonPressed(Mouse::Button::Left);
+		keyboard.buttons[Mouse::Button::Right] = Mouse::isButtonPressed(Mouse::Button::Right);
+		keyboard.buttons[Mouse::Button::Middle] = Mouse::isButtonPressed(Mouse::Button::Middle);
+		keyboard.buttons[Mouse::Button::XButton1] = Mouse::isButtonPressed(Mouse::Button::XButton1);
+		keyboard.buttons[Mouse::Button::XButton2] = Mouse::isButtonPressed(Mouse::Button::XButton2);
+
 		while (shared::window2.pollEvent(input)) {
 
 			if (input.type == Event::KeyPressed)
+			{
 				if (!keyboard.isPressed(input.key.code))
 					keyboard.pressed.push_back(input.key.code);
+			}
 
-			if (input.type == Event::KeyReleased)
+			else if (input.type == Event::KeyReleased)
 				keyboard.pressed.erase(keyboard.pressed.begin() + keyboard.pressedAt(input.key.code));
 
-			keyboard.buttons[Mouse::Button::Left] = Mouse::isButtonPressed(Mouse::Button::Left);
-			keyboard.buttons[Mouse::Button::Right] = Mouse::isButtonPressed(Mouse::Button::Right);
-			keyboard.buttons[Mouse::Button::Middle] = Mouse::isButtonPressed(Mouse::Button::Middle);
-			keyboard.buttons[Mouse::Button::XButton1] = Mouse::isButtonPressed(Mouse::Button::XButton1);
-			keyboard.buttons[Mouse::Button::XButton2] = Mouse::isButtonPressed(Mouse::Button::XButton2);
-
-			if (input.type == Event::MouseWheelMoved)
+			else if (input.type == Event::MouseWheelMoved)
 				keyboard.scroll = input.mouseWheel.delta;
+
+			else if (input.type == Event::Resized)
+				win_inf::update = true;
+			else if (input.type == Event::Closed)
+				win_inf::close_h = true;
 		}
 	}
 
@@ -1632,6 +1645,7 @@ namespace phys
 
 		shared::world_state::health = game::health;
 		shared::world_state::health_max = game::health_max;
+		shared::world_state::target = game::target;
 	}
 
 	void do_predict()
@@ -1877,6 +1891,9 @@ namespace phys
 		do_kess_tick(gen::kesses, gen::bodies, gen::w_time);
 
 		shared::world_state::bodies = gen::bodies_pos;
+
+		for (int i = 0; i < gen::bodies.size(); i++)
+			shared::world_state::names.push_back((*gen::bodies[i]).name);
 
 		body &plyr = *gen::bodies.back();
 		gen::tails[gen::tails.size() - 1] = make_tail(plyr, 1000);
