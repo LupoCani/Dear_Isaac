@@ -431,6 +431,9 @@ namespace phys
 		double health_max;
 		double eng_secs;
 
+		double dmg_rad;
+		double dmg_int;
+
 		vec_n goal_coords;
 		double goal_size;
 		bool goal_active;
@@ -598,16 +601,9 @@ namespace phys
 		return vmag(in.x, in.y);
 	}
 
-	vec_n rot_vec(vec_n in, double rot)
+	vec_r rot_vec(vec_r in, double rot)
 	{
-		double l = vmag(in);
-		double angle = atan2(in);
-
-		angle += rot;
-
-		in.y = l * sin(angle);
-		in.x = l * cos(angle);
-
+		in.ang += rot;
 		return in;
 	}
 
@@ -1105,7 +1101,7 @@ namespace phys
 						last_times[i] = pln_tim;
 						vec_n pln_pos = get_pos_ang(Vp, pln);
 
-						while (pln_tim < sat_tim_old)
+						while (pln_tim < sat_tim_old && its[i] < precision)
 						{
 							its[i]++;
 							Vp = starts[i] + ang_scale(diffs[i], its[i], precision);
@@ -1113,7 +1109,7 @@ namespace phys
 							last_times[i] = pln_tim;
 						}
 
-						while (pln_tim < sat_tim)
+						while (pln_tim < sat_tim && its[i] < precision)
 						{
 							double diff_part = (pln_tim - sat_tim_old) / sat_tim_diff;	//What percentage of the current time interval has passed in the moment we're observing.
 							vec_n sat_pos_est = sat_pos_old + sat_pos_diff * diff_part;
@@ -1415,6 +1411,21 @@ namespace phys
 	}
 
 	//End graph algorithms
+
+	//Begin game functions
+
+	double calc_dmg(double dist, double radius, double intensity)
+	{
+		if (dist > radius)
+			return 0;
+
+		double dist_part = dist / radius;
+		double dmg_base = 1 - pow(dist_part, 0.35);
+
+		return dmg_base * intensity;
+	}
+
+	//End game functions
 
 	void generate_goal(double radius, int par_id = 0)
 	{
@@ -1788,17 +1799,21 @@ namespace phys
 
 		if (expiring)
 		{
-			plyr.entering = true;
-
-			/*
 			vec_n true_pos_plyr, true_pos_pln;
 			body &pln = *bodies[cnv[new_parent]];
 
 			do_orbit(plyr, expire_time, 10, true_pos_plyr);
-			do_orbit(pln,  expire_time, 10, true_pos_pln);
+			do_orbit(pln, expire_time, 10, true_pos_pln);
 
-			vmag(true_pos_plyr - true_pos_pln);
-			*/
+			double true_dist = vmag(true_pos_plyr - true_pos_pln);
+
+			if (true_dist > pln.SOI)
+				expiring = false;
+		}
+
+		if (expiring)
+		{
+			plyr.entering = true;
 
 			plyr.V_ent = data.V_exp;
 
@@ -1864,6 +1879,27 @@ namespace phys
 		}
 	}
 
+	void run_health()
+	{
+		using gen::kesses;
+		double dmg_tot = 0;
+		body plyr = **gen::bodies.end();
+
+		for (int i = 0; i < kesses.size(); i++)
+		{
+			body kess = *kesses[i];
+			double dist = vmag(kess.pos - plyr.pos);
+
+			double dmg = calc_dmg(dist, game::dmg_rad, game::dmg_int);
+
+			dmg_tot += dmg;
+		}
+
+		game::health -= dmg_tot;
+		if (game::health < 0)
+			game::health = 0;
+	}
+
 	void handle_flushback(int flushback)
 	{
 		if (shared::game_state == 0)
@@ -1878,7 +1914,6 @@ namespace phys
 				shared::game_state = -1;
 		}
 	}
-
 	void send_world_state()
 	{
 		using namespace shared::world_state;
