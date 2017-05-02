@@ -112,7 +112,7 @@ namespace ui
 		window.draw(box);
 
 		vector<string> items;
-		if (kind == 0 || kind == 1)
+		if (kind == 0)
 			items.push_back("Target");
 		if (kind == 1 || kind == 3)
 			items.push_back("Intercept Detected");
@@ -155,7 +155,7 @@ namespace ui
 			l_y += true_size(item.getLocalBounds()).y + 3;
 			window.draw(item);
 
-			if (! (i < hl_count))
+			if (not (i < hl_count))
 			{
 				VertexArray lines(sf::LinesStrip, 2);
 				lines[0].position = vec_n(box_pos.x,              box_pos.y + l_y);
@@ -261,7 +261,35 @@ namespace ui
 					min_dist = phys::vmag(ws::target_close[0] - ws::player_close[0]);
 				if (ws::target_time.size())
 					min_time = ws::target_time[0];
-				draw_plnbox(window2, 1, vec_n(-5, 5), name, vel, dist, min_dist, min_time);
+
+				short box_mode = 0;
+				dist = int(phys::vmag(ws::bodies.back() - ws::bodies[target]));
+				if (ws::cepting and ws::target == ws::intercept)
+				{
+					box_mode = 1;
+					min_time = ws::cept_time;
+					min_dist = 0;
+				}
+				else
+				{
+					box_mode = 0;
+					min_time = ws::target_time[0] - ws::world_time;
+					min_dist = int(ws::target_min[0]);
+				}
+				draw_plnbox(window2, box_mode, vec_n(-5, 5), name, vel, dist, min_dist, min_time);
+
+
+				if (ws::cepting and ws::target != ws::intercept)
+				{
+					string name = ws::names[ws::intercept];
+					double vel = 0;
+					double dist = int(phys::vmag(ws::bodies.back() - ws::bodies[ws::intercept]));
+					double min_dist = 0;
+					double min_time = ws::cept_time - ws::world_time;
+					short box_mode = 1;
+
+					draw_plnbox(window2, box_mode, vec_n(-210, 5), name, vel, dist, min_dist, min_time);
+				}
 			}
 		}
 	}

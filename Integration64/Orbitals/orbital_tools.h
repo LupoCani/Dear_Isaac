@@ -6,6 +6,7 @@
 #include <vector>
 #include <string>
 #include <windows.h>
+#include <ciso646>
 #define skip if (false)
 #define ORBITAL_TOOLS_LOADED true
 #define RENDER_DEBUG_INSTALLED true
@@ -262,6 +263,8 @@ namespace shared
 
 	namespace world_state		//Data for rendering/ui functions to use in rendering
 	{
+		double world_time = 0;
+
 		//Physical variables:
 
 		/**/std::vector<vec_n> bodies;				//List of bodies' positions. The first value is the sun, the last is the player.
@@ -278,11 +281,16 @@ namespace shared
 		/**/int focus = 0;		//The body the view focuses on.
 		/**/int target = -1;	//The body selected by the player to target.
 
+		int intercept = -1;		//The body the player is currently intercepting
+		bool cepting = false;	//Whether or not the player is set to intercept a body
+		double cept_time = 0;	//Time until projected intercept
+
 		//Target approach variables:
 
-		std::vector<double> target_time;	//The time of the two closest approaches the player will make
-		std::vector<vec_n> target_close;	//The target's position in the two closest approaches
-		std::vector<vec_n> player_close;	//The player's position in the two closest approaches
+		std::vector<double> target_time(1);	//The time of the two closest approaches the player will make
+		std::vector<double> target_min(1);
+		std::vector<vec_n> target_close(1);	//The target's position in the two closest approaches
+		std::vector<vec_n> player_close(1);	//The player's position in the two closest approaches
 		
 		//Assist variables:
 
@@ -300,7 +308,7 @@ namespace shared
 		/**/vec_n  goal_pos;	//The center of the target zone.
 		/**/double goal_rad;	//The radius of the target zone.
 
-		/**/int goal_parent;		//The id of the body around which the target is placed.
+		/**/int goal_parent;	//The id of the body around which the target is placed.
 		/**/int goal_parent_2;	//If the above is a moon, this is the id of the planet the moon orbits.
 
 		//Score varibles:
@@ -471,6 +479,9 @@ namespace phys
 		short expire_count = 0;
 
 		int next_parent;	//The id of the predicted parent
+
+		vec_n enter_plyr_pos;
+		vec_n enter_pln_pos;
 	}
 
 	template<class vec_cont>
@@ -1861,6 +1872,7 @@ namespace phys
 
 			pred::next_parent = cnv[data.new_parent];
 			pred::expire_count = 50;
+			pred::end = plyr.entry;
 		}
 		else if (pred::expire_count > 0)
 		{
@@ -1930,9 +1942,12 @@ namespace phys
 				shared::game_state = -1;
 		}
 	}
+
 	void send_world_state()
 	{
 		using namespace shared::world_state;
+
+		world_time = gen::w_time;
 
 		health = game::health;
 		health_max = game::health_max;
@@ -1952,6 +1967,15 @@ namespace phys
 		goal_parent_2 = find_in(gen::bodies, (*gen::bodies[game::goal_id]).parent);
 
 		kesses = game::kesses_pos;
+
+		cepting = (*gen::bodies.back()).entering;
+		intercept = pred::next_parent;
+		cept_time = pred::end;
+
+		target_close[0] = game::target_pos;
+		player_close[0] = game::player_pos;
+		target_min[0] = game::min_dist;
+		target_time[0] = game::min_time;
 	}
 
 #ifdef RENDER_DEBUG_INSTALLED
