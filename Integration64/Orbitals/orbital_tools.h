@@ -1422,6 +1422,9 @@ namespace phys
 		double dist_part = dist / radius;
 		double dmg_base = 1 - pow(dist_part, 0.35);
 
+		if (isnan(dmg_base))
+			dmg_base = 0;
+
 		return dmg_base * intensity;
 	}
 
@@ -1452,6 +1455,40 @@ namespace phys
 			return true;
 
 		return false;
+	}
+
+	void run_health()
+	{
+		using gen::kesses;
+		double dmg_tot = 0;
+		body plyr = *gen::bodies.back();
+
+		for (int i = 0; i < kesses.size(); i++)
+		{
+			body kess = *kesses[i];
+			double dist = vmag(kess.pos - plyr.pos);
+
+			double dmg = calc_dmg(dist, game::dmg_rad, game::dmg_int);
+
+			dmg_tot += dmg;
+		}
+
+		{
+			body parent = *plyr.parent;
+
+			double dist = vmag(plyr.pos - parent.pos) - parent.size;
+			double atmosphere = parent.size * 0.05;
+
+			if (dist < 0)
+				game::health = 0;
+
+			double dmg = calc_dmg(dist, atmosphere, game::dmg_int);
+			dmg_tot += dmg;
+		}
+
+		game::health -= dmg_tot;
+		if (game::health < 0)
+			game::health = 0;
 	}
 
 	void add_kesslers()
@@ -1879,27 +1916,6 @@ namespace phys
 		}
 	}
 
-	void run_health()
-	{
-		using gen::kesses;
-		double dmg_tot = 0;
-		body plyr = **gen::bodies.end();
-
-		for (int i = 0; i < kesses.size(); i++)
-		{
-			body kess = *kesses[i];
-			double dist = vmag(kess.pos - plyr.pos);
-
-			double dmg = calc_dmg(dist, game::dmg_rad, game::dmg_int);
-
-			dmg_tot += dmg;
-		}
-
-		game::health -= dmg_tot;
-		if (game::health < 0)
-			game::health = 0;
-	}
-
 	void handle_flushback(int flushback)
 	{
 		if (shared::game_state == 0)
@@ -1961,6 +1977,7 @@ namespace phys
 			return;
 
 		do_game_tick();
+		run_health();
 
 		do_phys_tick(gen::bodies, gen::w_time, rock::eng_mode, rock::eng_thrust);
 		do_kess_tick(gen::kesses, gen::bodies, gen::w_time);
@@ -2139,6 +2156,12 @@ namespace phys
 		rock::f_p_t = 0.0;
 		rock::gyro = 100000000;
 		rock::eng_F = 1000000000000;
+
+		game::health = 100;
+		game::health_max = game::health;
+
+		game::dmg_rad = 100;
+		game::dmg_int = 0.001;
 	}
 
 	void engine_init()
