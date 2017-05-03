@@ -134,6 +134,7 @@ namespace input					//Declare the input system. In a namespace becuse putting sf
 	{
 		bool play = false;
 		int men_cmd = 0;
+		int pause_cmd = 0;
 	}
 
 }
