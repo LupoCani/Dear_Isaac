@@ -31,9 +31,6 @@ namespace basics
 
 void main()
 {
-
-	
-
 	srand(time(0));
 
 	phys::engine_init();

@@ -31,11 +31,69 @@ namespace ui
 	short men_sel = 0;
 	short men_l;
 
+	vector<string> pause_items;
+	string pause_head;
+	short pause_sel = 0;
+	short pause_l;
+
+
 	vector<string> crep_items;
 	vector<double> crep_dists(5);
 
 	void hp(double hp, double hp_max)
 	{
+	}
+
+	vec_n scale_single(vec_n pos, vec_n origo, double scale = 1, double mid_x = 500, double mid_y = 500)
+	{
+		pos -= origo;
+		pos *= scale;
+		pos.y *= -1;
+
+		pos += vec_n(mid_x, mid_y);
+
+		return pos;
+	}
+
+	vector<vec_n> handle_scale(vector<vec_n> list, vec_n origo, double scale = 1, double mid_x = 500, double mid_y = 500)
+	{
+		for (int i = 0; i < list.size(); i++)
+			list[i] = scale_single(list[i], origo, scale, mid_x, mid_y);
+
+		return list;
+	}
+
+	VertexArray render_dmg_ball(vec_n origo, double rad, int count = 30)
+	{
+		VertexArray lines(TrianglesFan, count + 2);
+
+		lines[0].position = origo;
+		lines[0].color = Color::Red;
+
+		for (int i = 0; i < count + 1; i++)
+		{
+			phys::vec_r pos;
+
+			pos.mag = rad;
+			pos.ang = double(i) / count * phys::M_2PI;
+
+			pos = pos + origo;
+
+			lines[i + 1].position = vec_n(pos);
+			lines[i + 1].color = Color::Transparent;
+		}
+
+		return lines;
+	}
+
+	void draw_kesslers(RenderWindow &window, vector<vec_n> pos, double size, vec_n origo, double scale = 1, vec_n center = vec_n(500, 500))
+	{
+		pos = handle_scale(pos, origo, scale, center.x, center.y);
+
+		for (int i = 0; i < pos.size(); i++)
+		{
+			window.draw(render_dmg_ball(pos[i], scale));
+		}
 	}
 
 	void draw_crep(RenderWindow &window, vector<double> dists, vector<string> items, vector<double> values)
@@ -93,35 +151,48 @@ namespace ui
 		vec_n box_size(200, 300);
 		vec_n box_pos;
 		vec_n box_orig = box_size * -1;
-		box_orig.y = 0;
+		vec_n box_move = box_orig;
 		short hl_count = 1;
-		if (kind == 1)
+		if (kind == 1 or kind == 0)
 			hl_count = 2;
 
 		if (pos.x < 0)
 			pos.x += window.getSize().x;
+		else
+			box_move.x = 0;
 		if (pos.y < 0)
 			pos.y += window.getSize().y;
+		else
+			box_move.y = 0;
 
 		box_pos = pos;
 
 		RectangleShape box(box_size);
 		box.setFillColor(Color(100, 100, 100));
-		box_pos += box_orig;
+		box_pos += box_move;
 		box.setPosition(box_pos);
 		window.draw(box);
 
+		/*
+		Box Types:
+		0: target, not intercepting.
+		1: target, intercepting.
+		2: not target, intercepting
+		*/
+
 		vector<string> items;
-		if (kind == 0)
+		if (kind == 0 or kind == 1)
 			items.push_back("Target");
-		if (kind == 1 || kind == 3)
-			items.push_back("Intercept Detected");
+		if (kind == 0)
+			items.push_back("I");
+		if (kind == 1 or kind == 2)
+			items.push_back("INTERCEPTING");
 		{
 			items.push_back("Name:     " + name);
 			items.push_back("Distance: " + std::to_string(dist));
 			items.push_back("Velocity: " + std::to_string(vel));
 		}
-		if (kind == 0 || kind == 1)
+		if (kind == 0 || kind == 1 || kind == 2)
 		{
 			items.push_back("Closest:  " + std::to_string(pr_dist));
 			items.push_back("ETA:      " + std::to_string(countdown));
@@ -136,6 +207,7 @@ namespace ui
 			item.setPosition(box_pos);
 			item.move(vec_n(5, l_y));
 			item.setCharacterSize(15);
+			double x_cent = box_orig.x * -0.5;
 
 			if (i < hl_count)
 			{
@@ -145,12 +217,20 @@ namespace ui
 				{
 					item.setCharacterSize(20);
 					item.setFillColor(Color(255, 127, 0));
+					if (kind == 0)
+						item.setFillColor(Color::Transparent);
+				}
+				if (kind == 2)
+				{
+					item.setCharacterSize(25);
+					item.setFillColor(Color(255, 127, 0));
 				}
 				vec_n center(true_size(item.getLocalBounds()));
 				center *= 0.5;
 				center.y = 0;
+
 				item.setOrigin(center);
-				item.move(box_orig * -0.5);
+				item.move(vec_n(x_cent, 0));
 			}
 			l_y += true_size(item.getLocalBounds()).y + 3;
 			window.draw(item);
@@ -276,7 +356,7 @@ namespace ui
 					min_time = ws::target_time[0] - ws::world_time;
 					min_dist = int(ws::target_min[0]);
 				}
-				draw_plnbox(window2, box_mode, vec_n(-5, 5), name, vel, dist, min_dist, min_time);
+				draw_plnbox(window2, box_mode, vec_n(-5, -5), name, vel, dist, min_dist, min_time);
 
 
 				if (ws::cepting and ws::target != ws::intercept)
@@ -286,11 +366,73 @@ namespace ui
 					double dist = int(phys::vmag(ws::bodies.back() - ws::bodies[ws::intercept]));
 					double min_dist = 0;
 					double min_time = ws::cept_time - ws::world_time;
-					short box_mode = 1;
+					short box_mode = 2;
 
 					draw_plnbox(window2, box_mode, vec_n(-210, 5), name, vel, dist, min_dist, min_time);
 				}
 			}
+
+			//draw_kesslers(window2, ws::kesses, ws::sizes_kess.back(), ws::bodies[ws::focus], )
+		}
+
+		if (game_state == 2)
+
+		{
+			vector<Text> lines;
+			vec_n h_pos = w_size;
+
+			{
+				Text line;
+				line.setFont(font);
+				line.setString(pause_head);
+				line.setCharacterSize(60);
+
+				h_pos.x *= 0.1;
+				h_pos.y *= 0.3;
+				line.setPosition(h_pos);
+
+				lines.push_back(line);
+			}
+
+
+			for (int i = 0; i < pause_l; i++)
+			{
+				Text line;
+				line.setFont(font);
+				line.setString(pause_items[i]);
+				line.setCharacterSize(30);
+
+				vec_n l_pos = h_pos;
+				l_pos.y += w_size.y * 0.1 * (i + 1);
+				line.setPosition(l_pos);
+
+				lines.push_back(line);
+			}
+
+			if (input::keyboard.wasPressed(input::key_state::keys::Up))
+				pause_sel--;
+			if (input::keyboard.wasPressed(input::key_state::keys::Down))
+				pause_sel++;
+
+			if (pause_sel >= pause_l)
+				pause_sel = 0;
+			if (pause_sel < 0)
+				pause_sel = pause_l - 1;
+
+			vec_n back_size = true_size(lines[1 + pause_sel].getLocalBounds());
+			RectangleShape back_rec;
+			back_rec.setSize(back_size);
+
+			back_rec.setFillColor(Color::White);
+			back_rec.setPosition(lines[1 + pause_sel].getPosition());
+			lines[1 + pause_sel].setFillColor(Color::Black);
+
+			if (input::keyboard.wasPressed(input::key_state::keys::Return))
+				input::flush_back::pause_cmd = pause_sel + 1;
+
+			window2.draw(back_rec);
+			for (int i = 0; i < lines.size(); i++)
+				window2.draw(lines[i]);
 		}
 	}
 
@@ -305,6 +447,13 @@ namespace ui
 			men_items.push_back("credits,");
 			men_items.push_back("quit.");
 			men_l = men_items.size();
+		}
+		{
+			pause_head = "Paused,";
+			pause_items.push_back("resume,");
+			pause_items.push_back("controls,");
+			pause_items.push_back("options,");
+			pause_items.push_back("quit.");
 		}
 		{
 			crep_items.push_back("Time:......");
