@@ -68,7 +68,7 @@ namespace ui
 		VertexArray lines(TrianglesFan, count + 2);
 
 		lines[0].position = origo;
-		lines[0].color = Color::Red;
+		lines[0].color = Color(255, 0, 0, 150);
 
 		for (int i = 0; i < count + 1; i++)
 		{
@@ -82,17 +82,16 @@ namespace ui
 			lines[i + 1].position = vec_n(pos);
 			lines[i + 1].color = Color::Transparent;
 		}
-
 		return lines;
 	}
 
 	void draw_kesslers(RenderWindow &window, vector<vec_n> pos, double size, vec_n origo, double scale = 1, vec_n center = vec_n(500, 500))
 	{
-		pos = handle_scale(pos, origo, scale, center.x, center.y);
+		pos = handle_scale(pos, origo, scale);// , center.x, center.y);
 
 		for (int i = 0; i < pos.size(); i++)
 		{
-			window.draw(render_dmg_ball(pos[i], scale));
+			window.draw(render_dmg_ball(pos[i], scale * size));
 		}
 	}
 
@@ -372,7 +371,7 @@ namespace ui
 				}
 			}
 
-			//draw_kesslers(window2, ws::kesses, ws::sizes_kess.back(), ws::bodies[ws::focus], )
+			draw_kesslers(window2, ws::kesses, ws::sizes_kess.back(), ws::bodies[ws::focus], ws::zoom, vec_n(window2.getSize().x / 2, window2.getSize().y / 2));
 		}
 
 		if (game_state == 2)

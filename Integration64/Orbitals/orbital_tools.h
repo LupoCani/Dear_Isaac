@@ -417,6 +417,8 @@ namespace phys
 
 		vector<body*> bodies;
 		vector<body*> kesses;
+		vector<double> bodies_size;
+		vector<double> kesses_size;
 		vector<vector<vec_n>> tails;
 		vector<vector<vec_n>> tails_future;
 		vector<vector<vec_n>> tails_out;
@@ -1525,21 +1527,24 @@ namespace phys
 			kess.parent = parent.self;
 			kess.isKess = true;
 			kess.u = 0.01;
+			kess.size = game::dmg_rad;
 
 			make_orbit(kess, plyr.epoch);
 
-			if (get_r(M_PI, kess) < parent.SOI)
+			if (parent.size < get_r(0, kess) and get_r(M_PI, kess) < parent.SOI)
+			{
 				gen::kesses.push_back(&kess);
+				gen::kesses_size.push_back(kess.size);
+			}
 			else
 				delete kess.self;
 		}
-
-		std::cout << gen::kesses.size() << std::endl;
 	}
 
 	void kill_kesslers()
 	{
 		using gen::kesses;
+		gen::kesses_size.clear();
 
 		while (kesses.size())
 		{
@@ -1967,7 +1972,9 @@ namespace phys
 		goal_parent = game::goal_id;
 		goal_parent_2 = find_in(gen::bodies, (*gen::bodies[game::goal_id]).parent);
 
+		sizes = gen::bodies_size;
 		kesses = game::kesses_pos;
+		sizes_kess = gen::kesses_size;
 
 		cepting = (*gen::bodies.back()).entering;
 		intercept = pred::next_parent;
@@ -2168,7 +2175,7 @@ namespace phys
 			body &sat = *gen::bodies[i];
 
 			sat.size = cbrt(sat.u) / 40;
-			shared::world_state::sizes.push_back(sat.size);
+			gen::bodies_size.push_back(sat.size);
 		}
 
 		for (int i = 0; i < gen::bodies.size(); i++)
@@ -2362,10 +2369,10 @@ namespace render_debug			//To be removed once the neccesary render_tools functio
 		}
 
 
-		namespace in = shared::world_state;
+		namespace ws = shared::world_state;
 
 		window_is_clear = true;
-		render_lines(in::paths, in::bodies[in::focus], in::zoom);
+		render_lines(ws::paths, ws::bodies[ws::focus], ws::zoom);
 
 		std::vector<std::string> texts;
 		texts.push_back("Engine: " + std::to_string(phys::rock::thrust));
@@ -2380,11 +2387,11 @@ namespace render_debug			//To be removed once the neccesary render_tools functio
 		texts.push_back("Expire: " + std::to_string((*phys::gen::bodies.back()).expire()));
 
 		render_texts(texts);
-		render_kesslers(shared::world_state::kesses, in::bodies[in::focus], in::zoom);
-		render_player(in::player_rotation, in::bodies.back(), in::bodies[in::focus], in::zoom);
+		render_kesslers(shared::world_state::kesses, ws::bodies[ws::focus], ws::zoom);
+		render_player(ws::player_rotation, ws::bodies.back(), ws::bodies[ws::focus], ws::zoom);
 
-		render_goal(phys::game::goal_coords, in::bodies[in::focus], in::zoom);
-		render_coll(in::bodies[in::focus], in::zoom);
+		render_goal(phys::game::goal_coords, ws::bodies[ws::focus], ws::zoom);
+		render_coll(ws::bodies[ws::focus], ws::zoom);
 
 		//window2.display();
 	}
