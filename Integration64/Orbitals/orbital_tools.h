@@ -275,12 +275,12 @@ namespace shared
 
 		//Physical variables:
 
-		/**/std::vector<vec_n> bodies;				//List of bodies' positions. The first value is the sun, the last is the player.
+		/**/std::vector<vec_n> bodies;			//List of bodies' positions. The first value is the sun, the last is the player.
 		std::vector<double> sizes;				//List of bodies' sizes. Specifically, unzoomed radius.
 		std::vector<vec_n> kesses;				//List of kessler fields
 		std::vector<double> sizes_kess;			//List of kessler fields' sizes. Specifically, the unzoomed radius
 		
-		int bodies_moons_begin = 0;
+		int bodies_moons_begin = 0;				//The id of the first moon in the list
 		std::vector<std::string> names;			//List of the names for every corresponding body
 		/**/std::vector<std::vector<vec_n>> paths;	//List of paths. Every path is a vector of points to be rendered as connected lines.
 
