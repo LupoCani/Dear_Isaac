@@ -6,6 +6,7 @@
 #include <vector>
 #include <string>
 #include <windows.h>
+#include <ciso646>
 #define skip if (false)
 #define ORBITAL_TOOLS_LOADED true
 #define RENDER_DEBUG_INSTALLED true
@@ -88,6 +89,12 @@ namespace input					//Declare the input system. In a namespace becuse putting sf
 
 	key_state keyboard;
 
+	namespace win_inf
+	{
+		bool update = 0;
+		bool close_h = 1;
+	}
+
 	void run_input()
 	{
 		Event input;
@@ -96,29 +103,38 @@ namespace input					//Declare the input system. In a namespace becuse putting sf
 		keyboard.buttons_last = keyboard.buttons;
 		keyboard.buttons = std::vector<bool>(Mouse::Button::ButtonCount);
 
+		keyboard.buttons[Mouse::Button::Left] = Mouse::isButtonPressed(Mouse::Button::Left);
+		keyboard.buttons[Mouse::Button::Right] = Mouse::isButtonPressed(Mouse::Button::Right);
+		keyboard.buttons[Mouse::Button::Middle] = Mouse::isButtonPressed(Mouse::Button::Middle);
+		keyboard.buttons[Mouse::Button::XButton1] = Mouse::isButtonPressed(Mouse::Button::XButton1);
+		keyboard.buttons[Mouse::Button::XButton2] = Mouse::isButtonPressed(Mouse::Button::XButton2);
+
 		while (shared::window2.pollEvent(input)) {
 
 			if (input.type == Event::KeyPressed)
+			{
 				if (!keyboard.isPressed(input.key.code))
 					keyboard.pressed.push_back(input.key.code);
+			}
 
-			if (input.type == Event::KeyReleased)
+			else if (input.type == Event::KeyReleased)
 				keyboard.pressed.erase(keyboard.pressed.begin() + keyboard.pressedAt(input.key.code));
 
-			keyboard.buttons[Mouse::Button::Left] = Mouse::isButtonPressed(Mouse::Button::Left);
-			keyboard.buttons[Mouse::Button::Right] = Mouse::isButtonPressed(Mouse::Button::Right);
-			keyboard.buttons[Mouse::Button::Middle] = Mouse::isButtonPressed(Mouse::Button::Middle);
-			keyboard.buttons[Mouse::Button::XButton1] = Mouse::isButtonPressed(Mouse::Button::XButton1);
-			keyboard.buttons[Mouse::Button::XButton2] = Mouse::isButtonPressed(Mouse::Button::XButton2);
-
-			if (input.type == Event::MouseWheelMoved)
+			else if (input.type == Event::MouseWheelMoved)
 				keyboard.scroll = input.mouseWheel.delta;
+
+			else if (input.type == Event::Resized)
+				win_inf::update = true;
+			else if (input.type == Event::Closed)
+				win_inf::close_h = true;
 		}
 	}
 
 	namespace flush_back
 	{
 		bool play = false;
+		int men_cmd = 0;
+		int pause_cmd = 0;
 	}
 
 }
@@ -248,27 +264,34 @@ namespace shared
 
 	namespace world_state		//Data for rendering/ui functions to use in rendering
 	{
+		double world_time = 0;
+
 		//Physical variables:
 
-		std::vector<vec_n> bodies;				//List of bodies' positions. The first value is the sun, the last is the player.
+		/**/std::vector<vec_n> bodies;				//List of bodies' positions. The first value is the sun, the last is the player.
 		std::vector<double> sizes;				//List of bodies' sizes. Specifically, unzoomed radius.
 		std::vector<vec_n> kesses;				//List of kessler fields
 		std::vector<double> sizes_kess;			//List of kessler fields' sizes. Specifically, the unzoomed radius
 		
 		std::vector<std::string> names;			//List of the names for every corresponding body
-		std::vector<std::vector<vec_n>> paths;	//List of paths. Every path is a vector of points to be rendered as connected lines.
+		/**/std::vector<std::vector<vec_n>> paths;	//List of paths. Every path is a vector of points to be rendered as connected lines.
 
 		//Screen variables:
 
 		double zoom = 1;	//The current zoom level. Larger values mean more close zoom.
-		int focus = 0;		//The body the view focuses on.
-		int target = -1;	//The body selected by the player to target.
+		/**/int focus = 0;		//The body the view focuses on.
+		/**/int target = -1;	//The body selected by the player to target.
+
+		int intercept = -1;		//The body the player is currently intercepting
+		bool cepting = false;	//Whether or not the player is set to intercept a body
+		double cept_time = 0;	//Time until projected intercept
 
 		//Target approach variables:
 
-		std::vector<double> target_time;	//The time of the two closest approaches the player will make
-		std::vector<vec_n> target_close;	//The target's position in the two closest approaches
-		std::vector<vec_n> player_close;	//The player's position in the two closest approaches
+		std::vector<double> target_time(1);	//The time of the two closest approaches the player will make
+		std::vector<double> target_min(1);
+		std::vector<vec_n> target_close(1);	//The target's position in the two closest approaches
+		std::vector<vec_n> player_close(1);	//The player's position in the two closest approaches
 		
 		//Assist variables:
 
@@ -283,20 +306,20 @@ namespace shared
 
 		//Game variables:
 
-		vec_n  target_pos;	//The center of the target zone.
-		double target_rad;	//The radius of the target zone.
+		/**/vec_n  goal_pos;	//The center of the target zone.
+		/**/double goal_rad;	//The radius of the target zone.
 
-		int target_parent;		//The id of the body around which the target is placed.
-		int target_parent_2;	//If the above is a moon, this is the id of the planet the moon orbits.
+		/**/int goal_parent;	//The id of the body around which the target is placed.
+		/**/int goal_parent_2;	//If the above is a moon, this is the id of the planet the moon orbits.
 
 		//Score varibles:
 
-		double eng_secs = 0;	//Abstract amount of time engine has been on
-		double goal_count = -1;	//Amount of goals that have been collected
-		double score = 0;		//Amount of points, represented by the score
+		/**/double eng_secs = 0;	//Abstract amount of time engine has been on
+		/**/double goal_count = -1;	//Amount of goals that have been collected
+		/**/double score = 0;		//Amount of points, represented by the score
 
-		double health;			//Current health
-		double health_max;		//Size of health bar
+		/**/double health;			//Current health
+		/**/double health_max;		//Size of health bar
 	};
 }
 
@@ -394,8 +417,11 @@ namespace phys
 
 		vector<body*> bodies;
 		vector<body*> kesses;
+		vector<double> bodies_size;
+		vector<double> kesses_size;
 		vector<vector<vec_n>> tails;
 		vector<vector<vec_n>> tails_future;
+		vector<vector<vec_n>> tails_out;
 		vector<vec_n> bodies_pos;
 	}
 
@@ -410,16 +436,23 @@ namespace phys
 		vec_n player_pos;
 
 		double zoom_mem = 2;
+		int focus = 1;
 
 		double health;
 		double health_max;
 		double eng_secs;
 
+		double dmg_rad;
+		double dmg_int;
+
 		vec_n goal_coords;
 		double goal_size;
 		bool goal_active;
+		int goal_id;
 		int goal_parent;
 		int goal_count = -1;
+
+		vector<vec_n> kesses_pos;
 	}
 
 	namespace rock
@@ -449,6 +482,9 @@ namespace phys
 		short expire_count = 0;
 
 		int next_parent;	//The id of the predicted parent
+
+		vec_n enter_plyr_pos;
+		vec_n enter_pln_pos;
 	}
 
 	template<class vec_cont>
@@ -579,16 +615,9 @@ namespace phys
 		return vmag(in.x, in.y);
 	}
 
-	vec_n rot_vec(vec_n in, double rot)
+	vec_r rot_vec(vec_r in, double rot)
 	{
-		double l = vmag(in);
-		double angle = atan2(in);
-
-		angle += rot;
-
-		in.y = l * sin(angle);
-		in.x = l * cos(angle);
-
+		in.ang += rot;
 		return in;
 	}
 
@@ -674,6 +703,11 @@ namespace phys
 			return acos(cosE) - ecc * sinE;
 		else
 			return M_2PI - acos(cosE) - ecc * -sinE;
+	}
+
+	double get_dM_E(double E, double ecc)
+	{
+		return 1 - ecc * cos(E);
 	}
 
 	double get_M_E(double E, double ecc)
@@ -836,6 +870,25 @@ namespace phys
 		}
 
 		return ang_wrap(mid);
+	}
+
+	double do_orbit_precise_N(double part, body sat, int precision)
+	{
+		if (sat.shape) return do_orbit_precise_H(part, sat, precision);
+
+		double E_pot = part;
+		double M_pot = 0;
+		double diff = pow(2, -precision);
+
+		for (int i = 0; i < precision *2; i++)
+		{
+			M_pot = get_M_E(E_pot, sat.ecc);
+			E_pot = E_pot - M_pot / get_dM_E(E_pot, sat.ecc);
+
+			if (abs(M_pot - part) < diff)
+				break;
+		}
+		return get_V(E_pot, sat.ecc);
 	}
 
 	double do_orbit_precise(double part, body sat, int precision)
@@ -1062,7 +1115,7 @@ namespace phys
 						last_times[i] = pln_tim;
 						vec_n pln_pos = get_pos_ang(Vp, pln);
 
-						while (pln_tim < sat_tim_old)
+						while (pln_tim < sat_tim_old && its[i] < precision)
 						{
 							its[i]++;
 							Vp = starts[i] + ang_scale(diffs[i], its[i], precision);
@@ -1070,7 +1123,7 @@ namespace phys
 							last_times[i] = pln_tim;
 						}
 
-						while (pln_tim < sat_tim)
+						while (pln_tim < sat_tim && its[i] < precision)
 						{
 							double diff_part = (pln_tim - sat_tim_old) / sat_tim_diff;	//What percentage of the current time interval has passed in the moment we're observing.
 							vec_n sat_pos_est = sat_pos_old + sat_pos_diff * diff_part;
@@ -1373,6 +1426,24 @@ namespace phys
 
 	//End graph algorithms
 
+	//Begin game functions
+
+	double calc_dmg(double dist, double radius, double intensity)
+	{
+		if (dist > radius)
+			return 0;
+
+		double dist_part = dist / radius;
+		double dmg_base = 1 - pow(dist_part, 0.35);
+
+		if (isnan(dmg_base))
+			dmg_base = 0;
+
+		return dmg_base * intensity;
+	}
+
+	//End game functions
+
 	void generate_goal(double radius, int par_id = 0)
 	{
 		double sat_r = (*gen::bodies[par_id]).size;
@@ -1400,6 +1471,40 @@ namespace phys
 		return false;
 	}
 
+	void run_health()
+	{
+		using gen::kesses;
+		double dmg_tot = 0;
+		body plyr = *gen::bodies.back();
+
+		for (int i = 0; i < kesses.size(); i++)
+		{
+			body kess = *kesses[i];
+			double dist = vmag(kess.pos - plyr.pos);
+
+			double dmg = calc_dmg(dist, game::dmg_rad, game::dmg_int);
+
+			dmg_tot += dmg;
+		}
+
+		{
+			body parent = *plyr.parent;
+
+			double dist = vmag(plyr.pos - parent.pos) - parent.size;
+			double atmosphere = parent.size * 0.05;
+
+			if (dist < 0)
+				game::health = 0;
+
+			double dmg = calc_dmg(dist, atmosphere, game::dmg_int);
+			dmg_tot += dmg;
+		}
+
+		game::health -= dmg_tot;
+		if (game::health < 0)
+			game::health = 0;
+	}
+
 	void add_kesslers()
 	{
 		body &plyr = *gen::bodies.back();
@@ -1422,21 +1527,24 @@ namespace phys
 			kess.parent = parent.self;
 			kess.isKess = true;
 			kess.u = 0.01;
+			kess.size = game::dmg_rad;
 
 			make_orbit(kess, plyr.epoch);
 
-			if (get_r(M_PI, kess) < parent.SOI)
+			if (parent.size < get_r(0, kess) and get_r(M_PI, kess) < parent.SOI)
+			{
 				gen::kesses.push_back(&kess);
+				gen::kesses_size.push_back(kess.size);
+			}
 			else
 				delete kess.self;
 		}
-
-		std::cout << gen::kesses.size() << std::endl;
 	}
 
 	void kill_kesslers()
 	{
 		using gen::kesses;
+		gen::kesses_size.clear();
 
 		while (kesses.size())
 		{
@@ -1476,7 +1584,7 @@ namespace phys
 			out.push_back(sat.pos);
 		}
 
-		shared::world_state::kesses = out;
+		game::kesses_pos = out;
 	}
 
 	void do_phys_tick(vector<body*> bodies, double w_time, bool phys_mode, vec_n thrust = vec_n())
@@ -1494,7 +1602,7 @@ namespace phys
 			vec_n vel;
 
 			if (!phys_mode || !sat.isPlayer)
-				do_orbit(sat, w_time, 20, pos, vel);
+				do_orbit(sat, w_time, 10, pos, vel);
 			else
 				do_orbit_phys(sat, w_time, thrust, pos, vel);
 
@@ -1597,7 +1705,7 @@ namespace phys
 		}
 		if (keyboard.isPressed(key_state::keys::Numpad4))
 		{
-			std::cin >> shared::world_state::focus;
+			std::cin >> game::focus;
 		}
 
 		double thrust_actual = 0;
@@ -1623,14 +1731,6 @@ namespace phys
 
 		rock::eng_thrust = vec_to_pos(rock::rot, -thrust_actual / (rock::mass + rock::fuel) );
 		rock::eng_mode = vmag(rock::eng_thrust);
-
-
-		shared::world_state::score = pow(10, 9) * sqr(game::goal_count) / game::eng_secs;
-		shared::world_state::goal_count = game::goal_count;
-		shared::world_state::eng_secs = game::eng_secs;
-
-		shared::world_state::health = game::health;
-		shared::world_state::health_max = game::health_max;
 	}
 
 	void do_predict()
@@ -1753,17 +1853,21 @@ namespace phys
 
 		if (expiring)
 		{
-			plyr.entering = true;
-
-			/*
 			vec_n true_pos_plyr, true_pos_pln;
 			body &pln = *bodies[cnv[new_parent]];
 
 			do_orbit(plyr, expire_time, 10, true_pos_plyr);
-			do_orbit(pln,  expire_time, 10, true_pos_pln);
+			do_orbit(pln, expire_time, 10, true_pos_pln);
 
-			vmag(true_pos_plyr - true_pos_pln);
-			*/
+			double true_dist = vmag(true_pos_plyr - true_pos_pln);
+
+			if (true_dist > pln.SOI)
+				expiring = false;
+		}
+
+		if (expiring)
+		{
+			plyr.entering = true;
 
 			plyr.V_ent = data.V_exp;
 
@@ -1774,6 +1878,7 @@ namespace phys
 
 			pred::next_parent = cnv[data.new_parent];
 			pred::expire_count = 50;
+			pred::end = plyr.entry;
 		}
 		else if (pred::expire_count > 0)
 		{
@@ -1788,7 +1893,6 @@ namespace phys
 		{
 			if (co_sats[i] == gen::bodies[game::target])
 			{
-
 				if (!pairs[i].size()) break;
 
 				if (pairs[i][0].dist == DBL_MAX) break;
@@ -1820,17 +1924,66 @@ namespace phys
 					if (r_max > radius)
 						radius = r_max;
 				}
-
 				radius *= 0.8;
 			}
 
 			generate_goal(radius, par_id);
 
-			shared::world_state::target_parent = par_id;
-			shared::world_state::target_parent_2 = find_in(gen::bodies, (*gen::bodies[par_id]).parent);
-
+			game::goal_id = par_id;
 			game::goal_count++;
 		}
+	}
+
+	void handle_flushback(int flushback)
+	{
+		if (shared::game_state == 0)
+		{
+			if (flushback == 1)			//Play game
+				shared::game_state = 1;
+			if (flushback == 2)			//View options
+				shared::game_state = 3;
+			if (flushback == 3)			//View credits
+				shared::game_state = 5;
+			if (flushback == 4)			//End game
+				shared::game_state = -1;
+		}
+	}
+
+	void send_world_state()
+	{
+		using namespace shared::world_state;
+
+		world_time = gen::w_time;
+
+		health = game::health;
+		health_max = game::health_max;
+		target = game::target;
+
+		score = pow(10, 9) * sqr(game::goal_count) / game::eng_secs;
+		goal_count = game::goal_count;
+		eng_secs = game::eng_secs;
+
+		bodies = gen::bodies_pos;
+		focus = game::focus;
+		paths = gen::tails_out;
+
+		goal_pos = game::goal_coords;
+		goal_rad = game::goal_size;
+		goal_parent = game::goal_id;
+		goal_parent_2 = find_in(gen::bodies, (*gen::bodies[game::goal_id]).parent);
+
+		sizes = gen::bodies_size;
+		kesses = game::kesses_pos;
+		sizes_kess = gen::kesses_size;
+
+		cepting = (*gen::bodies.back()).entering;
+		intercept = pred::next_parent;
+		cept_time = pred::end;
+
+		target_close[0] = game::target_pos;
+		player_close[0] = game::player_pos;
+		target_min[0] = game::min_dist;
+		target_time[0] = game::min_time;
 	}
 
 #ifdef RENDER_DEBUG_INSTALLED
@@ -1840,87 +1993,35 @@ namespace phys
 
 	void run_engine()
 	{
+		if (input::flush_back::play)
+			shared::game_state = 1;
+
 		gen::w_time_last = gen::w_time;
 		double diff_time = (shared::r_time - shared::l_time) / 100.0 / shared::cps / gen::d_time_fact;
 		if (diff_time < 0.01)
 			gen::w_time_diff = diff_time;
 		else
 			gen::w_time_diff = 0.01;
-		gen::w_time += gen::w_time_diff;
 
-		if (!input::flush_back::play)
-			return;
+		if (shared::game_state == 1)
+			gen::w_time += gen::w_time_diff;	
 		else
-			shared::game_state = 1;
-
-		
+			return;
 
 		do_game_tick();
-
-		
+		run_health();
 
 		do_phys_tick(gen::bodies, gen::w_time, rock::eng_mode, rock::eng_thrust);
 		do_kess_tick(gen::kesses, gen::bodies, gen::w_time);
 
-		
-
-		shared::world_state::bodies = gen::bodies_pos;
-
-		
-
 		body &plyr = *gen::bodies.back();
 		gen::tails[gen::tails.size() - 1] = make_tail(plyr, 1000);
-
-		
 
 		do_predict();
 
 		run_goal();
 
 		set_tails_future(gen::bodies, 100);
-
-		/*
-		skip if (gen::last_predict + 0.5 * shared::cps < shared::r_time && !plyr.inverse)
-		{
-			get_expiry data(plyr, gen::bodies);
-
-			vector<body*> co_sats = data.list_out;
-
-			vector<vector<pred_p>> pairs = data.mins_out;
-
-			bool expiring = data.will_expire;
-			int new_parent = data.new_parent;
-
-
-			plyr.safe = plyr.t_l;
-
-			if (expiring)
-			{
-				plyr.expire = 2;
-				plyr.V_exp = data.V_exp;
-
-				if (plyr.shape ? pairs[new_parent][0].time <= plyr.expire : pairs[new_parent][0].time <= plyr.t_l + 2 * plyr.t_p)
-					plyr.expiry = pairs[new_parent][0].time;
-			}
-			else
-			{
-				reset_expiry(plyr);
-				set_expiry_regular(plyr);
-			}
-
-			for (int i = 0; i < co_sats.size(); i++)
-			{
-				if (co_sats[i] == gen::bodies[game::target])
-				{
-					if (pairs[i][0].dist == DBL_MAX) break;
-
-					game::min_dist = pairs[i][0].dist;
-					game::min_time = pairs[i][0].time;
-				}
-			}
-			gen::last_predict = shared::r_time;
-		}
-		*/
 
 		game::cur_dist = vmag((*gen::bodies.back()).pos - (*gen::bodies[game::target]).pos);
 		vector<vector<vec_n>> tails_out = gen::tails;
@@ -1939,12 +2040,9 @@ namespace phys
 				tails_out[i][i2] += par_pos;
 		}
 
-		shared::world_state::paths = tails_out;
+		gen::tails_out = tails_out;
 
-#ifdef RENDER_DEBUG_INSTALLED
-		emode = rock::eng_mode;
-		thrust_debug = rock::eng_thrust;
-#endif
+		send_world_state();
 	}
 
 	vector<body*> sort_bodies(vector<body*> unsorted)	//Bubble-ish sorting of the bodies by mass, largest to smallest.
@@ -2077,9 +2175,11 @@ namespace phys
 			body &sat = *gen::bodies[i];
 
 			sat.size = cbrt(sat.u) / 40;
-			shared::world_state::sizes.push_back(sat.size);
+			gen::bodies_size.push_back(sat.size);
 		}
 
+		for (int i = 0; i < gen::bodies.size(); i++)
+			shared::world_state::names.push_back((*gen::bodies[i]).name);
 
 		gen::tails = get_tails_basic(gen::bodies, 1000);
 
@@ -2088,6 +2188,12 @@ namespace phys
 		rock::f_p_t = 0.0;
 		rock::gyro = 100000000;
 		rock::eng_F = 1000000000000;
+
+		game::health = 100;
+		game::health_max = game::health;
+
+		game::dmg_rad = 100;
+		game::dmg_int = 0.001;
 	}
 
 	void engine_init()
@@ -2263,10 +2369,10 @@ namespace render_debug			//To be removed once the neccesary render_tools functio
 		}
 
 
-		namespace in = shared::world_state;
+		namespace ws = shared::world_state;
 
 		window_is_clear = true;
-		render_lines(in::paths, in::bodies[in::focus], in::zoom);
+		render_lines(ws::paths, ws::bodies[ws::focus], ws::zoom);
 
 		std::vector<std::string> texts;
 		texts.push_back("Engine: " + std::to_string(phys::rock::thrust));
@@ -2281,11 +2387,11 @@ namespace render_debug			//To be removed once the neccesary render_tools functio
 		texts.push_back("Expire: " + std::to_string((*phys::gen::bodies.back()).expire()));
 
 		render_texts(texts);
-		render_kesslers(shared::world_state::kesses, in::bodies[in::focus], in::zoom);
-		render_player(in::player_rotation, in::bodies.back(), in::bodies[in::focus], in::zoom);
+		render_kesslers(shared::world_state::kesses, ws::bodies[ws::focus], ws::zoom);
+		render_player(ws::player_rotation, ws::bodies.back(), ws::bodies[ws::focus], ws::zoom);
 
-		render_goal(phys::game::goal_coords, in::bodies[in::focus], in::zoom);
-		render_coll(in::bodies[in::focus], in::zoom);
+		render_goal(phys::game::goal_coords, ws::bodies[ws::focus], ws::zoom);
+		render_coll(ws::bodies[ws::focus], ws::zoom);
 
 		//window2.display();
 	}
