@@ -145,6 +145,20 @@ namespace ui
 		return out;
 	}
 
+	string to_string(double in, short max)
+	{
+		string out;
+		if (isnan(in))
+			out = "N/A";
+		else
+			out = std::to_string(in);
+
+		if (out.length() > max)
+			out = out.substr(0, max);
+
+		return out;
+	}
+
 	void draw_plnbox(RenderWindow &window, short kind, vec_n pos, string name, double vel, double dist = 0, double pr_dist = 0, double countdown = 0)
 	{
 		vec_n box_size(200, 300);
@@ -188,13 +202,13 @@ namespace ui
 			items.push_back("INTERCEPTING");
 		{
 			items.push_back("Name:     " + name);
-			items.push_back("Distance: " + std::to_string(dist));
-			items.push_back("Velocity: " + std::to_string(vel));
+			items.push_back("Distance: " + to_string(dist, 10));
+			items.push_back("Velocity: " + to_string(vel, 10));
 		}
 		if (kind == 0 || kind == 1 || kind == 2)
 		{
-			items.push_back("Closest:  " + std::to_string(pr_dist));
-			items.push_back("ETA:      " + std::to_string(countdown));
+			items.push_back("Closest:  " + to_string(pr_dist, 10));
+			items.push_back("ETA:      " + to_string(countdown, 10));
 		}
 
 		double l_y = 0;
@@ -354,6 +368,11 @@ namespace ui
 					box_mode = 0;
 					min_time = ws::target_time[0] - ws::world_time;
 					min_dist = int(ws::target_min[0]);
+					if (ws::cepting and ws::cept_time < ws::target_time[0])
+					{
+						min_time = NAN;
+						min_dist = NAN;
+					}
 				}
 				draw_plnbox(window2, box_mode, vec_n(-5, -5), name, vel, dist, min_dist, min_time);
 

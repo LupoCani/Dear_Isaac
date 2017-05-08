@@ -1673,8 +1673,8 @@ namespace phys
 		else
 			gen::d_time_fact *= pow(1.1, keyboard.scroll);
 
-		rock::spin -= rock::gyro * gen::w_time_diff * keyboard.isPressed(key_state::keys::Left);
-		rock::spin += rock::gyro * gen::w_time_diff * keyboard.isPressed(key_state::keys::Right);
+		rock::spin += rock::gyro * gen::w_time_diff * keyboard.isPressed(key_state::keys::Left);
+		rock::spin -= rock::gyro * gen::w_time_diff * keyboard.isPressed(key_state::keys::Right);
 
 		rock::rot += gen::w_time_diff * rock::spin;
 
@@ -1724,12 +1724,12 @@ namespace phys
 		accel.mag = thrust_actual / (rock::mass + rock::fuel);
 		accel.ang = rock::rot;
 
-		using namespace shared::world_state;
-		focus = 6;
-		zoom = game::zoom_mem;
-		player_rotation = rock::rot;
+		namespace ws = shared::world_state;
+		ws::focus = 6;
+		ws::zoom = game::zoom_mem;
+		ws::player_rotation = rock::rot;
 
-		rock::eng_thrust = vec_to_pos(rock::rot, -thrust_actual / (rock::mass + rock::fuel) );
+		rock::eng_thrust = vec_to_pos(rock::rot, thrust_actual / (rock::mass + rock::fuel) );
 		rock::eng_mode = vmag(rock::eng_thrust);
 	}
 
@@ -2008,6 +2008,10 @@ namespace phys
 		else
 			return;
 
+#ifdef RENDER_DEBUG_INSTALLED
+		thrust_debug = (*gen::bodies.back()).vel;
+#endif
+
 		do_game_tick();
 		run_health();
 
@@ -2042,6 +2046,9 @@ namespace phys
 
 		gen::tails_out = tails_out;
 
+#ifdef RENDER_DEBUG_INSTALLED
+		thrust_debug = (*gen::bodies.back()).vel - thrust_debug;
+#endif
 		send_world_state();
 	}
 
@@ -2194,6 +2201,8 @@ namespace phys
 
 		game::dmg_rad = 100;
 		game::dmg_int = 0.001;
+
+		game::focus = gen::bodies.size() - 1;
 	}
 
 	void engine_init()
@@ -2268,6 +2277,7 @@ namespace render_debug			//To be removed once the neccesary render_tools functio
 		FPS2.setFont(debug_font);
 		FPS2.setPosition(coords);
 		FPS2.setCharacterSize(25);
+		FPS2.setFillColor(Color(150, 150, 150));
 		if (nonsense)
 			FPS2.setString(text);
 		window2.draw(FPS2);
@@ -2288,7 +2298,7 @@ namespace render_debug			//To be removed once the neccesary render_tools functio
 		plyr.setOrigin(5, 5);
 		plyr.setPosition(pos);
 		plyr.setScale(vec_n(1, 2));
-		plyr.setRotation(rot / phys::M_2PI * 360.0 + 90.0);
+		plyr.setRotation(-rot / phys::M_2PI * 360.0 + 90.0);
 
 		window2.draw(plyr);
 	}
@@ -2374,10 +2384,20 @@ namespace render_debug			//To be removed once the neccesary render_tools functio
 		window_is_clear = true;
 		render_lines(ws::paths, ws::bodies[ws::focus], ws::zoom);
 
+		double gm_rot = phys::rock::rot;// phys::ang_scale(4, phys::rock::rot, phys::M_2PI);
+		double ph_rot = phys::atan2(phys::thrust_debug);// phys::ang_scale(4, phys::atan2(phys::thrust_debug), phys::M_2PI);
+		double df_rot = gm_rot - ph_rot;
+
+		while (df_rot < 0)
+			df_rot += 4;
+		while (df_rot > 4)
+			df_rot -= 4;
+
 		std::vector<std::string> texts;
 		texts.push_back("Engine: " + std::to_string(phys::rock::thrust));
-		texts.push_back("GM_rot: " + std::to_string(phys::ang_scale(4, phys::rock::rot, phys::M_2PI)));
-		texts.push_back("PH_rot: " + std::to_string(phys::ang_scale(4, phys::atan2(phys::thrust_debug), phys::M_2PI)));
+		texts.push_back("GM_rot: " + std::to_string(gm_rot));
+		texts.push_back("PH_rot: " + std::to_string(ph_rot));
+		texts.push_back("DF_rot: " + std::to_string(df_rot));
 
 		texts.push_back("Eccent: " + std::to_string((*phys::gen::bodies.back()).ecc));
 

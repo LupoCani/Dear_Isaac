@@ -57,11 +57,12 @@ void main()
 			phys::run_engine();
 
 			graph::do_render();
+
+			ui::run_ui();
+
 #ifdef RENDER_DEBUG_INSTALLED
 			render_debug::render_all();
 #endif
-			ui::run_ui();
-
 			basics::done();
 
 			l_time = r_time;
