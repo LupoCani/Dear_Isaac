@@ -215,9 +215,9 @@ namespace graph{
 
 		namespace ws = shared::world_state;
 
-		if (ws::target_parent_2 == 0 ) {
-			planets[ws::target_parent].setOutlineColor(Color(242, 46, 176));
-			planets[ws::target_parent].setOutlineThickness(5);
+		if (ws::goal_parent_2 == 0 ) {
+			planets[ws::goal_parent].setOutlineColor(Color(242, 46, 176));
+			planets[ws::goal_parent].setOutlineThickness(5);
 		}
 		for (int i = 0; i < 5; i++) {
 			window2.draw(planets[i]);
