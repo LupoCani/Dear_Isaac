@@ -217,7 +217,7 @@ namespace graph{
 
 		if (ws::target_parent_2 == 0 ) {
 			planets[ws::target_parent].setOutlineColor(Color(242, 46, 176));
-			planets[ws::target_parent].setOutlineThickness(radius[ws::target_parent] * 0.2);
+			planets[ws::target_parent].setOutlineThickness(5);
 		}
 		for (int i = 0; i < 5; i++) {
 			window2.draw(planets[i]);
