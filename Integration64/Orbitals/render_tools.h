@@ -146,7 +146,7 @@ namespace graph{
 
 		if (shared::game_state == 0)
 		{
-			start_menue();
+			//start_menue();
 			return;
 		}
 

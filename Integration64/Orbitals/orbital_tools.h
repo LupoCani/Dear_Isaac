@@ -261,6 +261,13 @@ namespace shared
 	using phys::vec_n;
 
 	short game_state = 0;
+	/*
+	0: start menu
+	1: playing
+	2: paused
+	4: game over
+	5: closing
+	*/
 
 	namespace world_state		//Data for rendering/ui functions to use in rendering
 	{
@@ -1993,8 +2000,7 @@ namespace phys
 
 	void run_engine()
 	{
-		if (input::flush_back::play)
-			shared::game_state = 1;
+		handle_flushback(input::flush_back::men_cmd);
 
 		gen::w_time_last = gen::w_time;
 		double diff_time = (shared::r_time - shared::l_time) / 100.0 / shared::cps / gen::d_time_fact;
@@ -2368,7 +2374,7 @@ namespace render_debug			//To be removed once the neccesary render_tools functio
 
 	void render_all()
 	{
-		if (!input::flush_back::play)
+		if (shared::game_state != 1)
 		{
 			return;
 		}
