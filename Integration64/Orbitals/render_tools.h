@@ -205,19 +205,19 @@ namespace graph{
 			
 		}
 	
-#ifdef RENDER_DEBUG_INSTALLED
+//#ifdef RENDER_DEBUG_INSTALLED
 		if (!render_debug::window_is_clear)
 			window2.clear();
 		render_debug::window_is_clear = false;
-#else
+//#else
 		window2.clear();
-#endif // RENDER_DEBUG_INSTALLED
+//#endif // RENDER_DEBUG_INSTALLED
 
 		namespace ws = shared::world_state;
 
-		if (ws::goal_parent_2 == 0 ) {
-			planets[ws::goal_parent].setOutlineColor(Color(242, 46, 176));
-			planets[ws::goal_parent].setOutlineThickness(radius[ws::goal_parent] * 0.2);
+		if (ws::target_parent_2 == 0 ) {
+			planets[ws::target_parent].setOutlineColor(Color(242, 46, 176));
+			planets[ws::target_parent].setOutlineThickness(5);
 		}
 		for (int i = 0; i < 5; i++) {
 			window2.draw(planets[i]);
