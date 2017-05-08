@@ -1510,6 +1510,9 @@ namespace phys
 		game::health -= dmg_tot;
 		if (game::health < 0)
 			game::health = 0;
+
+		if (game::health <= 0)
+			shared::game_state = 4;
 	}
 
 	void add_kesslers()
@@ -1941,18 +1944,19 @@ namespace phys
 		}
 	}
 
-	void handle_flushback(int flushback)
+	void handle_flushback()
 	{
 		if (shared::game_state == 0)
 		{
+			int flushback = input::flush_back::men_cmd;
 			if (flushback == 1)			//Play game
 				shared::game_state = 1;
 			if (flushback == 2)			//View options
-				shared::game_state = 3;
+				shared::game_state = 11;
 			if (flushback == 3)			//View credits
-				shared::game_state = 5;
+				shared::game_state = 12;
 			if (flushback == 4)			//End game
-				shared::game_state = -1;
+				shared::game_state = 4;
 		}
 	}
 
@@ -2000,7 +2004,7 @@ namespace phys
 
 	void run_engine()
 	{
-		handle_flushback(input::flush_back::men_cmd);
+		handle_flushback();
 
 		gen::w_time_last = gen::w_time;
 		double diff_time = (shared::r_time - shared::l_time) / 100.0 / shared::cps / gen::d_time_fact;
