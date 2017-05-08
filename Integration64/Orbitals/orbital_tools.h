@@ -280,6 +280,7 @@ namespace shared
 		std::vector<vec_n> kesses;				//List of kessler fields
 		std::vector<double> sizes_kess;			//List of kessler fields' sizes. Specifically, the unzoomed radius
 		
+		int bodies_moons_begin = 0;
 		std::vector<std::string> names;			//List of the names for every corresponding body
 		/**/std::vector<std::vector<vec_n>> paths;	//List of paths. Every path is a vector of points to be rendered as connected lines.
 
@@ -1920,21 +1921,23 @@ namespace phys
 	{
 		if (compare_goal() || game::goal_count < 0)
 		{
-			int par_id = rand() % gen::bodies.size();
+			int max_i = gen::bodies.size() - 1;
+
+			int par_id = rand() % max_i;
 			double radius = (*gen::bodies[par_id]).SOI * 0.8;
 
 			if (par_id == 0)
 			{
-				double radius = 0;
-
-				for (int i = 0; i < gen::bodies.size(); i++)
+				radius = 0;
+				for (int i = 1; i < max_i; i++)
 				{
 					double r_max = get_r(M_PI, *gen::bodies[i]);
-
+					std::cout << "Radius: " << r_max << std::endl;
 					if (r_max > radius)
 						radius = r_max;
 				}
 				radius *= 0.8;
+				std::cout << "Radius: " << radius << std::endl;
 			}
 
 			generate_goal(radius, par_id);
@@ -2197,6 +2200,10 @@ namespace phys
 
 		for (int i = 0; i < gen::bodies.size(); i++)
 			shared::world_state::names.push_back((*gen::bodies[i]).name);
+
+		for (int i = gen::bodies.size() - 1; i > 0; i--)
+			if (gen::bodies.front() != (*gen::bodies[i]).parent)
+				shared::world_state::bodies_moons_begin = i;
 
 		gen::tails = get_tails_basic(gen::bodies, 1000);
 
