@@ -218,6 +218,8 @@ namespace graph{
 		if (ws::goal_parent_2 == 0 ) {
 			planets[ws::goal_parent].setOutlineColor(Color(242, 46, 176));
 			planets[ws::goal_parent].setOutlineThickness(5);
+		} else{
+			planets[ws::goal_parent].setOutlineThickness(0);
 		}
 		for (int i = 0; i < 5; i++) {
 			window2.draw(planets[i]);
