@@ -135,6 +135,11 @@ namespace input					//Declare the input system. In a namespace becuse putting sf
 		bool play = false;
 		int men_cmd = 0;
 		int pause_cmd = 0;
+
+		namespace play_cmds
+		{
+			bool pause = false;
+		}
 	}
 
 }
@@ -1949,15 +1954,52 @@ namespace phys
 
 	void handle_flushback()
 	{
+
+		/*
+		state list:
+
+		0: start menu
+		1: playing
+		2: paused
+		3: game over
+		4: quitting
+		11: options
+		12: credits
+		13: controls
+		*/
 		if (shared::game_state == 0)
 		{
 			int flushback = input::flush_back::men_cmd;
+			input::flush_back::men_cmd = 0;
 			if (flushback == 1)			//Play game
 				shared::game_state = 1;
 			if (flushback == 2)			//View options
 				shared::game_state = 11;
 			if (flushback == 3)			//View credits
 				shared::game_state = 12;
+			if (flushback == 4)			//End game
+				shared::game_state = 4;
+		}
+
+		if (shared::game_state == 1)
+		{
+			if (input::flush_back::play_cmds::pause)
+			{
+				input::flush_back::play_cmds::pause = 0;
+				shared::game_state = 2;
+			}
+		}
+
+		if (shared::game_state == 2)
+		{
+			int flushback = input::flush_back::pause_cmd;
+			input::flush_back::pause_cmd = 0;
+			if (flushback == 1)			//Play game
+				shared::game_state = 1;
+			if (flushback == 2)			//View options
+				shared::game_state = 12;
+			if (flushback == 3)			//View credits
+				shared::game_state = 13;
 			if (flushback == 4)			//End game
 				shared::game_state = 4;
 		}

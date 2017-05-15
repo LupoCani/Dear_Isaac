@@ -391,6 +391,9 @@ namespace ui
 			}
 
 			draw_kesslers(window2, ws::kesses, ws::sizes_kess.back(), ws::bodies[ws::focus], ws::zoom, vec_n(window2.getSize().x / 2, window2.getSize().y / 2));
+
+			if (input::keyboard.isPressed(input::key_state::keys::Escape))
+				input::flush_back::play_cmds::pause = true;
 		}
 
 		if (game_state == 2)
@@ -447,6 +450,8 @@ namespace ui
 
 			if (input::keyboard.wasPressed(input::key_state::keys::Return))
 				input::flush_back::pause_cmd = pause_sel + 1;
+			if (input::keyboard.wasPressed(input::key_state::keys::Escape))
+				input::flush_back::pause_cmd = 1;
 
 			window2.draw(back_rec);
 			for (int i = 0; i < lines.size(); i++)

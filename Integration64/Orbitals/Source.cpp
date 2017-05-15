@@ -74,6 +74,10 @@ void main()
 			cout << "Ticks per second: " << i / t_cap << endl;
 			t_cap += 5;
 		}
+		if (shared::game_state == 4)
+		{
+			break;
+		}
 	}
 	return;
 }
