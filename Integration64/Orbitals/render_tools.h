@@ -143,6 +143,11 @@ namespace graph{
 	{
 		namespace screen_state = shared::world_state;
 		using shared::window2;
+		CircleShape goal_mark(20);
+		goal_mark.setOutlineThickness(1);
+		goal_mark.setFillColor(Color(5, 5, 5));
+		goal_mark.setOutlineColor(Color(224, 132, 255));
+		goal_mark.setOrigin(goal_mark.getRadius(), goal_mark.getRadius());
 
 		if (shared::game_state == 0)
 		{
@@ -216,30 +221,21 @@ namespace graph{
 		namespace ws = shared::world_state;
 
 	
-			planets[ws::goal_parent].setOutlineColor(Color(242, 46, 176));
-			planets[ws::goal_parent].setOutlineThickness(5);
 
-		if (ws::goal_parent_2 != 0) {
-			planets[ws::goal_parent_2].setOutlineColor(Color(242, 46, 176));
-			planets[ws::goal_parent_2].setOutlineThickness(5);
-		} 
+
+			goal_mark.setPosition(planets[ws::goal_parent].getPosition());
+
+
 	///*
-		for (int i = 0; i < planets.size();i++){
-		
-			if (i<ws::bodies_moons_begin || i != ws::goal_parent) {
-				planets[i].setOutlineThickness(0);
-			}
-			if (i >= ws::bodies_moons_begin || i != ws::goal_parent_2) {
-				planets[i].setOutlineThickness(0);
-			}
 
-		}
  //*/
+			window2.draw(goal_mark);
 		for (int i = 0; i < 5; i++) {
 			window2.draw(planets[i]);
 		}
 
 		window2.draw(player);
+
 		//window2.display();
 		/*
 		for (int i = 0; i < 9; i++) {
