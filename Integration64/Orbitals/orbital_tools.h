@@ -2555,7 +2555,7 @@ namespace render_debug			//To be removed once the neccesary render_tools functio
 		texts.push_back("AcDist: " + std::to_string(phys::game::cur_dist));
 		texts.push_back("Expire: " + std::to_string((*phys::gen::bodies.back()).expire()));
 
-		render_texts(texts);
+		//render_texts(texts);
 		render_kesslers(shared::world_state::kesses, ws::bodies[ws::focus], ws::zoom);
 		render_player(ws::player_rotation, ws::bodies.back(), ws::bodies[ws::focus], ws::zoom);
 
