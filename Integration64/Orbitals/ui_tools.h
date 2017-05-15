@@ -36,13 +36,8 @@ namespace ui
 	short pause_sel = 0;
 	short pause_l;
 
-
 	vector<string> crep_items;
 	vector<double> crep_dists(5);
-
-	void hp(double hp, double hp_max)
-	{
-	}
 
 	vec_n scale_single(vec_n pos, vec_n origo, double scale = 1, double mid_x = 500, double mid_y = 500)
 	{
@@ -137,14 +132,6 @@ namespace ui
 		}
 	}
 
-	vec_n true_size(FloatRect rect)
-	{
-		vec_n out;
-		out.x = rect.width + rect.left;
-		out.y = rect.height + rect.top;
-		return out;
-	}
-
 	string to_string(double in, short max)
 	{
 		string out;
@@ -159,9 +146,42 @@ namespace ui
 		return out;
 	}
 
+	vec_n true_size(FloatRect rect)
+	{
+		vec_n out;
+		out.x = rect.width + rect.left;
+		out.y = rect.height + rect.top;
+		return out;
+	}
+
+	void draw_score(RenderWindow &window, double value)
+	{
+		Text scoretext;
+
+		string text = "Score: ";
+
+		text += to_string(value, 10);
+
+		scoretext.setString(text);
+		scoretext.setFont(font);
+		scoretext.setCharacterSize(20);
+
+		scoretext.setPosition(vec_n(500, 5));
+
+		vec_n size = true_size(scoretext.getLocalBounds());
+		size.x *= 0.5;
+		size.y = 0;
+		scoretext.setOrigin(size);
+
+		window.draw(scoretext);
+	}
+
 	void draw_plnbox(RenderWindow &window, short kind, vec_n pos, string name, double vel, double dist = 0, double pr_dist = 0, double countdown = 0)
 	{
-		vec_n box_size(200, 300);
+		vec_n box_size(200, 250);
+		if (kind > 2)
+			box_size.y *= 0.5;
+
 		vec_n box_pos;
 		vec_n box_orig = box_size * -1;
 		vec_n box_move = box_orig;
@@ -191,11 +211,17 @@ namespace ui
 		0: target, not intercepting.
 		1: target, intercepting.
 		2: not target, intercepting
+		3: parent, orbiting
+		4: parent, escaping
 		*/
 
 		vector<string> items;
 		if (kind == 0 or kind == 1)
 			items.push_back("Target");
+		if (kind == 3)
+			items.push_back("Orbiting");
+		if (kind == 4)
+			items.push_back("Leaving");
 		if (kind == 0)
 			items.push_back("I");
 		if (kind == 1 or kind == 2)
@@ -207,7 +233,8 @@ namespace ui
 		}
 		if (kind == 0 || kind == 1 || kind == 2)
 		{
-			items.push_back("Closest:  " + to_string(pr_dist, 10));
+			if (kind == 0)
+				items.push_back("Closest:  " + to_string(pr_dist, 10));
 			items.push_back("ETA:      " + to_string(countdown, 10));
 		}
 
@@ -340,7 +367,10 @@ namespace ui
 			double health_prc = ws::health / ws::health_max;
 			double thrust_prc = ws::player_thrust / ws::player_thrust_max;
 
+
+			draw_kesslers(window2, ws::kesses, ws::sizes_kess.back(), ws::bodies[ws::focus], ws::zoom, vec_n(window2.getSize().x / 2, window2.getSize().y / 2));
 			draw_crep(window2, crep_dists, crep_items, { time_prc, health_prc, thrust_prc });
+			draw_score(window2, ws::score);
 
 			int target = ws::target;
 			if (target >= 0 && target < ws::names.size())
@@ -360,7 +390,7 @@ namespace ui
 				if (ws::cepting and ws::target == ws::intercept)
 				{
 					box_mode = 1;
-					min_time = ws::cept_time;
+					min_time = ws::cept_time - ws::world_time;
 					min_dist = 0;
 				}
 				else
@@ -374,7 +404,7 @@ namespace ui
 						min_dist = NAN;
 					}
 				}
-				draw_plnbox(window2, box_mode, vec_n(-5, -5), name, vel, dist, min_dist, min_time);
+				draw_plnbox(window2, box_mode, vec_n(-5, 5), name, vel, dist, min_dist, min_time);
 
 
 				if (ws::cepting and ws::target != ws::intercept)
@@ -388,9 +418,20 @@ namespace ui
 
 					draw_plnbox(window2, box_mode, vec_n(-210, 5), name, vel, dist, min_dist, min_time);
 				}
-			}
 
-			draw_kesslers(window2, ws::kesses, ws::sizes_kess.back(), ws::bodies[ws::focus], ws::zoom, vec_n(window2.getSize().x / 2, window2.getSize().y / 2));
+				{
+					int parent_id = ws::parent_id;
+					if ( 0 > parent_id)
+						parent_id = 0;
+
+					string name = ws::names[ws::parent_id];
+					double vel = (ws::bodies_vel[ws::parent_id] - ws::bodies_vel.back()).mag();
+					double dist = (ws::bodies[ws::parent_id] - ws::bodies.back()).mag();
+					short box_mode = 3;
+
+					draw_plnbox(window2, box_mode, vec_n(-5, -5), name, vel, dist);
+				}
+			}
 
 			if (input::keyboard.isPressed(input::key_state::keys::Escape))
 				input::flush_back::play_cmds::pause = true;
@@ -477,6 +518,7 @@ namespace ui
 			pause_items.push_back("controls,");
 			pause_items.push_back("options,");
 			pause_items.push_back("quit.");
+			pause_l = pause_items.size();
 		}
 		{
 			crep_items.push_back("Time:......");

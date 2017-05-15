@@ -189,6 +189,16 @@ namespace phys					//Declare various classes and functions
 			y = in_y;
 		}
 
+		double mag()
+		{
+			return vmag(*this);
+		}
+
+		double ang()
+		{
+			return atan2(*this);
+		}
+
 		operator sf::Vector2f() {
 			return sf::Vector2f(x, y);
 		}
@@ -285,6 +295,8 @@ namespace shared
 		std::vector<vec_n> kesses;				//List of kessler fields
 		std::vector<double> sizes_kess;			//List of kessler fields' sizes. Specifically, the unzoomed radius
 		
+		/**/std::vector<vec_n> bodies_vel;
+
 		int bodies_moons_begin = 0;				//The id of the first moon in the list
 		std::vector<std::string> names;			//List of the names for every corresponding body
 		/**/std::vector<std::vector<vec_n>> paths;	//List of paths. Every path is a vector of points to be rendered as connected lines.
@@ -294,6 +306,7 @@ namespace shared
 		double zoom = 1;	//The current zoom level. Larger values mean more close zoom.
 		/**/int focus = 0;		//The body the view focuses on.
 		/**/int target = -1;	//The body selected by the player to target.
+		int parent_id = 0;
 
 		int intercept = -1;		//The body the player is currently intercepting
 		bool cepting = false;	//Whether or not the player is set to intercept a body
@@ -436,6 +449,7 @@ namespace phys
 		vector<vector<vec_n>> tails_future;
 		vector<vector<vec_n>> tails_out;
 		vector<vec_n> bodies_pos;
+		vector<vec_n> bodies_vel;
 	}
 
 	namespace game
@@ -454,6 +468,9 @@ namespace phys
 		double health;
 		double health_max;
 		double eng_secs;
+
+		double score_base = 0;
+		double score_tot = 0;
 
 		double dmg_rad;
 		double dmg_int;
@@ -498,6 +515,9 @@ namespace phys
 
 		vec_n enter_plyr_pos;
 		vec_n enter_pln_pos;
+
+		vector<vec_n> target_close_pos(1);
+		vector<vec_n> player_close_pos(1);
 	}
 
 	template<class vec_cont>
@@ -1322,7 +1342,7 @@ namespace phys
 
 	//Begin graph algorithms
 
-	vector<vec_n> make_tail(body sat, int subdiv, bool debug = false)
+	vector<vec_n> make_tail(body sat, int subdiv, bool apses = false)
 	{
 		vector<vec_n> out;
 
@@ -1339,7 +1359,11 @@ namespace phys
 		double V_span = V_end - V_start;
 
 		for (int i = 0; i <= subdiv; i++)
-			out.push_back(get_pos_ang(V_start + ang_scale(V_span, i, subdiv), sat));
+		{
+			double ang = V_start + ang_scale(V_span, i, subdiv);
+			vec_n point = get_pos_ang(ang, sat);
+			out.push_back(point);
+		}
 
 		return out;
 	}
@@ -1456,6 +1480,16 @@ namespace phys
 	}
 
 	//End game functions
+
+	void update_score()
+	{
+		double score_inc = 1 / (1 + sqrt(game::eng_secs));
+
+		game::score_base += score_inc;
+		game::score_tot = game::goal_count * game::score_base;
+
+		game::eng_secs = 0;
+	}
 
 	void generate_goal(double radius, int par_id = 0)
 	{
@@ -1606,6 +1640,7 @@ namespace phys
 	void do_phys_tick(vector<body*> bodies, double w_time, bool phys_mode, vec_n thrust = vec_n())
 	{
 		vector<vec_n> out;
+		vector<vec_n> out_vel;
 		bool expired = false;
 
 		vector<vec_n> pos_buffer;
@@ -1635,6 +1670,7 @@ namespace phys
 			sat.t_l = w_time;
 
 			out.push_back(sat.pos);
+			out_vel.push_back(sat.vel);
 		}
 
 		body &plyr = *bodies.back();
@@ -1678,6 +1714,7 @@ namespace phys
 		}
 
 		gen::bodies_pos = out;
+		gen::bodies_vel = out_vel;
 	}
 
 	void do_game_tick()
@@ -1903,6 +1940,8 @@ namespace phys
 		else
 		{
 			plyr.entering = false;
+
+
 		}
 
 		for (int i = 0; i < co_sats.size(); i++)
@@ -1916,6 +1955,14 @@ namespace phys
 				game::min_dist = pairs[i][0].dist;
 				game::min_time = pairs[i][0].time;
 
+				vec_n fut_pln_pos, fut_plyr_pos;
+
+				do_orbit(plyr, game::min_time, 10, fut_plyr_pos);
+				do_orbit(*co_sats[i], game::min_time, 10, fut_pln_pos);
+
+				pred::player_close_pos[0] = fut_plyr_pos;
+				pred::target_close_pos[0] = fut_pln_pos;
+
 				break;
 			}
 		}
@@ -1926,6 +1973,7 @@ namespace phys
 	{
 		if (compare_goal() || game::goal_count < 0)
 		{
+			update_score();
 			int max_i = gen::bodies.size() - 1;
 
 			int par_id = rand() % max_i;
@@ -2015,11 +2063,12 @@ namespace phys
 		health_max = game::health_max;
 		target = game::target;
 
-		score = pow(10, 9) * sqr(game::goal_count) / game::eng_secs;
+		score = game::score_tot;
 		goal_count = game::goal_count;
 		eng_secs = game::eng_secs;
 
 		bodies = gen::bodies_pos;
+		bodies_vel = gen::bodies_vel;
 		focus = game::focus;
 		paths = gen::tails_out;
 
@@ -2036,10 +2085,12 @@ namespace phys
 		intercept = pred::next_parent;
 		cept_time = pred::end;
 
-		target_close[0] = game::target_pos;
-		player_close[0] = game::player_pos;
+		target_close = pred::target_close_pos;
+		player_close = pred::player_close_pos;
 		target_min[0] = game::min_dist;
 		target_time[0] = game::min_time;
+
+		parent_id = find_in(gen::bodies, (*gen::bodies.back()).parent);
 	}
 
 #ifdef RENDER_DEBUG_INSTALLED
@@ -2329,6 +2380,32 @@ namespace render_debug			//To be removed once the neccesary render_tools functio
 			render_line(in[i], origo, zoom);
 		}
 	}
+	void render_ext(vector<vec_n> in, vec_n origo, double zoom)
+	{
+		in = handle_scale(in, origo, zoom);
+
+		for (int i2 = 0; i2 < in.size(); i2++)
+		{
+			sf::VertexArray lines(sf::LinesStrip, 5);
+			for (int i = 0; i < 5; i++)
+			{
+				phys::vec_r corner;
+				corner.ang = i * phys::M_PI2;
+				corner.mag = 5;
+
+				lines[i].position = in[i2] + corner;
+				lines[i].color = Color(100, 100, 200);
+			}
+			window2.draw(lines);
+		}
+	}
+	void render_exts(vector<vector<vec_n>> in, vec_n origo, double zoom)
+	{
+		for (int i = 0; i < in.size(); i++)
+		{
+			render_ext(in[i], origo, zoom);
+		}
+	}
 
 	void render_text(std::string text, vec_n coords)
 	{
@@ -2396,32 +2473,45 @@ namespace render_debug			//To be removed once the neccesary render_tools functio
 
 	void render_coll(vec_n origo, double zoom)
 	{
-		
+		namespace ws = shared::world_state;
+		if (not (ws::cepting and ws::target == ws::intercept))
 		{
-			double size = 6;
-			shared::vec_n pos = phys::game::target_pos;
+			sf::VertexArray lines(sf::LinesStrip, 2);
+			{
+				vec_n pos = ws::target_close[0];
+				pos = scale_single(pos, origo, zoom);
 
-			pos = scale_single(pos, origo, zoom);
+				lines[0].position = pos;
+				lines[0].color = Color(150, 150, 250);
+			}
+			{
+				vec_n pos_2 = ws::player_close[0];
+				pos_2 = scale_single(pos_2, origo, zoom);
 
-			CircleShape kess(size);
-			kess.setFillColor(sf::Color::Blue);
-			kess.setOrigin(size / 2, size / 2);
-			kess.setPosition(pos);
-
-			window2.draw(kess);
+				lines[1].position = pos_2;
+				lines[1].color = Color(150, 150, 250);
+			}
+			window2.draw(lines);
 		}
+
+		if (ws::cepting)
 		{
-			double size = 3;
-			shared::vec_n pos = phys::game::player_pos;
+			sf::VertexArray lines(sf::LinesStrip, 2);
+			{
+				shared::vec_n pos = phys::game::target_pos;
+				pos = scale_single(pos, origo, zoom);
 
-			pos = scale_single(pos, origo, zoom);
+				lines[0].position = pos;
+				lines[0].color = Color::Red;
+			}
+			{
+				shared::vec_n pos = phys::game::player_pos;
+				pos = scale_single(pos, origo, zoom);
 
-			CircleShape kess(size);
-			kess.setFillColor(sf::Color::Red);
-			kess.setOrigin(size / 2, size / 2);
-			kess.setPosition(pos);
-
-			window2.draw(kess);
+				lines[1].position = pos;
+				lines[1].color = Color::Red;
+			}
+			window2.draw(lines);
 		}
 	}
 
