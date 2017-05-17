@@ -25,125 +25,6 @@ namespace shared 					//Declare basic shared parameters
 	//namespace world_state;
 }
 
-namespace input					//Declare the input system. In a namespace becuse putting sf:: in phys feels unclean
-{
-	using namespace sf;
-
-	struct key_state {
-
-		short scroll = 0;
-		std::vector<int>  pressed;
-		std::vector<int>  pressed_last;
-		std::vector<bool> buttons;
-		std::vector<bool> buttons_last;
-
-		struct keys : sf::Keyboard {
-			using Keyboard::Key;
-		};
-
-		struct btns : sf::Mouse {
-			using Mouse::Button;
-		};
-
-		int isAt(int key, std::vector<int> list)
-		{
-			for (int i = 0; i < list.size(); i++)
-				if (key == list[i])
-					return i;
-
-			return -1;
-		}
-
-		bool isPressed(int key)
-		{
-			return isAt(key, pressed) >= 0;
-		}
-
-		int pressedAt(int key)
-		{
-			return isAt(key, pressed);
-		}
-
-		bool wasPressed(int key)
-		{
-			return isAt(key, pressed) >= 0 && isAt(key, pressed_last) < 0;
-		}
-		bool isPressed_any()
-		{
-			return pressed.size();
-		}
-		bool wasPressed_any()
-		{
-			return pressed.size() && !pressed_last.size();
-		}
-
-		bool msDown(short button)
-		{
-			return buttons[button] && !buttons_last[button];
-		}
-		bool msPressed(short button)
-		{
-			return buttons[button];
-		}
-	};
-
-	key_state keyboard;
-
-	namespace win_inf
-	{
-		bool update = 0;
-		bool close_h = 1;
-	}
-
-	void run_input()
-	{
-		Event input;
-		keyboard.scroll = 0;
-		keyboard.pressed_last = keyboard.pressed;
-		keyboard.buttons_last = keyboard.buttons;
-		keyboard.buttons = std::vector<bool>(Mouse::Button::ButtonCount);
-
-		keyboard.buttons[Mouse::Button::Left] = Mouse::isButtonPressed(Mouse::Button::Left);
-		keyboard.buttons[Mouse::Button::Right] = Mouse::isButtonPressed(Mouse::Button::Right);
-		keyboard.buttons[Mouse::Button::Middle] = Mouse::isButtonPressed(Mouse::Button::Middle);
-		keyboard.buttons[Mouse::Button::XButton1] = Mouse::isButtonPressed(Mouse::Button::XButton1);
-		keyboard.buttons[Mouse::Button::XButton2] = Mouse::isButtonPressed(Mouse::Button::XButton2);
-
-		while (shared::window2.pollEvent(input)) {
-
-			if (input.type == Event::KeyPressed)
-			{
-				if (!keyboard.isPressed(input.key.code))
-					keyboard.pressed.push_back(input.key.code);
-			}
-
-			else if (input.type == Event::KeyReleased)
-				keyboard.pressed.erase(keyboard.pressed.begin() + keyboard.pressedAt(input.key.code));
-
-			else if (input.type == Event::MouseWheelMoved)
-				keyboard.scroll = input.mouseWheel.delta;
-
-			else if (input.type == Event::Resized)
-				win_inf::update = true;
-			else if (input.type == Event::Closed)
-				win_inf::close_h = true;
-		}
-	}
-
-	namespace flush_back
-	{
-		bool play = false;
-		int men_cmd = 0;
-		int pause_cmd = 0;
-
-		namespace play_cmds
-		{
-			bool pause = false;
-		}
-	}
-
-}
-
 namespace phys					//Declare various classes and functions
 {
 	struct vec_n;
@@ -286,7 +167,8 @@ namespace shared
 
 	namespace world_state		//Data for rendering/ui functions to use in rendering
 	{
-		double world_time = 0;
+		/**/double world_time = 0;
+		/**/double time_speed = 1;
 
 		//Physical variables:
 
@@ -347,6 +229,149 @@ namespace shared
 		/**/double health;			//Current health
 		/**/double health_max;		//Size of health bar
 	};
+}
+
+namespace input					//Declare the input system. In a namespace becuse putting sf:: in phys feels unclean
+{
+	using namespace sf;
+	using phys::vec_n;
+
+	vec_n reverse_single(vec_n pos, vec_n origo, double scale = 1, vec_n center = vec_n())
+	{
+		pos -= origo;
+		pos *= 1 / scale;
+		pos.y *= -1;
+
+		pos += center;
+
+		return pos;
+	}
+
+	struct key_state {
+
+		short scroll = 0;
+		std::vector<int>  pressed;
+		std::vector<int>  pressed_last;
+		std::vector<bool> buttons;
+		std::vector<bool> buttons_last;
+
+		vec_n mouse_pos;
+
+		struct keys : sf::Keyboard {
+			using Keyboard::Key;
+		};
+
+		struct btns : sf::Mouse {
+			using Mouse::Button;
+		};
+
+		int isAt(int key, std::vector<int> list)
+		{
+			for (int i = 0; i < list.size(); i++)
+				if (key == list[i])
+					return i;
+
+			return -1;
+		}
+
+		bool isPressed(int key)
+		{
+			return isAt(key, pressed) >= 0;
+		}
+
+		int pressedAt(int key)
+		{
+			return isAt(key, pressed);
+		}
+
+		bool wasPressed(int key)
+		{
+			return isAt(key, pressed) >= 0 && isAt(key, pressed_last) < 0;
+		}
+		bool isPressed_any()
+		{
+			return pressed.size();
+		}
+		bool wasPressed_any()
+		{
+			return pressed.size() && !pressed_last.size();
+		}
+
+		bool msDown(short button)
+		{
+			return buttons[button] && !buttons_last[button];
+		}
+		bool msPressed(short button)
+		{
+			return buttons[button];
+		}
+	};
+
+	key_state keyboard;
+
+	namespace win_inf
+	{
+		bool update = 0;
+		bool close_h = 0;
+	}
+
+	void run_input()
+	{
+		Event input;
+		keyboard.scroll = 0;
+		keyboard.pressed_last = keyboard.pressed;
+		keyboard.buttons_last = keyboard.buttons;
+		keyboard.buttons = std::vector<bool>(Mouse::Button::ButtonCount);
+
+		keyboard.buttons[Mouse::Button::Left] = Mouse::isButtonPressed(Mouse::Button::Left);
+		keyboard.buttons[Mouse::Button::Right] = Mouse::isButtonPressed(Mouse::Button::Right);
+		keyboard.buttons[Mouse::Button::Middle] = Mouse::isButtonPressed(Mouse::Button::Middle);
+		keyboard.buttons[Mouse::Button::XButton1] = Mouse::isButtonPressed(Mouse::Button::XButton1);
+		keyboard.buttons[Mouse::Button::XButton2] = Mouse::isButtonPressed(Mouse::Button::XButton2);
+
+		Vector2i mouse_pos = Mouse::getPosition(shared::window2);
+		vec_n mouse_pos_v = vec_n(mouse_pos.x, mouse_pos.y);
+
+		if (shared::world_state::focus >= 0 && shared::game_state == 1)
+			keyboard.mouse_pos = reverse_single(mouse_pos_v, vec_n(500, 500), shared::world_state::zoom, shared::world_state::bodies[shared::world_state::focus]);
+
+		while (shared::window2.pollEvent(input)) {
+
+			if (input.type == Event::KeyPressed)
+			{
+				if (!keyboard.isPressed(input.key.code))
+					keyboard.pressed.push_back(input.key.code);
+			}
+
+			else if (input.type == Event::KeyReleased)
+				keyboard.pressed.erase(keyboard.pressed.begin() + keyboard.pressedAt(input.key.code));
+
+			else if (input.type == Event::MouseWheelMoved)
+				keyboard.scroll = input.mouseWheel.delta;
+
+			else if (input.type == Event::Resized)
+				win_inf::update = true;
+			else if (input.type == Event::Closed)
+				win_inf::close_h = true;
+		}
+	}
+
+	namespace flush_back
+	{
+		bool play = false;
+		int men_cmd = 0;
+		int pause_cmd = 0;
+		int gameover_cmd = 0;
+		int cred_cmd = 0;
+		int cont_cmd = 0;
+
+
+		namespace play_cmds
+		{
+			bool pause = false;
+		}
+	}
+
 }
 
 namespace phys
@@ -467,10 +492,12 @@ namespace phys
 
 		double health;
 		double health_max;
+		double thrust_max;
 		double eng_secs;
 
 		double score_base = 0;
 		double score_tot = 0;
+		double score_disp = 0;
 
 		double dmg_rad;
 		double dmg_int;
@@ -483,6 +510,8 @@ namespace phys
 		int goal_count = -1;
 
 		vector<vec_n> kesses_pos;
+
+		int last_state = 0;
 	}
 
 	namespace rock
@@ -1481,14 +1510,19 @@ namespace phys
 
 	//End game functions
 
-	void update_score()
+	void update_score(bool hit_goal)
 	{
-		double score_inc = 1 / (1 + sqrt(game::eng_secs));
+		double score_inc = 1 / (1 + cbrt(game::eng_secs));
 
-		game::score_base += score_inc;
-		game::score_tot = game::goal_count * game::score_base;
+		if (hit_goal && game::goal_count >= 0)
+		{
+			game::score_base += score_inc;
+			game::score_tot = (game::goal_count + 1) * game::score_base;
 
-		game::eng_secs = 0;
+			game::eng_secs = 0;
+		}
+
+		game::score_disp = long(1000000000 * (game::score_tot + score_inc * (game::goal_count + 1)));
 	}
 
 	void generate_goal(double radius, int par_id = 0)
@@ -1552,7 +1586,7 @@ namespace phys
 			game::health = 0;
 
 		if (game::health <= 0)
-			shared::game_state = 4;
+			shared::game_state = 3;
 	}
 
 	void add_kesslers()
@@ -1720,55 +1754,109 @@ namespace phys
 	void do_game_tick()
 	{
 		using namespace input;
+		update_score(false);
 
-		if (!keyboard.isPressed(key_state::keys::RShift))
-			game::zoom_mem *= pow(1.1, keyboard.scroll);
-		else
-			gen::d_time_fact *= pow(1.1, keyboard.scroll);
-
-		rock::spin += rock::gyro * gen::w_time_diff * keyboard.isPressed(key_state::keys::Left);
-		rock::spin -= rock::gyro * gen::w_time_diff * keyboard.isPressed(key_state::keys::Right);
+		rock::spin += rock::gyro * gen::w_time_diff * keyboard.isPressed(key_state::keys::A);
+		rock::spin -= rock::gyro * gen::w_time_diff * keyboard.isPressed(key_state::keys::D);
 
 		rock::rot += gen::w_time_diff * rock::spin;
 
 		rock::rot = ang_wrap(rock::rot, 2);
 
-		rock::thrust += keyboard.isPressed(key_state::keys::Up);
-		rock::thrust -= keyboard.isPressed(key_state::keys::Down);
+		rock::thrust += keyboard.isPressed(key_state::keys::W);
+		rock::thrust -= keyboard.isPressed(key_state::keys::S);
 
-		if (keyboard.isPressed(key_state::keys::Numpad1))
+		game::zoom_mem *= pow(1.1, keyboard.scroll);
+
+		if (keyboard.isPressed(key_state::keys::Q))
 		{
 			rock::spin = 0;
 		}
-		if (keyboard.isPressed(key_state::keys::Numpad3))
+		if (keyboard.isPressed(key_state::keys::Right))
 		{
-			gen::d_time_fact = 100;
+			gen::d_time_fact *= (1 / 1.01);
+			if (gen::d_time_fact < 0.01)
+				gen::d_time_fact = 0.01;
 		}
-		if (keyboard.isPressed(key_state::keys::Numpad6))
+		if (keyboard.isPressed(key_state::keys::Left))
 		{
-			gen::d_time_fact = 1;
+			gen::d_time_fact *= 1.01;
+			if (gen::d_time_fact > 100)
+				gen::d_time_fact = 100;
 		}
-		if (keyboard.isPressed(key_state::keys::Numpad2))
+		if (keyboard.isPressed(key_state::keys::E))
 		{
 			rock::thrust = 0;
 		}
+		if (gen::d_time_fact < 50)
+		{
+			rock::spin = 0;
+			rock::thrust = 0;
+		}
+		if (keyboard.buttons[key_state::btns::Left])
+		{
+			for (int i = 0; i < gen::bodies.size() - 1; i++)
+			{
+				double dist = (keyboard.mouse_pos - (*gen::bodies[i]).pos).mag();
+				double max_dist = (*gen::bodies[i]).size;
+
+				if (game::zoom_mem < 0.05)
+					max_dist /= (10 * game::zoom_mem);
+
+				if (dist < max_dist)
+				{
+					game::target = i;
+				}
+			}
+		}
+
+		if (keyboard.buttons[key_state::btns::Right])
+		{
+			for (int i = 0; i < gen::bodies.size() - 1; i++)
+			{
+				double dist = (keyboard.mouse_pos - (*gen::bodies[i]).pos).mag();
+				double max_dist = (*gen::bodies[i]).size;
+
+				if (game::zoom_mem < 0.05)
+					max_dist /= ( 10 * game::zoom_mem);
+
+				if (dist < max_dist)
+				{
+					game::focus = i;
+				}
+			}
+		}
+
 		if (keyboard.isPressed(key_state::keys::Numpad0))
 		{
-			std::cin >> game::target;
+			//std::cin >> game::target;
 		}
 		if (keyboard.isPressed(key_state::keys::Numpad4))
 		{
-			std::cin >> game::focus;
+			//std::cin >> game::focus;
 		}
-
-		double thrust_actual = 0;
-		vec_r accel;
+		if (keyboard.isPressed(key_state::keys::Up))
+		{
+			game::focus = gen::bodies.size() - 1;
+		}
+		if (keyboard.isPressed(key_state::keys::Down))
+		{
+			gen::d_time_fact = 100;
+		}
 
 		if (rock::thrust < 0)
 			rock::thrust = 0;
 
-		if (rock::fuel > 0)
-			thrust_actual = rock::thrust * rock::eng_F;
+		if (rock::thrust > game::thrust_max)
+			rock::thrust = game::thrust_max;
+
+		double thrust_actual = 0;
+		vec_r accel;
+
+		game::eng_secs += 0.001 * rock::thrust / gen::d_time_fact;
+
+		//if (rock::fuel > 0)
+		thrust_actual = rock::thrust * rock::eng_F;
 
 		rock::fuel -= thrust_actual * rock::f_p_t;
 		if (rock::fuel < 0)
@@ -1973,7 +2061,7 @@ namespace phys
 	{
 		if (compare_goal() || game::goal_count < 0)
 		{
-			update_score();
+			update_score(true);
 			int max_i = gen::bodies.size() - 1;
 
 			int par_id = rand() % max_i;
@@ -2021,10 +2109,16 @@ namespace phys
 			input::flush_back::men_cmd = 0;
 			if (flushback == 1)			//Play game
 				shared::game_state = 1;
-			if (flushback == 2)			//View options
-				shared::game_state = 11;
+			if (flushback == 2)			//View controls
+			{
+				shared::game_state = 13;
+				game::last_state = 0;
+			}
 			if (flushback == 3)			//View credits
+			{
 				shared::game_state = 12;
+				game::last_state = 0;
+			}
 			if (flushback == 4)			//End game
 				shared::game_state = 4;
 		}
@@ -2038,19 +2132,56 @@ namespace phys
 			}
 		}
 
+		if (shared::game_state == 3)
+		{
+			if (input::flush_back::gameover_cmd > 0)
+			{
+				shared::game_state = 4;
+			}
+		}
+
 		if (shared::game_state == 2)
 		{
 			int flushback = input::flush_back::pause_cmd;
 			input::flush_back::pause_cmd = 0;
 			if (flushback == 1)			//Play game
 				shared::game_state = 1;
-			if (flushback == 2)			//View options
-				shared::game_state = 12;
-			if (flushback == 3)			//View credits
+			if (flushback == 2)			//View controls
+			{
 				shared::game_state = 13;
+				game::last_state = 2;
+			}
+			if (flushback == 3)			//View credits
+			{
+				shared::game_state = 12;
+				game::last_state = 2;
+			}
 			if (flushback == 4)			//End game
 				shared::game_state = 4;
 		}
+
+		if (shared::game_state == 12)
+		{
+			int flushback = input::flush_back::cred_cmd;
+			input::flush_back::cred_cmd = 0;
+
+			if (flushback == 1)
+			{
+				shared::game_state = game::last_state;
+			}
+		}
+		if (shared::game_state == 13)
+		{
+			int flushback = input::flush_back::cont_cmd;
+			input::flush_back::cont_cmd = 0;
+
+			if (flushback == 1)
+			{
+				shared::game_state = game::last_state;
+			}
+		}
+		if (input::win_inf::close_h)
+			shared::game_state = 4;
 	}
 
 	void send_world_state()
@@ -2058,12 +2189,13 @@ namespace phys
 		using namespace shared::world_state;
 
 		world_time = gen::w_time;
+		time_speed = gen::d_time_fact;
 
 		health = game::health;
 		health_max = game::health_max;
 		target = game::target;
 
-		score = game::score_tot;
+		score = game::score_disp;
 		goal_count = game::goal_count;
 		eng_secs = game::eng_secs;
 
@@ -2089,6 +2221,9 @@ namespace phys
 		player_close = pred::player_close_pos;
 		target_min[0] = game::min_dist;
 		target_time[0] = game::min_time;
+
+		player_thrust = rock::thrust;
+		player_thrust_max = game::thrust_max;
 
 		parent_id = find_in(gen::bodies, (*gen::bodies.back()).parent);
 	}
@@ -2299,6 +2434,7 @@ namespace phys
 				shared::world_state::bodies_moons_begin = i;
 
 		gen::tails = get_tails_basic(gen::bodies, 1000);
+		gen::d_time_fact = 100;
 
 		rock::fuel = 1000;
 		rock::mass = 1000000000;
@@ -2308,6 +2444,7 @@ namespace phys
 
 		game::health = 100;
 		game::health_max = game::health;
+		game::thrust_max = 2000;
 
 		game::dmg_rad = 100;
 		game::dmg_int = 0.001;
@@ -2347,6 +2484,17 @@ namespace render_debug			//To be removed once the neccesary render_tools functio
 		pos.y *= -1;
 
 		pos += vec_n(mid_x, mid_y);
+
+		return pos;
+	}
+
+	vec_n reverse_single(vec_n pos, vec_n origo, double scale = 1, vec_n center = vec_n())
+	{
+		pos -= origo;
+		pos *= 1/scale;
+		pos.y *= -1;
+
+		pos += center;
 
 		return pos;
 	}
@@ -2554,8 +2702,9 @@ namespace render_debug			//To be removed once the neccesary render_tools functio
 		texts.push_back("PrTime: " + std::to_string(phys::game::min_time - phys::gen::w_time));
 		texts.push_back("AcDist: " + std::to_string(phys::game::cur_dist));
 		texts.push_back("Expire: " + std::to_string((*phys::gen::bodies.back()).expire()));
+		texts.push_back("Time: " + std::to_string(phys::gen::d_time_fact));
 
-		//render_texts(texts);
+		render_texts(texts);
 		render_kesslers(shared::world_state::kesses, ws::bodies[ws::focus], ws::zoom);
 		render_player(ws::player_rotation, ws::bodies.back(), ws::bodies[ws::focus], ws::zoom);
 

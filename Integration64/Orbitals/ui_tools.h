@@ -36,6 +36,18 @@ namespace ui
 	short pause_sel = 0;
 	short pause_l;
 
+	vector<string> gameover_items;
+	string gameover_head;
+	short gameover_l;
+
+	vector<string> credits_items;
+	string credits_head;
+	short credits_l;
+
+	vector<string> controls_items;
+	string controls_head;
+	short controls_l;
+
 	vector<string> crep_items;
 	vector<double> crep_dists(5);
 
@@ -363,7 +375,7 @@ namespace ui
 
 		if (game_state == 1)
 		{
-			double time_prc = ws::health / ws::health_max;
+			double time_prc = (pow((0.01 / ws::time_speed), 0.2));
 			double health_prc = ws::health / ws::health_max;
 			double thrust_prc = ws::player_thrust / ws::player_thrust_max;
 
@@ -438,7 +450,6 @@ namespace ui
 		}
 
 		if (game_state == 2)
-
 		{
 			vector<Text> lines;
 			vec_n h_pos = w_size;
@@ -498,6 +509,138 @@ namespace ui
 			for (int i = 0; i < lines.size(); i++)
 				window2.draw(lines[i]);
 		}
+
+		if (game_state == 3)
+		{
+			vector<Text> lines;
+			vec_n h_pos = w_size;
+
+			{
+				Text line;
+				line.setFont(font);
+				line.setString(gameover_head);
+				line.setCharacterSize(60);
+
+				h_pos.x *= 0.1;
+				h_pos.y *= 0.3;
+				line.setPosition(h_pos);
+
+				lines.push_back(line);
+			}
+
+
+			for (int i = 0; i < gameover_l; i++)
+			{
+				string text = gameover_items[i];
+				if (i == 0)
+					text += to_string(abs(ws::score), 5) + ",";
+
+				Text line;
+				line.setFont(font);
+				line.setString(text);
+				line.setCharacterSize(30);
+
+				vec_n l_pos = h_pos;
+				l_pos.y += w_size.y * 0.1 * (i + 1);
+				line.setPosition(l_pos);
+
+				lines.push_back(line);
+			}
+
+			if (input::keyboard.wasPressed(input::key_state::keys::Return))
+				input::flush_back::gameover_cmd = 1;
+			if (input::keyboard.wasPressed(input::key_state::keys::Escape))
+				input::flush_back::gameover_cmd = 1;
+
+			for (int i = 0; i < lines.size(); i++)
+				window2.draw(lines[i]);
+		}
+
+		if (game_state == 12)
+		{
+			vector<Text> lines;
+			vec_n h_pos = w_size;
+
+			{
+				Text line;
+				line.setFont(font);
+				line.setString(credits_head);
+				line.setCharacterSize(60);
+
+				h_pos.x *= 0.1;
+				h_pos.y *= 0.3;
+				line.setPosition(h_pos);
+
+				lines.push_back(line);
+			}
+
+
+			for (int i = 0; i < credits_l; i++)
+			{
+				string text = credits_items[i];
+				Text line;
+				line.setFont(font);
+				line.setString(text);
+				line.setCharacterSize(30);
+
+				vec_n l_pos = h_pos;
+				l_pos.y += w_size.y * 0.1 * (i + 1);
+				line.setPosition(l_pos);
+
+				lines.push_back(line);
+			}
+
+			if (input::keyboard.wasPressed(input::key_state::keys::Return))
+				input::flush_back::cred_cmd = 1;
+			if (input::keyboard.wasPressed(input::key_state::keys::Escape))
+				input::flush_back::cred_cmd = 1;
+
+			for (int i = 0; i < lines.size(); i++)
+				window2.draw(lines[i]);
+		}
+
+		if (game_state == 13)
+		{
+			vector<Text> lines;
+			vec_n h_pos = w_size;
+
+			{
+				Text line;
+				line.setFont(font);
+				line.setString(controls_head);
+				line.setCharacterSize(60);
+
+				h_pos.x *= 0.1;
+				h_pos.y *= 0.3;
+				line.setPosition(h_pos);
+
+				lines.push_back(line);
+			}
+
+
+			for (int i = 0; i < controls_l; i++)
+			{
+				string text = controls_items[i];
+				Text line;
+				line.setFont(font);
+				line.setString(text);
+				line.setCharacterSize(30);
+
+				vec_n l_pos = h_pos;
+				l_pos.y += w_size.y * 0.1 * (i + 1);
+				line.setPosition(l_pos);
+
+				lines.push_back(line);
+			}
+
+			if (input::keyboard.wasPressed(input::key_state::keys::Return))
+				input::flush_back::cont_cmd = 1;
+			if (input::keyboard.wasPressed(input::key_state::keys::Escape))
+				input::flush_back::cont_cmd = 1;
+
+			for (int i = 0; i < lines.size(); i++)
+				window2.draw(lines[i]);
+		}
 	}
 
 	void ui_init()
@@ -507,7 +650,7 @@ namespace ui
 			men_head = "Dear Isaac,";
 
 			men_items.push_back("play,");
-			men_items.push_back("options,");
+			men_items.push_back("controls,");
 			men_items.push_back("credits,");
 			men_items.push_back("quit.");
 			men_l = men_items.size();
@@ -516,9 +659,31 @@ namespace ui
 			pause_head = "Paused,";
 			pause_items.push_back("resume,");
 			pause_items.push_back("controls,");
-			pause_items.push_back("options,");
+			pause_items.push_back("credits,");
 			pause_items.push_back("quit.");
 			pause_l = pause_items.size();
+		}
+		{
+			gameover_head = "Game over,";
+			gameover_items.push_back("score - ");
+			gameover_items.push_back("enter or esc to quit.");
+			gameover_l = gameover_items.size();
+		}
+		{
+			credits_head = "Credits,";
+			credits_items.push_back("Gunnar Wickbom - Programmer at large,");
+			credits_items.push_back("Carl Housten   - Coordinator, marketing,");
+			credits_items.push_back("Alex Modee     - Graphics design and programming.");
+			credits_l = credits_items.size();
+		}
+		{
+			controls_head = "Controls,";
+			controls_items.push_back("W / S / E        - increase / decrease / reset thrust,");
+			controls_items.push_back("A / D / Q        - spin left / spin right / brake,");
+			controls_items.push_back("arrows l / r / d - speed up / slow down / reset time,");
+			controls_items.push_back("click l / r      - set target assist / view focus,");
+			controls_items.push_back("arrow up         - reset view focus");
+			controls_l = controls_items.size();
 		}
 		{
 			crep_items.push_back("Time:......");

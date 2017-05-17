@@ -43,7 +43,7 @@ void main()
 	long long i = 0;
 	long long t_cap = 5;
 
-	
+	ShowWindow(GetConsoleWindow(), 0);
 
 	while (true)
 	{

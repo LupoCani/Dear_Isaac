@@ -149,7 +149,7 @@ namespace graph{
 		goal_mark.setOutlineColor(Color(224, 132, 255));
 		goal_mark.setOrigin(goal_mark.getRadius(), goal_mark.getRadius());
 
-		if (shared::game_state == 0)
+		if (shared::game_state != 1)
 		{
 			//start_menue();
 			return;
