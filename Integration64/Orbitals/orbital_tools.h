@@ -1636,8 +1636,6 @@ namespace phys
 			kesses.pop_back();
 			delete sat_p;
 		}
-
-		std::cout << "Kill\n";
 	}
 
 	void do_kess_tick(vector<body*> list, vector<body*> list_pln, double w_time)
@@ -1901,9 +1899,6 @@ namespace phys
 		int new_parent = data.new_parent;
 		double expire_time = data.expire_time;
 
-		if (expiring)
-			std::cout << "New parent: " << (*co_sats[new_parent]).name << "\n";
-
 		for (int i = 0; i < pairs.size(); i++)
 		{
 			int ip = cnv[i];
@@ -2073,12 +2068,10 @@ namespace phys
 				for (int i = 1; i < max_i; i++)
 				{
 					double r_max = get_r(M_PI, *gen::bodies[i]);
-					std::cout << "Radius: " << r_max << std::endl;
 					if (r_max > radius)
 						radius = r_max;
 				}
 				radius *= 0.8;
-				std::cout << "Radius: " << radius << std::endl;
 			}
 
 			generate_goal(radius, par_id);

@@ -71,7 +71,7 @@ void main()
 
 		if ((r_time - s_time) / cps > t_cap)
 		{
-			cout << "Ticks per second: " << i / t_cap << endl;
+			//cout << "Ticks per second: " << i / t_cap << endl;
 			t_cap += 5;
 		}
 		if (shared::game_state == 4)
