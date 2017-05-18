@@ -133,14 +133,17 @@ namespace graph{
 	std::vector<CircleShape>planets;
 	std::vector<Texture> textures;
 	Sprite player;
-	Texture player_s;
+	//Texture player_s;
+	Texture player_texture;
 	double player_radius;
+
 
 
 
 
 	void main_render() 
 	{
+
 		namespace screen_state = shared::world_state;
 		using shared::window2;
 		CircleShape goal_mark(20);
@@ -195,7 +198,9 @@ namespace graph{
 		Oh, and, I assume you meant to say .y in the second argument.
 		*/
 		player.setPosition(Vector2f(coordinates.back().x, coordinates.back().y));
-
+		//player.setPosition(Vector2f(200, 100));
+		player.setRotation(ws::player_rotation/(phys::M_2PI)*(-360)+90);
+		
 
 		for (int i = 0; i < 6; i++) {
 			planets[i].setOrigin(planets[i].getRadius() / 1, planets[i].getRadius() / 1);
@@ -229,11 +234,11 @@ namespace graph{
 	///*
 
  //*/
+
 			window2.draw(goal_mark);
 		for (int i = 0; i < 5; i++) {
 			window2.draw(planets[i]);
 		}
-
 		window2.draw(player);
 
 		//window2.display();
@@ -248,7 +253,7 @@ namespace graph{
 	//Texture planet_textures[9];
 	//*
 
-	Texture player_texture;
+
 	void render_init() { //paste into begining of main function
 		using shared::window2;
 
@@ -260,7 +265,7 @@ namespace graph{
 
 		std::vector<CircleShape>planets_out(9); //pass to render and  collision function
 		planets = planets_out;
-		Sprite player; //pass to render and  collision function
+		//Sprite player; //pass to render and  collision function
 
 		//int radius[9] = { 220, 68, 116, 70, 60, 72, 110, 86, 150 }; //radius for the planets 
 		const int radius_size = 9;
@@ -305,6 +310,7 @@ namespace graph{
 		
 
 		player.setTexture(player_texture);
+		player.setScale(0.7, 0.7);
 		player.setOrigin(32, 32); //center the origin of the player (half the with, half the height)
 		float player_radius = player.getLocalBounds().width / 2.5; // radius of circle containing sprite; pass to collision function
 
