@@ -32,6 +32,7 @@ namespace basics
 void main()
 {
 	srand(time(0));
+	ShowWindow(GetConsoleWindow(), 0);
 
 	phys::engine_init();
 	
@@ -42,8 +43,6 @@ void main()
 
 	long long i = 0;
 	long long t_cap = 5;
-
-	ShowWindow(GetConsoleWindow(), 0);
 
 	while (true)
 	{
@@ -56,13 +55,13 @@ void main()
 
 			phys::run_engine();
 
+#ifdef RENDER_DEBUG_INSTALLED
+			render_debug::render_all();
+#endif
 			graph::do_render();
 
 			ui::run_ui();
 
-#ifdef RENDER_DEBUG_INSTALLED
-			render_debug::render_all();
-#endif
 			basics::done();
 
 			l_time = r_time;

@@ -2333,7 +2333,7 @@ namespace phys
 		sun.vel.x = 0;
 		sun.vel.y = 0;
 		sun.u = pow(10, 14);
-		sun.name = "Sun";
+		sun.name = "Sol";
 
 		body& moon = *new body;
 		moon.pos.x = -25300;
@@ -2341,7 +2341,7 @@ namespace phys
 		moon.vel.x = 0;
 		moon.vel.y = -46000;
 		moon.u = pow(10, 9);
-		moon.name = "moon";
+		moon.name = "Tale";
 
 		body& planet = *new body;
 		planet.pos.x = -25000;
@@ -2349,7 +2349,7 @@ namespace phys
 		planet.vel.x = 0;
 		planet.vel.y = -40000;
 		planet.u = pow(10, 10);
-		planet.name = "planet";
+		planet.name = "Steglarum";
 
 		body& pluto = *new body;
 		pluto.pos.x = -30000;
@@ -2357,7 +2357,7 @@ namespace phys
 		pluto.vel.x = 0;
 		pluto.vel.y = -40000;
 		pluto.u = pow(10, 10);
-		pluto.name = "pluto";
+		pluto.name = "Steur";
 
 		body& dune = *new body;
 		dune.pos.x = -35000;
@@ -2365,7 +2365,7 @@ namespace phys
 		dune.vel.x = 0;
 		dune.vel.y = -40000;
 		dune.u = pow(10, 10);
-		dune.name = "dune";
+		dune.name = "Munroe";
 
 		body& laythe = *new body;
 		dune.pos.x = -35000;
@@ -2373,7 +2373,7 @@ namespace phys
 		dune.vel.x = 0;
 		dune.vel.y = -40000;
 		dune.u = pow(10, 10);
-		dune.name = "layhte";
+		dune.name = "Predicost";
 
 		body& yavin = *new body;
 		yavin.pos.x = -40000;
@@ -2381,13 +2381,13 @@ namespace phys
 		yavin.vel.x = 0;
 		yavin.vel.y = -40000;
 		yavin.u = pow(10, 10);
-		yavin.name = "yavin";
+		yavin.name = "Trappist";
 
 		body& plyr = *new body;
 		plyr.pos.x = -40200;
 		plyr.pos.y = 0;
 		plyr.vel.x = 0;
-		plyr.vel.y = -50000;
+		plyr.vel.y = -48000;
 		plyr.u = 1;
 		plyr.isPlayer = true;
 		plyr.name = "plyr";
@@ -2500,7 +2500,7 @@ namespace render_debug			//To be removed once the neccesary render_tools functio
 		return list;
 	}
 
-	void render_line(vector<vec_n> in, vec_n origo, double zoom)
+	void render_line(vector<vec_n> in, vec_n origo, double zoom, Color color)
 	{
 		sf::VertexArray lines(sf::LinesStrip, in.size());
 
@@ -2509,7 +2509,7 @@ namespace render_debug			//To be removed once the neccesary render_tools functio
 		for (int i = 0; i < in.size(); i++)
 		{
 			lines[i].position = in[i];
-			lines[i].color = Color::Cyan;
+			lines[i].color = color;
 		}
 
 		window2.draw(lines);
@@ -2518,7 +2518,22 @@ namespace render_debug			//To be removed once the neccesary render_tools functio
 	{
 		for (int i = 0; i < in.size(); i++)
 		{
-			render_line(in[i], origo, zoom);
+			Color color = Color::Cyan;
+
+			if (i != shared::world_state::focus)
+			{
+				color = Color(150, 150, 150, 150);
+			}
+			if (i == shared::world_state::target)
+			{
+				color = Color(200, 100, 100, 150);
+			}
+			if (not (i < shared::world_state::bodies.size()))
+			{
+				color = Color(150, 150, 200, 200);
+			}
+
+			render_line(in[i], origo, zoom, color);
 		}
 	}
 	void render_ext(vector<vec_n> in, vec_n origo, double zoom)
@@ -2571,7 +2586,7 @@ namespace render_debug			//To be removed once the neccesary render_tools functio
 		pos = scale_single(pos, origo, zoom);
 
 		CircleShape plyr(10, 3);
-		plyr.setFillColor(sf::Color::Green);
+		plyr.setFillColor(sf::Color::White);
 		plyr.setOrigin(5, 5);
 		plyr.setPosition(pos);
 		plyr.setScale(vec_n(1, 2));
@@ -2605,7 +2620,9 @@ namespace render_debug			//To be removed once the neccesary render_tools functio
 		double size = phys::game::goal_size * zoom;
 
 		CircleShape kess(size);
-		kess.setFillColor(sf::Color::Magenta);
+		kess.setFillColor(sf::Color(100, 255, 255, 150));
+		kess.setOutlineThickness(5);
+		kess.setOutlineColor(sf::Color::Cyan);
 		kess.setOrigin(size / 2, size / 2);
 		kess.setPosition(pos);
 
@@ -2697,8 +2714,8 @@ namespace render_debug			//To be removed once the neccesary render_tools functio
 		texts.push_back("Expire: " + std::to_string((*phys::gen::bodies.back()).expire()));
 		texts.push_back("Time: " + std::to_string(phys::gen::d_time_fact));
 
-		render_texts(texts);
-		render_kesslers(shared::world_state::kesses, ws::bodies[ws::focus], ws::zoom);
+		//render_texts(texts);
+		//render_kesslers(shared::world_state::kesses, ws::bodies[ws::focus], ws::zoom);
 		render_player(ws::player_rotation, ws::bodies.back(), ws::bodies[ws::focus], ws::zoom);
 
 		render_goal(phys::game::goal_coords, ws::bodies[ws::focus], ws::zoom);

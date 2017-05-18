@@ -145,7 +145,7 @@ namespace graph{
 		using shared::window2;
 		CircleShape goal_mark(20);
 		goal_mark.setOutlineThickness(1);
-		goal_mark.setFillColor(Color(5, 5, 5));
+		goal_mark.setFillColor(Color::Transparent);
 		goal_mark.setOutlineColor(Color(224, 132, 255));
 		goal_mark.setOrigin(goal_mark.getRadius(), goal_mark.getRadius());
 
@@ -210,13 +210,13 @@ namespace graph{
 			
 		}
 	
-//#ifdef RENDER_DEBUG_INSTALLED
+#ifdef RENDER_DEBUG_INSTALLED
 		if (!render_debug::window_is_clear)
 			window2.clear();
 		render_debug::window_is_clear = false;
-//#else
+#else
 		window2.clear();
-//#endif // RENDER_DEBUG_INSTALLED
+#endif // RENDER_DEBUG_INSTALLED
 
 		namespace ws = shared::world_state;
 
@@ -256,7 +256,7 @@ namespace graph{
 			//handle exception
 		}
 
-		shared::window2.create(sf::VideoMode(1080, 860), "Orbitals");
+		shared::window2.create(sf::VideoMode(1080, 860), "Dear Isaac");
 
 		std::vector<CircleShape>planets_out(9); //pass to render and  collision function
 		planets = planets_out;
