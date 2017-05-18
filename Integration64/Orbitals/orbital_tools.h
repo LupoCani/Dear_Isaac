@@ -2716,7 +2716,7 @@ namespace render_debug			//To be removed once the neccesary render_tools functio
 
 		//render_texts(texts);
 		//render_kesslers(shared::world_state::kesses, ws::bodies[ws::focus], ws::zoom);
-		render_player(ws::player_rotation, ws::bodies.back(), ws::bodies[ws::focus], ws::zoom);
+		//render_player(ws::player_rotation, ws::bodies.back(), ws::bodies[ws::focus], ws::zoom);
 
 		render_goal(phys::game::goal_coords, ws::bodies[ws::focus], ws::zoom);
 		render_coll(ws::bodies[ws::focus], ws::zoom);
