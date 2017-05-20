@@ -278,19 +278,19 @@ namespace graph{
 		if (!textures[0].loadFromFile("sun_texture.png")) {
 
 		}
-		if (!textures[1].loadFromFile("planet_texture2.png")) {
+		if (!textures[1].loadFromFile("planet_texture1.png")) {
 
 		}
-		if (!textures[2].loadFromFile("planet_texture3.png")) {
+		if (!textures[2].loadFromFile("planet_texture2.png")) {
 
 		}
 		if (!textures[3].loadFromFile("planet_texture4.png")) {
 
 		}
-		if (!textures[4].loadFromFile("planet_texture5.png")) {
+		if (!textures[4].loadFromFile("planet_texture7.png")) {
 
 		}
-		if (!textures[5].loadFromFile("planet_texture6.png")) {
+		if (!textures[5].loadFromFile("planet_texture8.png")) {
 
 		}
 		if (!textures[6].loadFromFile("planet_texture7.png")) {
