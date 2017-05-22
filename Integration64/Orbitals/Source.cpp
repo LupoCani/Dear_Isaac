@@ -1,6 +1,7 @@
 #include <iostream>
 #include <time.h>
 #include <SFML\Graphics.hpp>
+#include <SFML\/Audio.hpp>
 #include <math.h>
 #include <cmath>
 #include <vector>
