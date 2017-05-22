@@ -314,8 +314,8 @@ namespace graph{
 		player.setOrigin(32, 32); //center the origin of the player (half the with, half the height)
 		float player_radius = player.getLocalBounds().width / 2.5; // radius of circle containing sprite; pass to collision function
 
-		music.openFromFile("game ost concept.wav");
-		music.setVolume(25);
+		music.openFromFile("orbitals_2.wav");
+		music.setVolume(50);
 		music.setLoop(true);
 		music.play();
 		for (int i = 1; i < planets.size(); i++) { //set planet values
